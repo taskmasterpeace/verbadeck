@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { ToneSelector } from './ToneSelector';
 import { TONE_OPTIONS, DEFAULT_TONE } from '../lib/tone-options';
 import { Sparkles, Image as ImageIcon, Upload, Wand2, ChevronRight, Loader2 } from 'lucide-react';
@@ -77,30 +78,34 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Sparkles className="w-8 h-8 text-purple-400" />
-            <h1 className="text-3xl font-bold text-white">Create from Scratch</h1>
-          </div>
-          <p className="text-white/60">Describe your presentation and let AI build it for you</p>
-        </div>
+    <div className="space-y-4">
+      {/* Info Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wand2 className="w-5 h-5" />
+            Create from Scratch
+          </CardTitle>
+          <CardDescription>
+            Describe your presentation topic and AI will generate a complete presentation with trigger words
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-        {/* Main Form */}
-        <div className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-6">
+      {/* Main Form */}
+      <Card>
+        <CardContent className="p-6 space-y-6">
 
           {/* Description */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80">
+            <label className="text-sm font-medium text-gray-700">
               What's your presentation about?
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your topic, key points, and what you want to achieve..."
-              className="w-full h-32 px-4 py-3 bg-black/40 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full h-32 px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
           </div>
 
@@ -110,8 +115,8 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
           {/* Slides Slider */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-white/80">Number of Slides</label>
-              <span className="text-2xl font-bold text-purple-400">{numSlides}</span>
+              <label className="text-sm font-medium text-gray-700">Number of Slides</label>
+              <span className="text-2xl font-bold text-blue-600">{numSlides}</span>
             </div>
             <input
               type="range"
@@ -119,12 +124,12 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
               max="20"
               value={numSlides}
               onChange={(e) => handleNumSlidesChange(parseInt(e.target.value))}
-              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider-thumb"
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
               style={{
-                background: `linear-gradient(to right, rgb(168, 85, 247) 0%, rgb(168, 85, 247) ${((numSlides - 3) / 17) * 100}%, rgba(255,255,255,0.1) ${((numSlides - 3) / 17) * 100}%, rgba(255,255,255,0.1) 100%)`
+                background: `linear-gradient(to right, rgb(37, 99, 235) 0%, rgb(37, 99, 235) ${((numSlides - 3) / 17) * 100}%, rgb(229, 231, 235) ${((numSlides - 3) / 17) * 100}%, rgb(229, 231, 235) 100%)`
               }}
             />
-            <div className="flex justify-between text-xs text-white/40">
+            <div className="flex justify-between text-xs text-gray-500">
               <span>3 slides</span>
               <span>20 slides</span>
             </div>
@@ -132,11 +137,11 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
 
           {/* Target Audience */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80">Target Audience</label>
+            <label className="text-sm font-medium text-gray-700">Target Audience</label>
             <select
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value)}
-              className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="general">General Audience</option>
               <option value="executives">Executives / Leadership</option>
@@ -149,16 +154,16 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
           </div>
 
           {/* Image Options */}
-          <div className="space-y-4 border-t border-white/10 pt-6">
+          <div className="space-y-4 border-t border-gray-200 pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-white/80">Include Images</label>
-                <p className="text-xs text-white/50 mt-1">Add visuals to your presentation</p>
+                <label className="text-sm font-medium text-gray-700">Include Images</label>
+                <p className="text-xs text-gray-500 mt-1">Add visuals to your presentation</p>
               </div>
               <button
                 onClick={() => handleIncludeImagesToggle(!includeImages)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  includeImages ? 'bg-purple-600' : 'bg-white/20'
+                  includeImages ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               >
                 <span
@@ -170,15 +175,15 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
             </div>
 
             {includeImages && (
-              <div className="space-y-4 pl-4 border-l-2 border-purple-500/30">
+              <div className="space-y-4 pl-4 border-l-2 border-blue-200">
                 {/* Image Mode Toggle */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => setImageMode('generate')}
-                    className={`flex-1 px-4 py-2 rounded-lg border transition-all ${
+                    className={`flex-1 px-4 py-2 rounded-lg border transition-all font-medium ${
                       imageMode === 'generate'
-                        ? 'bg-purple-600/30 border-purple-500 text-white'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                        : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <Wand2 className="w-4 h-4 inline mr-2" />
@@ -186,10 +191,10 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                   </button>
                   <button
                     onClick={() => setImageMode('upload')}
-                    className={`flex-1 px-4 py-2 rounded-lg border transition-all ${
+                    className={`flex-1 px-4 py-2 rounded-lg border transition-all font-medium ${
                       imageMode === 'upload'
-                        ? 'bg-purple-600/30 border-purple-500 text-white'
-                        : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                        : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <Upload className="w-4 h-4 inline mr-2" />
@@ -202,7 +207,7 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {Array.from({ length: numSlides }).map((_, index) => (
                       <div key={index} className="space-y-2">
-                        <label className="text-xs font-medium text-white/60">
+                        <label className="text-xs font-medium text-gray-600">
                           Slide {index + 1} Image Prompt
                         </label>
                         <input
@@ -210,7 +215,7 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                           value={imagePrompts[index] || ''}
                           onChange={(e) => handleImagePromptChange(index, e.target.value)}
                           placeholder="Describe the image..."
-                          className="w-full px-3 py-2 bg-black/40 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
                     ))}
@@ -231,7 +236,7 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                         />
                         <label
                           htmlFor={`image-upload-${index}`}
-                          className="flex flex-col items-center justify-center w-full h-full bg-black/40 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:bg-white/5 hover:border-purple-500/50 transition-all"
+                          className="flex flex-col items-center justify-center w-full h-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 hover:border-blue-500 transition-all"
                         >
                           {uploadedImages[index] ? (
                             <div className="relative w-full h-full">
@@ -246,8 +251,8 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                             </div>
                           ) : (
                             <>
-                              <ImageIcon className="w-8 h-8 text-white/40 mb-2" />
-                              <span className="text-xs text-white/40">Slide {index + 1}</span>
+                              <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                              <span className="text-xs text-gray-500">Slide {index + 1}</span>
                             </>
                           )}
                         </label>
@@ -256,7 +261,7 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
                   </div>
                 )}
 
-                <p className="text-xs text-white/40 italic">
+                <p className="text-xs text-gray-500 italic">
                   {imageMode === 'generate'
                     ? '⚠️ AI image generation coming soon - prompts will be saved for future use'
                     : 'Upload images in portrait (9:16) or landscape (16:9) format'
@@ -270,7 +275,7 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
           <button
             onClick={handleGenerate}
             disabled={isProcessing || !description.trim()}
-            className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-semibold text-lg shadow-lg shadow-purple-500/25 transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-semibold text-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             {isProcessing ? (
               <>
@@ -285,8 +290,8 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
               </>
             )}
           </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <style>{`
         .slider-thumb::-webkit-slider-thumb {
@@ -294,19 +299,19 @@ export function CreateFromScratch({ onGenerate, isProcessing = false }: CreateFr
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: rgb(168, 85, 247);
+          background: rgb(37, 99, 235);
           cursor: pointer;
-          box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+          box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
         }
 
         .slider-thumb::-moz-range-thumb {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: rgb(168, 85, 247);
+          background: rgb(37, 99, 235);
           cursor: pointer;
           border: none;
-          box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+          box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
         }
       `}</style>
     </div>

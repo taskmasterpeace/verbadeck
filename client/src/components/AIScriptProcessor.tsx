@@ -134,11 +134,30 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
     onSectionsGenerated(sections);
   };
 
+  const methodDescriptions = {
+    text: "You have existing script text that needs to be formatted into VerbaDeck sections with trigger words. Perfect for written speeches or presentations you've already drafted.",
+    powerpoint: "Convert an existing PowerPoint presentation into VerbaDeck format. Extracts text and images from your PPTX file.",
+    imageTemplate: "Upload presentation slide images and AI will analyze them to generate a complete voice-driven script with trigger words."
+  };
+
   return (
     <div className="space-y-4">
+      {/* Info Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            Process Existing Content
+          </CardTitle>
+          <CardDescription>
+            Choose your starting point: paste text, upload PowerPoint, or generate from images
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
       {/* Method Selection Tabs */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-4 space-y-3">
           <div className="flex gap-2">
             <button
               onClick={() => setInputMethod('text')}
@@ -174,6 +193,9 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
               Generate from Images
             </button>
           </div>
+          <p className="text-sm text-muted-foreground text-center">
+            {methodDescriptions[inputMethod]}
+          </p>
         </CardContent>
       </Card>
 

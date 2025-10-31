@@ -409,7 +409,7 @@ export default function App() {
                   onClick={() => setViewMode('create-from-scratch')}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
                     viewMode === 'create-from-scratch'
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                      ? 'bg-blue-600 text-white shadow-md'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
                   }`}
                 >
@@ -425,7 +425,7 @@ export default function App() {
                   }`}
                 >
                   <Sparkles className="w-4 h-4" />
-                  AI Processor
+                  Process Existing Content
                 </button>
                 <button
                   onClick={() => setViewMode('editor')}
