@@ -1,16 +1,20 @@
 import { Badge } from './ui/badge';
-import { Play, Square, Info } from 'lucide-react';
+import { Play, Square, Info, MessageCircle } from 'lucide-react';
 
 interface StatusBarProps {
   streamStatus: 'connecting' | 'connected' | 'disconnected';
   isStreaming: boolean;
   onToggleStream: () => void;
+  isListeningForQuestions?: boolean;
+  onToggleQuestions?: () => void;
 }
 
 export function StatusBar({
   streamStatus,
   isStreaming,
   onToggleStream,
+  isListeningForQuestions = false,
+  onToggleQuestions,
 }: StatusBarProps) {
   const statusColor = streamStatus === 'connected' ? 'default' : streamStatus === 'connecting' ? 'secondary' : 'outline';
 
@@ -46,6 +50,23 @@ export function StatusBar({
                 <p>Use this to convert your raw script text into presentation sections with smart trigger words.</p>
               </div>
             </div>
+
+            {/* Q&A Toggle (only show when streaming) */}
+            {isStreaming && onToggleQuestions && (
+              <button
+                onClick={onToggleQuestions}
+                className={`
+                  px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 border-2
+                  ${isListeningForQuestions
+                    ? 'bg-blue-50 border-blue-500 text-blue-700'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                  }
+                `}
+              >
+                <MessageCircle className="w-4 h-4" />
+                Listen for Questions
+              </button>
+            )}
 
             <button
               onClick={onToggleStream}

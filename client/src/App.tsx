@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useTransitions } from './hooks/useTransitions';
+import { useOpenRouter } from './hooks/useOpenRouter';
 import { createTokenPattern, type Section } from './lib/script-parser';
 import { savePresentation, loadPresentation } from './lib/file-storage';
 import { PresenterView } from './components/PresenterView';
@@ -11,6 +12,7 @@ import { RichSectionEditor } from './components/RichSectionEditor';
 import { TransitionEffects } from './components/TransitionEffects';
 import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
+import { QAPanel } from './components/QAPanel';
 import { Card, CardContent } from './components/ui/card';
 import { FileText, Sparkles, Edit, Save, FolderOpen, Info } from 'lucide-react';
 
@@ -33,12 +35,47 @@ export default function App() {
   const [transcript, setTranscript] = useState<string[]>([]);
   const [lastTranscript, setLastTranscript] = useState('');
 
+  // Q&A Feature
+  const [isListeningForQuestions, setIsListeningForQuestions] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
+  const [questionTalkingPoints, setQuestionTalkingPoints] = useState<string[]>([]);
+  const [isLoadingQA, setIsLoadingQA] = useState(false);
+  const { suggestTriggers } = useOpenRouter();
+
   // Debounce to prevent double-advance/back on echo
   const lastNavTimeRef = useRef<number>(0);
   const NAV_DEBOUNCE_MS = 2000;
 
   // Transitions
   const { shouldFlash, triggerTransition } = useTransitions();
+
+  // Q&A Handlers
+  const handleQuestionDetected = async (question: string) => {
+    setCurrentQuestion(question);
+    setIsLoadingQA(true);
+    setQuestionTalkingPoints([]);
+
+    try {
+      // Generate AI talking points using the existing suggestTriggers API
+      // (We'll reuse this since it's similar - generates suggestions based on text)
+      const points = await suggestTriggers(
+        `Generate 3-5 concise talking points to answer this question: ${question}`,
+        selectedModel
+      );
+      setQuestionTalkingPoints(points);
+    } catch (error) {
+      console.error('Failed to generate talking points:', error);
+      setQuestionTalkingPoints(['Unable to generate talking points. Please answer manually.']);
+    } finally {
+      setIsLoadingQA(false);
+    }
+  };
+
+  const handleDismissQuestion = () => {
+    setCurrentQuestion(null);
+    setQuestionTalkingPoints([]);
+    setIsLoadingQA(false);
+  };
 
   // Advance to next section
   const advanceSection = useCallback(() => {
@@ -95,6 +132,13 @@ export default function App() {
 
     const lowerText = text.toLowerCase();
 
+    // Check for questions when Q&A mode is enabled (only on final transcripts)
+    if (isListeningForQuestions && isFinal && text.includes('?')) {
+      console.log('❓ Question detected:', text);
+      handleQuestionDetected(text);
+      return; // Don't process other triggers when question detected
+    }
+
     // Check for BACK command first (works on any section except first)
     if (currentSectionIndex > 0) {
       const backWords = ['back', 'previous', 'go back'];
@@ -128,7 +172,7 @@ export default function App() {
         }
       }
     }
-  }, [sections, currentSectionIndex, advanceSection, goBackSection]);
+  }, [sections, currentSectionIndex, advanceSection, goBackSection, isListeningForQuestions]);
 
   const { isStreaming, status, startStreaming, stopStreaming } = useAudioStreaming({
     onTranscript: handleTranscript,
@@ -213,6 +257,10 @@ export default function App() {
     setCurrentSectionIndex(0);
   };
 
+  // Keep a ref to current state for BroadcastChannel
+  const currentStateRef = useRef({ currentSectionIndex, sections });
+  currentStateRef.current = { currentSectionIndex, sections };
+
   // Set up broadcast channel for audience view
   useEffect(() => {
     const channel = new BroadcastChannel('verbadeck-presentation');
@@ -221,12 +269,10 @@ export default function App() {
     // Listen for state requests from audience window
     channel.onmessage = (event) => {
       if (event.data.type === 'request-state') {
+        // Use ref to get current values instead of closure
         channel.postMessage({
           type: 'presentation-update',
-          state: {
-            currentSectionIndex,
-            sections,
-          },
+          state: currentStateRef.current,
         });
       }
     };
@@ -345,6 +391,8 @@ export default function App() {
         streamStatus={status}
         isStreaming={isStreaming}
         onToggleStream={isStreaming ? stopStreaming : startStreaming}
+        isListeningForQuestions={isListeningForQuestions}
+        onToggleQuestions={() => setIsListeningForQuestions(!isListeningForQuestions)}
       />
 
       {/* Floating status indicator */}
@@ -508,6 +556,9 @@ export default function App() {
                 totalSections={sections.length}
                 progress={progress}
                 onSectionClick={goToSection}
+                currentQuestion={currentQuestion}
+                questionTalkingPoints={questionTalkingPoints}
+                isLoadingQA={isLoadingQA}
               />
             </TransitionEffects>
           </>
@@ -543,9 +594,20 @@ export default function App() {
             <div>Current Tokens: {currentSection?.selectedTriggers?.join(', ') || currentSection?.advanceToken || 'N/A'}</div>
             <div>Stream Status: {status}</div>
             <div>Last Transcript: {lastTranscript}</div>
+            <div>Q&A Mode: {isListeningForQuestions ? 'ON' : 'OFF'}</div>
           </div>
         )}
       </div>
+
+      {/* Q&A Panel Modal */}
+      {currentQuestion && (
+        <QAPanel
+          question={currentQuestion}
+          talkingPoints={questionTalkingPoints}
+          isLoading={isLoadingQA}
+          onDismiss={handleDismissQuestion}
+        />
+      )}
     </div>
   );
 }
