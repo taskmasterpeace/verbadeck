@@ -163,7 +163,8 @@ export function useOpenRouter() {
     question: string,
     presentationContent: string,
     knowledgeBase: { question: string; answer: string }[],
-    model: string
+    model: string,
+    tone: string = 'professional'
   ): Promise<{ answer1: string; answer2: string }> => {
     setIsProcessing(true);
     setError(null);
@@ -174,7 +175,7 @@ export function useOpenRouter() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question, presentationContent, knowledgeBase, model }),
+        body: JSON.stringify({ question, presentationContent, knowledgeBase, model, tone }),
       });
 
       if (!response.ok) {

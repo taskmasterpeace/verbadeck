@@ -504,12 +504,28 @@ ${presentationContent}`;
    * @param {string} model - Model ID
    * @returns {Promise<Object>} Object with two answer options
    */
-  async answerQuestion(question, presentationContent, knowledgeBase = [], model = 'anthropic/claude-3.5-sonnet') {
+  async answerQuestion(question, presentationContent, knowledgeBase = [], model = 'anthropic/claude-3.5-sonnet', tone = 'professional') {
     const kbContext = knowledgeBase.length > 0
       ? `\n\nKnowledge Base (FAQs):\n${knowledgeBase.map(kb => `Q: ${kb.question}\nA: ${kb.answer}`).join('\n\n')}`
       : '';
 
-    const prompt = `You are answering a live question during a presentation. Provide TWO different answer options that the presenter can choose from.
+    // Tone personas using "I want you to act as..." format
+    const tonePersonas = {
+      professional: 'I want you to act as a professional business presenter who delivers clear, direct, and credible answers. Be confident and authoritative while remaining approachable.',
+      witty: 'I want you to act as a witty and engaging presenter who uses clever wordplay, light humor, and memorable phrasing to make answers entertaining while still being informative.',
+      insightful: 'I want you to act as a deeply insightful thought leader who provides analytical, nuanced answers that reveal deeper connections and implications beyond the obvious.',
+      conversational: 'I want you to act as a friendly, conversational presenter who answers like talking to a colleague - warm, relatable, and easy to understand without corporate jargon.',
+      bold: 'I want you to act as a bold, provocative presenter who challenges assumptions, uses strong statements, and isn\'t afraid to be controversial or make people think differently.',
+      technical: 'I want you to act as a technical expert who provides precise, data-driven answers with specific details, metrics, and technical accuracy for sophisticated audiences.',
+      storytelling: 'I want you to act as a storytelling presenter who weaves answers into compelling narratives, using anecdotes, scenarios, and vivid examples to illustrate points.',
+      sarcastic: 'I want you to act as a sharp, sarcastic presenter who uses dry wit, subtle jabs, and ironic observations to make memorable points (while still being helpful).'
+    };
+
+    const selectedPersona = tonePersonas[tone] || tonePersonas.professional;
+
+    const prompt = `${selectedPersona}
+
+You are answering a live question during a presentation. Provide TWO different answer options that the presenter can choose from, both in the tone/style specified above.
 
 Question: "${question}"
 
@@ -523,11 +539,12 @@ Requirements:
 4. Make answers concise and easy to speak aloud
 5. Base answers on the presentation content and knowledge base provided
 6. The two answers should offer different approaches or perspectives
+7. CRITICAL: Both answers must match the personality/tone specified in the "act as" instruction above
 
 Return ONLY valid JSON in this exact format (no markdown, no extra text):
 {
-  "answer1": "First complete answer option (2-4 sentences, may include bullet points with •)",
-  "answer2": "Second complete answer option (2-4 sentences, different approach or perspective)"
+  "answer1": "First complete answer option in the specified tone (2-4 sentences, may include bullet points with •)",
+  "answer2": "Second complete answer option in the specified tone (2-4 sentences, different approach or perspective)"
 }`;
 
     try {

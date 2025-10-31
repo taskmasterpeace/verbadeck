@@ -66,11 +66,23 @@ VerbaDeck is a revolutionary presentation tool that lets you deliver presentatio
 ### 🎓 Q&A & Knowledge Base
 - **Question Detection**: Automatically detects "?" in live transcripts when Q&A mode is ON 🆕
 - **Dual-Answer AI**: Generates TWO complete answer options with different perspectives 🆕
+- **8 Personality Tones**: Choose how AI answers - Professional, Witty, Insightful, Conversational, Bold, Technical, Storytelling, or Sarcastic 🆕✨
+- **"I want you to act as..." Prompting**: Each tone uses persona-based prompts for consistent personality 🆕
 - **Knowledge Base Editor**: AI-powered FAQ generation + manual FAQ entry 🆕
 - **Context-Aware Answers**: Uses presentation content + knowledge base for accurate responses 🆕
 - **Toggle Mode**: "Listen for Questions" button in top bar (appears when listening) 🆕
 - **Presenter Display**: Q&A panel below "Next Up" in presenter view for dual-monitor setups 🆕
 - **Professional Formatting**: Answers are concise, easy to speak aloud, with bullet points 🆕
+
+**Available Tones**:
+- 💼 **Professional**: Clear, direct, credible - confident and authoritative
+- ✨ **Witty & Engaging**: Clever wordplay and memorable phrasing
+- 🧠 **Deeply Insightful**: Analytical, nuanced, reveals deeper connections
+- 💬 **Conversational**: Warm and relatable, no corporate jargon
+- 🔥 **Bold & Provocative**: Challenges assumptions, strong statements
+- 🔬 **Technical Expert**: Precise, data-driven, metrics-focused
+- 📖 **Storytelling**: Compelling narratives with vivid examples
+- 😏 **Sarcastic & Sharp**: Dry wit and ironic observations
 
 ### 🎯 Presenter Experience
 - **Presenter View**: Full controls, trigger words visible, next section preview

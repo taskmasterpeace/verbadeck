@@ -257,7 +257,7 @@ app.post('/api/generate-faqs', async (req, res) => {
 
 app.post('/api/answer-question', async (req, res) => {
   try {
-    const { question, presentationContent, knowledgeBase, model } = req.body;
+    const { question, presentationContent, knowledgeBase, model, tone } = req.body;
 
     if (!question || question.trim().length === 0) {
       return res.status(400).json({ error: 'Question is required' });
@@ -267,14 +267,15 @@ app.post('/api/answer-question', async (req, res) => {
       return res.status(400).json({ error: 'Presentation content is required' });
     }
 
-    console.log(`💬 Answering question: "${question}"`);
+    console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'})`);
     const answers = await openRouterClient.answerQuestion(
       question,
       presentationContent,
       knowledgeBase || [],
-      model
+      model,
+      tone || 'professional'
     );
-    console.log(`✅ Generated 2 answer options`);
+    console.log(`✅ Generated 2 answer options in ${tone || 'professional'} tone`);
 
     res.json(answers);
   } catch (error) {
