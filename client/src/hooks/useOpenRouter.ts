@@ -130,10 +130,75 @@ export function useOpenRouter() {
     }
   };
 
+  const generateFAQs = async (presentationContent: string, model: string): Promise<{ question: string; answer: string }[]> => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/generate-faqs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ presentationContent, model }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate FAQs');
+      }
+
+      const data = await response.json();
+      return data.faqs;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(message);
+      throw err;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const answerQuestion = async (
+    question: string,
+    presentationContent: string,
+    knowledgeBase: { question: string; answer: string }[],
+    model: string
+  ): Promise<{ answer1: string; answer2: string }> => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/answer-question`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question, presentationContent, knowledgeBase, model }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to answer question');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(message);
+      throw err;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return {
     processScript,
     suggestTriggers,
     processImagesWithAI,
+    generateFAQs,
+    answerQuestion,
     isProcessing,
     error,
     progress,

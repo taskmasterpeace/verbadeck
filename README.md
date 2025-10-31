@@ -64,11 +64,13 @@ VerbaDeck is a revolutionary presentation tool that lets you deliver presentatio
 - **Mobile-First**: Single presenter view for on-the-go presentations 🆕
 
 ### 🎓 Q&A & Knowledge Base
-- **Question Detection**: Automatically detects when audience asks questions 🆕
-- **Knowledge Base**: Add FAQs and context notes per presentation 🆕
-- **AI Talking Points**: Get instant talking points for live questions 🆕
-- **Pre-written Answers**: Load your prepared responses 🆕
-- **Toggle Mode**: "Listen for Questions" ON/OFF button 🆕
+- **Question Detection**: Automatically detects "?" in live transcripts when Q&A mode is ON 🆕
+- **Dual-Answer AI**: Generates TWO complete answer options with different perspectives 🆕
+- **Knowledge Base Editor**: AI-powered FAQ generation + manual FAQ entry 🆕
+- **Context-Aware Answers**: Uses presentation content + knowledge base for accurate responses 🆕
+- **Toggle Mode**: "Listen for Questions" button in top bar (appears when listening) 🆕
+- **Presenter Display**: Q&A panel below "Next Up" in presenter view for dual-monitor setups 🆕
+- **Professional Formatting**: Answers are concise, easy to speak aloud, with bullet points 🆕
 
 ### 🎯 Presenter Experience
 - **Presenter View**: Full controls, trigger words visible, next section preview
