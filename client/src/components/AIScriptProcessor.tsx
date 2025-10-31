@@ -171,7 +171,7 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
               }`}
             >
               <ImageIcon className="w-4 h-4" />
-              Image Template
+              Generate from Images
             </button>
           </div>
         </CardContent>

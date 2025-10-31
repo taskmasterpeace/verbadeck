@@ -108,8 +108,14 @@ export function RichSectionEditor({
     <Card className="relative">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
             Section {sectionIndex + 1} of {totalSections}
+            {section.imageUrl && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-normal">
+                <ImageIcon className="w-3 h-3" />
+                Has Image
+              </span>
+            )}
           </CardTitle>
           <div className="flex items-center gap-2">
             {!isEditing ? (

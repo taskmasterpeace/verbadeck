@@ -108,10 +108,10 @@ export function ImageTemplateBuilder({ onSectionsGenerated }: ImageTemplateBuild
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ImageIcon className="w-5 h-5" />
-          Image Template Builder
+          Generate Script from Images (AI Vision)
         </CardTitle>
         <CardDescription>
-          Upload images and let AI generate presentation script and narration for your visuals
+          Upload multiple images and AI will analyze them to generate a complete presentation script with narration for each visual
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
