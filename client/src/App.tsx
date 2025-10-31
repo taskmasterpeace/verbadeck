@@ -14,9 +14,10 @@ import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { QAPanel } from './components/QAPanel';
 import { Card, CardContent } from './components/ui/card';
-import { FileText, Sparkles, Edit, Save, FolderOpen, Info } from 'lucide-react';
+import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2 } from 'lucide-react';
+import { CreateFromScratch, type PresentationConfig } from './components/CreateFromScratch';
 
-type ViewMode = 'ai-processor' | 'editor' | 'presenter';
+type ViewMode = 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
 export default function App() {
   const [sections, setSections] = useState<Section[]>([]);
@@ -405,6 +406,17 @@ export default function App() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <button
+                  onClick={() => setViewMode('create-from-scratch')}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
+                    viewMode === 'create-from-scratch'
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                  }`}
+                >
+                  <Wand2 className="w-4 h-4" />
+                  Create from Scratch
+                </button>
+                <button
                   onClick={() => setViewMode('ai-processor')}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
                     viewMode === 'ai-processor'
@@ -488,6 +500,17 @@ export default function App() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Create from Scratch View */}
+        {viewMode === 'create-from-scratch' && !isStreaming && (
+          <CreateFromScratch
+            onGenerate={(config: PresentationConfig) => {
+              console.log('Create from Scratch config:', config);
+              // TODO: Implement backend generation
+              alert('Create from Scratch feature coming soon! Config logged to console.');
+            }}
+          />
         )}
 
         {/* AI Script Processor View */}
