@@ -1,62 +1,61 @@
-# VerbaDeck
+# 🎤 VerbaDeck
 
-**Voice-driven presentations with hands-free advancement.**
+**Voice-Driven Presentations with AI-Powered Script Processing**
 
-VerbaDeck lets you present word-for-word scripts using voice recognition. When you speak the last word of a section, the app automatically advances to the next. A custom wake-word arms/disarms advancement while transcription runs continuously.
+VerbaDeck is a revolutionary presentation tool that lets you deliver presentations hands-free using voice commands. Speak naturally, and VerbaDeck automatically advances your slides when you say the trigger words. Perfect for demos, speeches, and presentations where you need your hands free.
 
-## Features
+![Presenter View](presenter-with-image.png)
 
-- **Voice-Driven Advancement**: Speak the trigger word (last word of each section) to auto-advance
-- **Wake-Word Control**: Arm/disarm advancement with custom wake and stop words
-- **Live Transcription**: Real-time speech-to-text with AssemblyAI Universal-Streaming v3
-- **Hands-Free**: No clicker needed - just speak naturally
-- **Safety Controls**: Manual pause with keyboard shortcut (P key)
-- **Visual Feedback**: Status indicators, progress bar, live transcript ticker
-- **Section Preview**: See current and next sections side-by-side
-- **Custom Scripts**: Paste or edit your presentation script with auto-parsing
+---
 
-## Architecture
+## ✨ Features
 
-### Stack
+### 🗣️ Voice Control
+- **Voice Navigation**: Say trigger words to advance slides automatically
+- **BACK Command**: Navigate to previous slides by saying "back", "previous", or "go back"
+- **Real-time Transcription**: Live speech-to-text powered by AssemblyAI
+- **Hands-Free**: No clicker, no keyboard - just your voice
 
-- **Frontend**: Vite + React + TypeScript + shadcn/ui (Tailwind CSS)
-- **Backend**: Node.js + Express + WebSocket proxy
-- **STT**: AssemblyAI Universal-Streaming v3 API
-- **Audio**: Web Audio API + AudioWorklet (PCM16 mono 16kHz)
-- **Testing**: Playwright for visual regression and E2E tests
+### 🤖 AI-Powered
+- **AI Script Processor**: Transform raw text into presentation sections with smart trigger words
+- **Multiple AI Models**: Choose from GPT-4, Claude, Gemini, and more via OpenRouter
+- **Smart Trigger Detection**: AI suggests natural trigger words based on your content
+- **Multi-Trigger Support**: Multiple trigger words per section for flexibility
 
-### How It Works
+### 🎨 Presentation Features
+- **Image Support**: PowerPoint-style slides with images
+- **Dual-Monitor Mode**: Presenter view with controls + clean audience view
+- **Trigger Word Carousel**: Visual display of current, next, and previous triggers
+- **Live Transcript Bar**: See what's being detected in real-time
+- **Section Editing**: Rich editor for content and image URLs
+- **Progress Tracking**: Visual progress bar and section counter
 
-1. **Script Parsing**: Your script is split into sections (separated by blank lines). The last word of each section becomes the "trigger word".
-2. **Audio Capture**: Browser captures microphone audio via Web Audio API, converts to PCM16 format using AudioWorklet.
-3. **Streaming**: Audio is sent as raw binary over WebSocket to our Node.js proxy, which relays to AssemblyAI with authentication.
-4. **Transcription**: AssemblyAI sends back real-time transcript events.
-5. **State Machine**:
-   - **PAUSED**: Transcription runs but advancement is disabled
-   - **ARMED**: Listening for trigger words to advance sections
-   - Wake-word detection toggles between states
-6. **Auto-Advance**: When armed, hearing the current section's trigger word advances to the next section (with debounce to prevent double-advances).
+### 🎯 Presenter Experience
+- **Presenter View**: Full controls, trigger words visible, next section preview
+- **Audience View**: Clean 50/50 split layout for images and text
+- **BroadcastChannel Sync**: Real-time synchronization between windows
+- **Smooth Transitions**: Animated slide transitions with framer-motion
+- **Section Navigation**: Manual navigation for testing and practice
 
-## Prerequisites
+---
 
+## 🚀 Quick Start
+
+### Prerequisites
 - **Node.js** 18+ and npm
-- **AssemblyAI API Key**: Get yours at [assemblyai.com](https://www.assemblyai.com/)
-- **Browser**: Chrome, Edge, or any Chromium-based browser (for Web Audio API support)
+- **AssemblyAI API Key**: [Get free API key](https://www.assemblyai.com/) (100 free hours/month)
+- **OpenRouter API Key**: [Get API key](https://openrouter.ai/) for AI processing
+- **Browser**: Chrome, Edge, or Chromium-based (for Web Audio API)
 - **Microphone**: Required for voice input
 
-## Setup
-
-### 1. Clone or Download
+### Installation
 
 ```bash
-git clone <repository-url>
+# Clone the repository
+git clone https://github.com/taskmasterpeace/verbadeck.git
 cd verbadeck
-```
 
-### 2. Install Dependencies
-
-```bash
-# Install root workspace dependencies
+# Install root dependencies
 npm install
 
 # Install server dependencies
@@ -70,243 +69,426 @@ npm install
 cd ..
 ```
 
-### 3. Configure API Key
+### Configuration
 
-The `.env` file has already been created with your API key:
+Create a `.env` file in the project root:
 
+```env
+AAI_API_KEY=your_assemblyai_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
-AAI_API_KEY=987aca52da654f01aad3113ecb062169
-```
 
-**⚠️ SECURITY WARNING**: This key is currently exposed. After testing, you should:
-1. Rotate this key in your AssemblyAI dashboard
-2. Never commit `.env` to version control (already in `.gitignore`)
-3. Use environment variables in production
+**🔒 Security**: Never commit your `.env` file. It's already in `.gitignore`.
 
-### 4. Run Development Servers
-
-From the project root:
+### Run Development
 
 ```bash
+# From project root - starts both server and client
 npm run dev
 ```
 
-This starts both:
-- **Server**: http://localhost:3001 (WebSocket proxy)
-- **Client**: http://localhost:5173 (Vite dev server)
+This launches:
+- **Server**: `http://localhost:3001` (WebSocket proxy)
+- **Client**: `http://localhost:5173` (Vite dev server)
 
-## Usage
+Open `http://localhost:5173` in your browser and start presenting!
 
-### Basic Workflow
+---
 
-1. **Edit Your Script** (optional):
-   - Before starting, you can edit the default script in the text area
-   - Separate sections with blank lines
-   - The last word of each section will be auto-bolded as the trigger
+## 📖 How to Use
 
-2. **Set Wake/Stop Words** (optional):
-   - Default wake word: "majin twin"
-   - Default stop word: "majin pause"
-   - Edit these in the status bar before streaming
+### 1. Process Your Script with AI
 
-3. **Start Listening**:
-   - Click "Start Listening" button
-   - Grant microphone permissions when prompted
-   - Wait for "Connected" status (green indicator)
+1. Click on the **AI Script Processor** tab
+2. Choose your preferred AI model (GPT-4, Claude Sonnet, etc.)
+3. Paste your raw presentation text
+4. Click **"Process with AI"**
+5. Wait 30-60 seconds for AI to segment and suggest trigger words
 
-4. **Arm the System**:
-   - Say your wake word (e.g., "majin twin")
-   - Status changes from "PAUSED" to "ARMED"
+The AI will:
+- Split your text into digestible sections
+- Suggest natural trigger words for each section
+- Provide alternative trigger options
+- Format everything for voice navigation
 
-5. **Present**:
-   - Read your script naturally
-   - When you speak the bolded trigger word, the app advances
-   - Live transcript appears at the bottom
+### 2. Edit Sections (Optional)
 
-6. **Pause if Needed**:
-   - Say your stop word (e.g., "majin pause")
-   - Or press the **P** key on your keyboard
-   - Status returns to "PAUSED" (transcription continues)
+- Switch to the **Edit Sections** tab
+- Click **Edit** on any section to modify content
+- Add image URLs for PowerPoint-style slides
+- Toggle trigger words on/off
+- Reorder or remove sections as needed
 
-7. **Stop**:
-   - Click "Stop Listening" when done
+### 3. Start Presenting
 
-### Keyboard Shortcuts
+1. Click **"Start Listening"** (grant microphone permission)
+2. Wait for "Connected" status
+3. Begin speaking your presentation naturally
+4. When you say a trigger word, VerbaDeck automatically advances
+5. Say "back" to return to the previous slide
+6. Use **"Open Audience View"** for dual-monitor presentations
 
-- **P**: Toggle between ARMED and PAUSED modes
+### 4. Trigger Word Carousel
 
-### Tips
+At the bottom of the screen, you'll see:
+- **Left**: "Say back" hint (or previous trigger)
+- **Center**: Current section's trigger words (prominently displayed)
+- **Right**: Next section's trigger word (preview)
 
-- **Choose Good Trigger Words**: Avoid common words like "the" or "a". The parser automatically uses the last word, which is usually meaningful.
-- **Test First**: Use the section navigation buttons to test your script before presenting.
-- **Venue Testing**: Test your venue's Wi-Fi and ambient noise before the real presentation.
-- **Wake-Word Best Practices**: Use an uncommon phrase to avoid accidental arming (default "majin twin" is intentionally uncommon).
+### 5. Dual-Monitor Presenter Mode
 
-## Testing
+1. Click **"Open Audience View"** button
+2. A new window opens with the clean audience view
+3. Drag the audience window to your second monitor/projector
+4. Present from the main window (shows triggers and controls)
+5. Audience sees only content and images (no trigger words)
 
-### Run Playwright Tests
+---
 
-```bash
-# From project root
-npm test
+## 🏗️ Architecture
 
-# With UI mode for visual debugging
-npm run test:ui
+### Tech Stack
+
+**Frontend:**
+- React 18 + TypeScript
+- Vite (build tool)
+- Tailwind CSS + shadcn/ui components
+- Framer Motion (animations)
+- React Router (routing)
+- Web Audio API + AudioWorklet
+
+**Backend:**
+- Node.js + Express
+- WebSocket proxy for AssemblyAI
+- OpenRouter API integration
+
+**APIs:**
+- AssemblyAI Universal-Streaming v3 (real-time STT)
+- OpenRouter (AI model access)
+
+**Testing:**
+- Playwright (E2E and visual regression)
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       User Speaks                           │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Browser: Web Audio API captures microphone                │
+│  AudioWorklet converts Float32 → PCM16 (16kHz mono)        │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  WebSocket → Node.js Proxy (localhost:3001)                │
+│  Adds AssemblyAI auth header                                │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  AssemblyAI Real-time STT                                   │
+│  Returns transcript events via WebSocket                    │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  React App: Trigger Detection Engine                        │
+│  - Checks for BACK commands first                           │
+│  - Matches transcript against trigger words (with plurals)  │
+│  - Debounces to prevent double-advances                     │
+│  - Updates current section index                            │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│  BroadcastChannel syncs state to audience view              │
+│  Presenter and audience windows stay in sync                │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-The tests include:
-- UI rendering and visibility checks
-- Section navigation
-- Wake/stop word editing
-- Visual regression tests (screenshots)
-- Script editing and re-parsing
+---
 
-Test results and screenshots are saved to `playwright-report/`.
-
-## Development
-
-### Project Structure
+## 📁 Project Structure
 
 ```
 verbadeck/
-├── server/                 # Node.js WebSocket proxy
-│   ├── server.js          # Express + WS relay to AssemblyAI
-│   └── package.json
-├── client/                # React frontend
-│   ├── public/
-│   │   └── audio-processor.js  # AudioWorklet for PCM16 conversion
+├── client/                      # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ui/        # shadcn/ui components
-│   │   │   ├── PresenterView.tsx
-│   │   │   ├── ScriptEditor.tsx
-│   │   │   ├── StatusBar.tsx
-│   │   │   └── TranscriptTicker.tsx
+│   │   │   ├── AIScriptProcessor.tsx    # AI script processing UI
+│   │   │   ├── AudienceView.tsx         # Clean view for audience
+│   │   │   ├── PresenterView.tsx        # Main presenter display
+│   │   │   ├── RichSectionEditor.tsx    # Section editing
+│   │   │   ├── StatusBar.tsx            # Top navigation
+│   │   │   ├── StatusIndicator.tsx      # Listening badge
+│   │   │   ├── TranscriptTicker.tsx     # Live transcript bar
+│   │   │   ├── TriggerCarousel.tsx      # Trigger word display
+│   │   │   ├── TransitionEffects.tsx    # Slide animations
+│   │   │   ├── ModelSelector.tsx        # AI model picker
+│   │   │   └── ui/                      # shadcn/ui components
 │   │   ├── hooks/
-│   │   │   └── useAudioStreaming.ts
+│   │   │   ├── useAudioStreaming.ts     # Audio + WebSocket
+│   │   │   ├── useOpenRouter.ts         # AI API integration
+│   │   │   └── useTransitions.ts        # Animation hooks
 │   │   ├── lib/
-│   │   │   ├── script-parser.ts
-│   │   │   └── utils.ts
-│   │   ├── App.tsx        # Main app with state machine
-│   │   ├── main.tsx
-│   │   └── index.css
-│   ├── package.json
-│   └── vite.config.ts
+│   │   │   ├── script-parser.ts         # Token matching logic
+│   │   │   ├── openrouter-models.ts     # Model definitions
+│   │   │   └── utils.ts                 # Utilities
+│   │   ├── pages/
+│   │   │   └── AudiencePage.tsx         # /audience route
+│   │   ├── App.tsx                      # Main application
+│   │   └── main.tsx                     # Entry point
+│   ├── public/
+│   │   └── audio-processor.js           # AudioWorklet processor
+│   └── package.json
+├── server/
+│   ├── server.js                        # Express + WebSocket proxy
+│   ├── openrouter.js                    # OpenRouter API client
+│   └── package.json
 ├── tests/
-│   └── verbadeck.spec.ts  # Playwright E2E tests
-├── .env                   # API key (DO NOT COMMIT)
+│   ├── verbadeck.spec.ts               # Main E2E tests
+│   └── ai-features.spec.ts             # AI feature tests
+├── .env                                 # API keys (gitignored)
 ├── .gitignore
-├── package.json           # Root workspace config
+├── package.json                         # Root workspace
 ├── playwright.config.ts
 └── README.md
 ```
 
-### Key Files
+---
 
-- **server/server.js**: WebSocket proxy that authenticates with AssemblyAI and relays binary audio + transcript messages
-- **client/src/App.tsx**: Main application logic, state machine, wake-word detection, trigger-word matching
-- **client/src/hooks/useAudioStreaming.ts**: Audio capture, WebSocket connection, transcript events
-- **client/public/audio-processor.js**: AudioWorklet processor that converts Float32 mic input to PCM16
-- **client/src/lib/script-parser.ts**: Parses script into sections, extracts trigger words, creates regex patterns
+## 🧪 Testing
 
-## API Reference
+```bash
+# Run all tests
+npm test
 
-### AssemblyAI Universal-Streaming v3
+# Run with UI mode (visual debugging)
+npm run test:ui
 
-- **Endpoint**: `wss://streaming.assemblyai.com/v3/ws`
-- **Authentication**: Header `Authorization: <API_KEY>`
-- **Audio Format**: Raw binary PCM16, 16kHz, mono, ~50ms chunks (800 frames)
-- **Message Types**:
-  - `Begin`: Session started
-  - `Turn`: Transcript update (contains `text` field)
-  - `Termination`: Session ended
-  - `Error`: Error occurred
+# Update visual snapshots
+npx playwright test --update-snapshots
+```
 
-### WebSocket Proxy
+Tests cover:
+- ✅ UI rendering and component visibility
+- ✅ Voice navigation and section advancement
+- ✅ AI script processing
+- ✅ Section editing and trigger management
+- ✅ Visual regression (screenshot comparisons)
+- ✅ Dual-monitor synchronization
 
-- **Endpoint**: `ws://localhost:3001/ws` (dev) or `ws://yourdomain.com/ws` (production)
-- **Protocol**: Binary (audio) and JSON (status/transcript messages)
-- Client sends raw PCM16 audio, receives JSON transcript events
+---
 
-## Troubleshooting
+## 🔧 Development
 
-### "WebSocket connection failed"
+### Available Scripts
 
-- Ensure server is running on port 3001
-- Check that `.env` file exists with valid API key
-- Verify AssemblyAI API key in dashboard
+```bash
+# Root workspace
+npm run dev          # Start both server and client
+npm test             # Run Playwright tests
+npm run test:ui      # Run tests with UI mode
 
-### "Microphone permission denied"
+# Client only
+cd client
+npm run dev          # Start Vite dev server (port 5173)
+npm run build        # Build for production
+npm run preview      # Preview production build
 
-- Grant microphone access in browser settings
-- HTTPS required in production (localhost works in dev)
-
-### "Trigger word not detected"
-
-- Check console for transcript output
-- Ensure mode is "ARMED" (say wake word)
-- Verify trigger word is spelled correctly in transcript
-- Speak clearly and at normal pace
-
-### "Audio not streaming"
-
-- Check browser console for AudioWorklet errors
-- Verify `/audio-processor.js` is accessible (should be in `client/public/`)
-- Ensure sample rate is 16kHz
-
-### "Visual regression test failures"
-
-- Playwright screenshot tests may fail on first run (no baseline)
-- Run `npx playwright test --update-snapshots` to create/update baselines
-
-## Production Deployment
+# Server only
+cd server
+npm start            # Start Express server (port 3001)
+```
 
 ### Environment Variables
 
-Set these in your production environment:
-
-```bash
-AAI_API_KEY=<your-assemblyai-api-key>
-PORT=3001  # or your preferred port
+**`.env` (root):**
+```env
+AAI_API_KEY=your_assemblyai_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
-### Build Client
+---
+
+## 🚀 Production Deployment
+
+### Build the Client
 
 ```bash
 cd client
 npm run build
-# Output in client/dist/
+# Output: client/dist/
 ```
 
-### Deploy
+### Deploy Options
 
-1. Deploy `server/` to your Node.js hosting (Heroku, Railway, Render, etc.)
-2. Deploy `client/dist/` to static hosting (Vercel, Netlify, Cloudflare Pages, etc.)
-3. Update WebSocket URL in production to point to your server domain
-4. Ensure HTTPS for both server and client (required for microphone access)
+**Option 1: Static + Serverless**
+- Deploy `client/dist/` to Vercel, Netlify, or Cloudflare Pages
+- Deploy `server/` as serverless function or separate Node.js app
+- Update WebSocket URL in client to production server
+
+**Option 2: All-in-One**
+- Deploy server with static file serving
+- Point Express to serve `client/dist/`
+
+**Option 3: Separate Hosts**
+- Client on CDN/static host
+- Server on Railway, Render, or Heroku
+- Update CORS settings for cross-origin WebSocket
 
 ### HTTPS Requirement
 
-Browsers require HTTPS for:
-- `getUserMedia()` microphone access (localhost exempted)
-- Secure WebSocket (`wss://`)
+⚠️ **Required for Production:**
+- Microphone access requires HTTPS (except localhost)
+- WebSocket should use `wss://` in production
+- Use reverse proxy (nginx, Caddy) or platform SSL
 
-Use a reverse proxy (nginx, Caddy) or hosting platform with automatic SSL.
+### Environment Setup
 
-## License
-
-MIT (or your preferred license)
-
-## Credits
-
-Built with:
-- [AssemblyAI](https://www.assemblyai.com/) - Real-time speech-to-text
-- [React](https://react.dev/) - UI framework
-- [Vite](https://vitejs.dev/) - Build tool
-- [shadcn/ui](https://ui.shadcn.com/) - UI components
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [Playwright](https://playwright.dev/) - Testing
+Set these in your production environment:
+```bash
+AAI_API_KEY=<your-key>
+OPENROUTER_API_KEY=<your-key>
+PORT=3001
+NODE_ENV=production
+```
 
 ---
 
-**Happy Presenting! 🎤**
+## 🐛 Troubleshooting
+
+### WebSocket Connection Failed
+- Check server is running on port 3001
+- Verify `.env` file exists with valid API keys
+- Check browser console for detailed error
+
+### Microphone Not Working
+- Grant microphone permissions in browser
+- HTTPS required (except localhost)
+- Try different browser (Chrome recommended)
+
+### Trigger Words Not Detected
+- Check transcript bar at bottom - is text appearing?
+- Verify you're connected (green "Listening" badge)
+- Speak clearly and at normal pace
+- Check trigger words in carousel match your speech
+- Try saying alternative triggers
+
+### AI Processing Fails
+- Verify OpenRouter API key is correct
+- Check model availability (some require credits)
+- Ensure raw text is not empty
+- Try a different AI model
+
+### Audience View Not Syncing
+- Both windows must be from same origin
+- Check BroadcastChannel support in browser
+- Try closing and reopening audience view
+
+---
+
+## 🎯 Tips for Best Results
+
+### Script Writing
+- **Clear sections**: Separate topics with natural breaks
+- **Strong trigger words**: Use distinctive words, not "the", "and", "a"
+- **Natural flow**: Write like you speak
+- **Image placement**: Add images to key sections for visual impact
+
+### Presenting
+- **Test first**: Run through once before the real presentation
+- **Speak naturally**: Don't overemphasize trigger words
+- **Check venue**: Test Wi-Fi and ambient noise beforehand
+- **Have backup**: Keep a clicker or keyboard handy just in case
+
+### AI Model Selection
+- **GPT-4 Turbo**: Best overall quality, good speed
+- **Claude Sonnet**: Excellent for long scripts, creative triggers
+- **Gemini Pro**: Fast, cost-effective for simpler content
+- **Llama 3.1 70B**: Free tier available, good for testing
+
+---
+
+## 📸 Screenshots
+
+### Presenter View
+Full control interface with trigger words, next section preview, and manual navigation.
+
+![Presenter View](presenter-with-image.png)
+
+### AI Script Processor
+Transform raw text into structured presentation sections with smart trigger words.
+
+![AI Processing](streaming-active.png)
+
+### Trigger Carousel
+See current, next, and previous triggers at a glance.
+
+![Trigger Carousel](section-1.png)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure:
+- Code follows existing style
+- Tests pass (`npm test`)
+- Add tests for new features
+- Update documentation as needed
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details
+
+---
+
+## 🙏 Credits & Acknowledgments
+
+Built with amazing open-source tools:
+
+- [AssemblyAI](https://www.assemblyai.com/) - Real-time speech-to-text API
+- [OpenRouter](https://openrouter.ai/) - Unified AI model API
+- [React](https://react.dev/) - UI framework
+- [Vite](https://vitejs.dev/) - Lightning-fast build tool
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Framer Motion](https://www.framer.com/motion/) - Animation library
+- [Playwright](https://playwright.dev/) - Reliable testing framework
+
+---
+
+## 🌟 Star History
+
+If you find VerbaDeck useful, please consider giving it a star ⭐ on GitHub!
+
+---
+
+## 📧 Support
+
+- **Issues**: [GitHub Issues](https://github.com/taskmasterpeace/verbadeck/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/taskmasterpeace/verbadeck/discussions)
+
+---
+
+<div align="center">
+
+**Made with ❤️ by the VerbaDeck Team**
+
+**Happy Presenting! 🎤🚀**
+
+</div>
