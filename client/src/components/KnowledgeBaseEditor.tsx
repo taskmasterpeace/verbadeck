@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { BookOpen, Plus, X, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, X, Sparkles, Loader2 } from 'lucide-react';
 
 export interface KnowledgeBaseItem {
   id: string;
@@ -13,12 +13,21 @@ interface KnowledgeBaseEditorProps {
   items: KnowledgeBaseItem[];
   onUpdate: (items: KnowledgeBaseItem[]) => void;
   onClose: () => void;
+  presentationContent?: string;
+  selectedModel?: string;
+  onGenerateFAQs?: () => Promise<KnowledgeBaseItem[]>;
 }
 
-export function KnowledgeBaseEditor({ items, onUpdate, onClose }: KnowledgeBaseEditorProps) {
+export function KnowledgeBaseEditor({
+  items,
+  onUpdate,
+  onClose,
+  onGenerateFAQs
+}: KnowledgeBaseEditorProps) {
   const [editingItems, setEditingItems] = useState<KnowledgeBaseItem[]>(items);
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAdd = () => {
     if (!newQuestion.trim() || !newAnswer.trim()) {
@@ -46,6 +55,21 @@ export function KnowledgeBaseEditor({ items, onUpdate, onClose }: KnowledgeBaseE
     onClose();
   };
 
+  const handleGenerateFAQs = async () => {
+    if (!onGenerateFAQs) return;
+
+    setIsGenerating(true);
+    try {
+      const generatedFAQs = await onGenerateFAQs();
+      setEditingItems([...editingItems, ...generatedFAQs]);
+    } catch (error) {
+      console.error('Failed to generate FAQs:', error);
+      alert('Failed to generate FAQs. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-4xl max-h-[80vh] flex flex-col">
@@ -59,9 +83,30 @@ export function KnowledgeBaseEditor({ items, onUpdate, onClose }: KnowledgeBaseE
               ×
             </button>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Add frequently asked questions and answers. The AI will use these to provide better responses during Q&A.
-          </p>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-sm text-gray-600">
+              Add frequently asked questions and answers. The AI will use these to provide better responses during Q&A.
+            </p>
+            {onGenerateFAQs && (
+              <button
+                onClick={handleGenerateFAQs}
+                disabled={isGenerating}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    AI Generate FAQs
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </CardHeader>
 
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">

@@ -418,6 +418,166 @@ Return ONLY a JSON array of strings, no other text:
       return words.slice(-3).map(w => w.toLowerCase().replace(/[^a-z0-9]/g, ''));
     }
   }
+
+  /**
+   * Generate FAQ suggestions from presentation content
+   * @param {string} presentationContent - Full presentation text
+   * @param {string} model - Model ID
+   * @returns {Promise<Array>} Array of FAQ objects with question and answer
+   */
+  async generateFAQs(presentationContent, model = 'anthropic/claude-3.5-sonnet') {
+    const prompt = `You are a presentation Q&A expert. Analyze this presentation and generate 5-8 frequently asked questions that an audience might ask.
+
+For each question:
+1. The question should be something a real audience member would ask
+2. The answer should be 2-3 sentences, concise and clear
+3. Use bullet points if the answer has multiple parts
+4. Base answers on the presentation content provided
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "faqs": [
+    {
+      "question": "The question an audience member might ask",
+      "answer": "A clear, concise answer based on the presentation content"
+    }
+  ]
+}
+
+Presentation content:
+${presentationContent}`;
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
+        }
+      );
+
+      const content = response.data.choices[0].message.content;
+
+      // Try to extract JSON from the response
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (e) {
+        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          const objectMatch = content.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            parsed = JSON.parse(objectMatch[0]);
+          } else {
+            throw new Error('No valid JSON found in response');
+          }
+        }
+      }
+
+      return parsed.faqs || [];
+    } catch (error) {
+      console.error('Error generating FAQs:', error.response?.data || error.message);
+      throw new Error('Failed to generate FAQs');
+    }
+  }
+
+  /**
+   * Answer a question with TWO different response options
+   * @param {string} question - The question to answer
+   * @param {string} presentationContent - Full presentation text
+   * @param {Array} knowledgeBase - Array of FAQ objects
+   * @param {string} model - Model ID
+   * @returns {Promise<Object>} Object with two answer options
+   */
+  async answerQuestion(question, presentationContent, knowledgeBase = [], model = 'anthropic/claude-3.5-sonnet') {
+    const kbContext = knowledgeBase.length > 0
+      ? `\n\nKnowledge Base (FAQs):\n${knowledgeBase.map(kb => `Q: ${kb.question}\nA: ${kb.answer}`).join('\n\n')}`
+      : '';
+
+    const prompt = `You are answering a live question during a presentation. Provide TWO different answer options that the presenter can choose from.
+
+Question: "${question}"
+
+Context from presentation:
+${presentationContent}${kbContext}
+
+Requirements:
+1. Generate TWO complete, different answers (not talking points, but full answers)
+2. Each answer should be 2-4 sentences
+3. Use bullet points if the answer has multiple parts
+4. Make answers concise and easy to speak aloud
+5. Base answers on the presentation content and knowledge base provided
+6. The two answers should offer different approaches or perspectives
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "answer1": "First complete answer option (2-4 sentences, may include bullet points with •)",
+  "answer2": "Second complete answer option (2-4 sentences, different approach or perspective)"
+}`;
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
+        }
+      );
+
+      const content = response.data.choices[0].message.content;
+
+      // Try to extract JSON from the response
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (e) {
+        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          const objectMatch = content.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            parsed = JSON.parse(objectMatch[0]);
+          } else {
+            throw new Error('No valid JSON found in response');
+          }
+        }
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error('Error answering question:', error.response?.data || error.message);
+      throw new Error('Failed to answer question');
+    }
+  }
 }
 
 export default OpenRouterClient;

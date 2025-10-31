@@ -236,6 +236,53 @@ app.post('/api/generate-variations', async (req, res) => {
   }
 });
 
+app.post('/api/generate-faqs', async (req, res) => {
+  try {
+    const { presentationContent, model } = req.body;
+
+    if (!presentationContent || presentationContent.trim().length === 0) {
+      return res.status(400).json({ error: 'Presentation content is required' });
+    }
+
+    console.log(`❓ Generating FAQs from presentation content`);
+    const faqs = await openRouterClient.generateFAQs(presentationContent, model);
+    console.log(`✅ Generated ${faqs.length} FAQs`);
+
+    res.json({ faqs });
+  } catch (error) {
+    console.error('Error generating FAQs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/answer-question', async (req, res) => {
+  try {
+    const { question, presentationContent, knowledgeBase, model } = req.body;
+
+    if (!question || question.trim().length === 0) {
+      return res.status(400).json({ error: 'Question is required' });
+    }
+
+    if (!presentationContent || presentationContent.trim().length === 0) {
+      return res.status(400).json({ error: 'Presentation content is required' });
+    }
+
+    console.log(`💬 Answering question: "${question}"`);
+    const answers = await openRouterClient.answerQuestion(
+      question,
+      presentationContent,
+      knowledgeBase || [],
+      model
+    );
+    console.log(`✅ Generated 2 answer options`);
+
+    res.json(answers);
+  } catch (error) {
+    console.error('Error answering question:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const server = app.listen(PORT, () => {
   console.log(`\n🎤 VerbaDeck Server running on http://localhost:${PORT}`);
   console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws`);
