@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node test-layout.js:*)",
+      "Bash(timeout 15 bash:*)",
+      "Bash(node:*)",
+      "Bash(timeout 20 bash:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
