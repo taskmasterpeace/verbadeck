@@ -3,9 +3,13 @@ import { WebSocketServer } from 'ws';
 import { WebSocket as WS } from 'ws';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { dirname, resolve, join } from 'path';
 import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
+import multer from 'multer';
+import AdmZip from 'adm-zip';
+import { readFile, writeFile, unlink } from 'fs/promises';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,6 +38,12 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Increase limit for large scripts
 
+// Configure multer for file uploads
+const upload = multer({
+  dest: resolve(__dirname, './uploads'),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -52,7 +62,7 @@ app.get('/api/models', async (req, res) => {
 
 app.post('/api/process-script', async (req, res) => {
   try {
-    const { text, model } = req.body;
+    const { text, model, preserveWording = true } = req.body;
 
     if (!text || text.trim().length === 0) {
       return res.status(400).json({ error: 'Text is required' });
@@ -62,8 +72,8 @@ app.post('/api/process-script', async (req, res) => {
       return res.status(400).json({ error: 'Text too long (max 50,000 characters)' });
     }
 
-    console.log(`📝 Processing script with model: ${model || 'default'}`);
-    const result = await openRouterClient.processScript(text, model);
+    console.log(`📝 Processing script with model: ${model || 'default'}, preserve wording: ${preserveWording}`);
+    const result = await openRouterClient.processScript(text, model, preserveWording);
     console.log(`✅ Processed ${result.sections?.length || 0} sections`);
 
     res.json(result);
@@ -88,6 +98,140 @@ app.post('/api/suggest-triggers', async (req, res) => {
     res.json({ triggers });
   } catch (error) {
     console.error('Error suggesting triggers:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Process images with AI to generate presentation
+app.post('/api/process-images', async (req, res) => {
+  try {
+    const { images, aspectRatio, model } = req.body;
+
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'At least one image is required' });
+    }
+
+    console.log(`🖼️ Processing ${images.length} images with aspect ratio ${aspectRatio}`);
+    const result = await openRouterClient.processImages(images, aspectRatio, model);
+    console.log(`✅ Generated ${result.sections?.length || 0} sections from images`);
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error processing images:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PowerPoint upload and parsing endpoint
+app.post('/api/upload-pptx', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log(`📤 Processing PPTX file: ${req.file.originalname}`);
+
+    const filePath = req.file.path;
+    const zip = new AdmZip(filePath);
+    const zipEntries = zip.getEntries();
+
+    // Extract slides data
+    const slides = [];
+    let slideNumber = 1;
+
+    // Find all slide XML files
+    const slideFiles = zipEntries.filter(entry =>
+      entry.entryName.match(/ppt\/slides\/slide\d+\.xml/)
+    ).sort((a, b) => {
+      const aNum = parseInt(a.entryName.match(/slide(\d+)\.xml/)[1]);
+      const bNum = parseInt(b.entryName.match(/slide(\d+)\.xml/)[1]);
+      return aNum - bNum;
+    });
+
+    // Extract images from ppt/media/
+    const imageEntries = zipEntries.filter(entry =>
+      entry.entryName.startsWith('ppt/media/')
+    );
+
+    const imageMap = new Map();
+
+    for (const imageEntry of imageEntries) {
+      const imageName = imageEntry.entryName.split('/').pop();
+      const imageBuffer = imageEntry.getData();
+      const timestamp = Date.now();
+      const uniqueName = `${timestamp}-${imageName}`;
+      const imagePath = resolve(__dirname, `../client/public/uploads/${uniqueName}`);
+
+      await writeFile(imagePath, imageBuffer);
+      imageMap.set(imageName, `/uploads/${uniqueName}`);
+      console.log(`📷 Saved image: ${uniqueName}`);
+    }
+
+    // Parse each slide
+    for (const slideFile of slideFiles) {
+      const slideXml = slideFile.getData().toString('utf8');
+
+      // Simple text extraction from XML
+      const textMatches = slideXml.match(/<a:t>([^<]+)<\/a:t>/g) || [];
+      const slideText = textMatches
+        .map(match => match.replace(/<\/?a:t>/g, ''))
+        .join(' ')
+        .trim();
+
+      if (slideText) {
+        // Try to find associated image
+        let imageUrl = null;
+        if (imageMap.size > 0) {
+          // Simple heuristic: use images in order
+          const imageArray = Array.from(imageMap.values());
+          if (slideNumber - 1 < imageArray.length) {
+            imageUrl = imageArray[slideNumber - 1];
+          }
+        }
+
+        slides.push({
+          slideNumber,
+          content: slideText,
+          notes: '', // TODO: Extract speaker notes if needed
+          imageUrl
+        });
+
+        slideNumber++;
+      }
+    }
+
+    // Clean up uploaded file
+    await unlink(filePath);
+
+    console.log(`✅ Extracted ${slides.length} slides from PowerPoint`);
+    res.json({ slides });
+
+  } catch (error) {
+    console.error('Error processing PPTX:', error);
+    // Clean up on error
+    if (req.file?.path) {
+      try { await unlink(req.file.path); } catch {}
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate script variations endpoint
+app.post('/api/generate-variations', async (req, res) => {
+  try {
+    const { slideContent, model } = req.body;
+
+    if (!slideContent || slideContent.trim().length === 0) {
+      return res.status(400).json({ error: 'Slide content is required' });
+    }
+
+    console.log(`🎨 Generating variations for slide content`);
+    const variations = await openRouterClient.generateVariations(slideContent, model);
+    console.log(`✅ Generated ${variations.length} variations`);
+
+    res.json({ variations });
+  } catch (error) {
+    console.error('Error generating variations:', error);
     res.status(500).json({ error: error.message });
   }
 });

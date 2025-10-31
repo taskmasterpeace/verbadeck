@@ -19,7 +19,7 @@ export function useOpenRouter() {
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
-  const processScript = async (text: string, model: string): Promise<ProcessScriptResponse> => {
+  const processScript = async (text: string, model: string, preserveWording: boolean = true): Promise<ProcessScriptResponse> => {
     setIsProcessing(true);
     setError(null);
     setProgress(0);
@@ -35,7 +35,7 @@ export function useOpenRouter() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, model }),
+        body: JSON.stringify({ text, model, preserveWording }),
       });
 
       clearInterval(progressInterval);
@@ -87,9 +87,53 @@ export function useOpenRouter() {
     }
   };
 
+  const processImagesWithAI = async (
+    images: { id: string; dataUrl: string; name: string }[],
+    aspectRatio: string,
+    model: string
+  ): Promise<ProcessScriptResponse> => {
+    setIsProcessing(true);
+    setError(null);
+    setProgress(0);
+
+    try {
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => Math.min(prev + 10, 90));
+      }, 500);
+
+      const response = await fetch(`${API_BASE}/process-images`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ images, aspectRatio, model }),
+      });
+
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process images');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(message);
+      throw err;
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setProgress(0), 1000);
+    }
+  };
+
   return {
     processScript,
     suggestTriggers,
+    processImagesWithAI,
     isProcessing,
     error,
     progress,

@@ -4,6 +4,21 @@
 
 VerbaDeck is a revolutionary presentation tool that lets you deliver presentations hands-free using voice commands. Speak naturally, and VerbaDeck automatically advances your slides when you say the trigger words. Perfect for demos, speeches, and presentations where you need your hands free.
 
+## 🆕 What's New in v2.0
+
+**Latest Update:** October 31, 2025 - Complete 5-Phase Implementation
+
+- ✅ **Preservation Mode** - Preserve exact wording for enterprise/legal/medical use
+- ✅ **Rich Text Editor** - Format with bold, italic, headings, bullets (Tiptap)
+- ✅ **Presentation Library** - Save/load to localStorage + file export/import
+- ✅ **Progressive Web App** - Install on mobile/tablet, works offline
+- ✅ **Video Support** - MP4 playback with voice controls ("play", "pause", "restart")
+- ✅ **Live Q&A System** - AI-powered question detection + knowledge base
+- ✅ **Mobile Optimized** - Responsive design for any device
+- ✅ **Load Test Button** - One-click presentation loading for quick testing
+
+**See:** [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) for complete before/after comparison
+
 ![Presenter View](presenter-with-image.png)
 
 ---
@@ -15,20 +30,45 @@ VerbaDeck is a revolutionary presentation tool that lets you deliver presentatio
 - **BACK Command**: Navigate to previous slides by saying "back", "previous", or "go back"
 - **Real-time Transcription**: Live speech-to-text powered by AssemblyAI
 - **Hands-Free**: No clicker, no keyboard - just your voice
+- **Video Voice Commands**: Control video playback with "play", "pause", "restart" 🆕
 
 ### 🤖 AI-Powered
 - **AI Script Processor**: Transform raw text into presentation sections with smart trigger words
-- **Multiple AI Models**: Choose from GPT-4, Claude, Gemini, and more via OpenRouter
+- **Preservation Mode**: Checkbox to preserve exact wording (no AI editing) - perfect for legal/medical/sales 🆕
+- **Load Test Presentation**: One-click button to load example presentation for quick testing 🆕
+- **Multiple AI Models**: Choose from 50+ models (GPT-4, Claude, Gemini, Llama, etc.) via OpenRouter
 - **Smart Trigger Detection**: AI suggests natural trigger words based on your content
 - **Multi-Trigger Support**: Multiple trigger words per section for flexibility
+- **Live Q&A System**: AI-powered question detection and response generation with knowledge base 🆕
 
 ### 🎨 Presentation Features
+- **Rich Text Editor**: Format text with bold, italic, headings, bullets, and more (Tiptap) 🆕
+- **Video Support**: Embed MP4 videos with voice-controlled playback 🆕
 - **Image Support**: PowerPoint-style slides with images
 - **Dual-Monitor Mode**: Presenter view with controls + clean audience view
 - **Trigger Word Carousel**: Visual display of current, next, and previous triggers
 - **Live Transcript Bar**: See what's being detected in real-time
-- **Section Editing**: Rich editor for content and image URLs
+- **Section Editing**: Rich editor for content, images, and triggers
 - **Progress Tracking**: Visual progress bar and section counter
+
+### 💾 Persistence & Library
+- **Save/Load Presentations**: Export to .verbadeck files or load from disk 🆕
+- **Presentation Library**: Save presentations to browser localStorage 🆕
+- **Auto-Persistence**: Never lose your work
+- **Quick Access**: Instantly load previous presentations
+
+### 📱 Mobile & PWA
+- **Progressive Web App**: Install on any device (mobile/tablet/desktop) 🆕
+- **Offline Mode**: Works without internet after initial load 🆕
+- **Responsive Design**: Optimized for portrait and landscape 🆕
+- **Mobile-First**: Single presenter view for on-the-go presentations 🆕
+
+### 🎓 Q&A & Knowledge Base
+- **Question Detection**: Automatically detects when audience asks questions 🆕
+- **Knowledge Base**: Add FAQs and context notes per presentation 🆕
+- **AI Talking Points**: Get instant talking points for live questions 🆕
+- **Pre-written Answers**: Load your prepared responses 🆕
+- **Toggle Mode**: "Listen for Questions" ON/OFF button 🆕
 
 ### 🎯 Presenter Experience
 - **Presenter View**: Full controls, trigger words visible, next section preview
@@ -156,6 +196,9 @@ At the bottom of the screen, you'll see:
 - Framer Motion (animations)
 - React Router (routing)
 - Web Audio API + AudioWorklet
+- **Tiptap** (rich text editor) 🆕
+- **vite-plugin-pwa** (Progressive Web App) 🆕
+- **Workbox** (service worker & caching) 🆕
 
 **Backend:**
 - Node.js + Express
@@ -164,7 +207,11 @@ At the bottom of the screen, you'll see:
 
 **APIs:**
 - AssemblyAI Universal-Streaming v3 (real-time STT)
-- OpenRouter (AI model access)
+- OpenRouter (50+ AI models via unified API)
+
+**Storage:**
+- LocalStorage (presentation library) 🆕
+- File System (import/export .verbadeck files) 🆕
 
 **Testing:**
 - Playwright (E2E and visual regression)

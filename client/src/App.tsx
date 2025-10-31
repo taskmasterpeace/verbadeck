@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useTransitions } from './hooks/useTransitions';
 import { createTokenPattern, type Section } from './lib/script-parser';
-import { getDefaultModel } from './lib/openrouter-models';
+import { savePresentation, loadPresentation } from './lib/file-storage';
 import { PresenterView } from './components/PresenterView';
 import { StatusBar } from './components/StatusBar';
 import { TranscriptTicker } from './components/TranscriptTicker';
@@ -12,7 +12,7 @@ import { TransitionEffects } from './components/TransitionEffects';
 import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { Card, CardContent } from './components/ui/card';
-import { FileText, Sparkles, Edit } from 'lucide-react';
+import { FileText, Sparkles, Edit, Save, FolderOpen, Info } from 'lucide-react';
 
 type ViewMode = 'ai-processor' | 'editor' | 'presenter';
 
@@ -20,7 +20,9 @@ export default function App() {
   const [sections, setSections] = useState<Section[]>([]);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('ai-processor');
-  const [selectedModel] = useState(getDefaultModel().id);
+  const [selectedModel] = useState<string>(() => {
+    return localStorage.getItem('verbadeck-selected-model') || 'anthropic/claude-3.5-sonnet';
+  });
 
   // Broadcast channel for audience view sync
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
@@ -247,8 +249,44 @@ export default function App() {
     }
   }, [currentSectionIndex, sections]);
 
-  // Open audience view in new window
-  const openAudienceView = () => {
+  // Open audience view in new window with Window Management API support
+  const openAudienceView = async () => {
+    try {
+      // Try to use Window Management API for multi-screen support
+      if ('getScreenDetails' in window) {
+        const screenDetails = await (window as any).getScreenDetails();
+        console.log('📺 Screens detected:', screenDetails.screens.length);
+
+        // If multiple screens, open on the second screen
+        if (screenDetails.screens.length > 1) {
+          const externalScreen = screenDetails.screens[1];
+          const audienceWindow = window.open(
+            '/audience',
+            'VerbaDeck Audience View',
+            `left=${externalScreen.left},top=${externalScreen.top},width=${externalScreen.availWidth},height=${externalScreen.availHeight},menubar=no,toolbar=no,location=no,status=no`
+          );
+
+          if (audienceWindow) {
+            // Try to make it fullscreen on the external display
+            try {
+              await (audienceWindow.document.documentElement as any).requestFullscreen({
+                screen: externalScreen
+              });
+              console.log('✅ Fullscreen on external display');
+            } catch (err) {
+              console.log('ℹ️ Fullscreen not supported or denied');
+            }
+          } else {
+            alert('Please allow popups to open the audience view');
+          }
+          return;
+        }
+      }
+    } catch (err) {
+      console.log('ℹ️ Window Management API not available, using fallback');
+    }
+
+    // Fallback: Standard window.open
     const audienceWindow = window.open(
       '/audience',
       'VerbaDeck Audience View',
@@ -257,6 +295,42 @@ export default function App() {
 
     if (!audienceWindow) {
       alert('Please allow popups to open the audience view');
+    }
+  };
+
+  // Save presentation to file
+  const handleSavePresentation = async () => {
+    if (sections.length === 0) {
+      alert('No presentation to save');
+      return;
+    }
+
+    try {
+      await savePresentation(sections);
+      console.log('✅ Presentation saved');
+    } catch (error) {
+      console.error('Error saving presentation:', error);
+      alert('Failed to save presentation');
+    }
+  };
+
+  // Load presentation from file
+  const handleLoadPresentation = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await loadPresentation(file);
+      setSections(data.sections);
+      setCurrentSectionIndex(0);
+      setViewMode('editor');
+      console.log(`✅ Loaded presentation with ${data.sections.length} sections`);
+
+      // Reset file input
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error loading presentation:', error);
+      alert(error instanceof Error ? error.message : 'Failed to load presentation');
     }
   };
 
@@ -281,13 +355,13 @@ export default function App() {
         {!isStreaming && (
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setViewMode('ai-processor')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
                     viewMode === 'ai-processor'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
                   }`}
                 >
                   <Sparkles className="w-4 h-4" />
@@ -296,10 +370,10 @@ export default function App() {
                 <button
                   onClick={() => setViewMode('editor')}
                   disabled={sections.length === 0}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
                     viewMode === 'editor'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
                   }`}
                 >
                   <Edit className="w-4 h-4" />
@@ -308,10 +382,10 @@ export default function App() {
                 <button
                   onClick={() => setViewMode('presenter')}
                   disabled={sections.length === 0}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
                     viewMode === 'presenter'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -319,13 +393,50 @@ export default function App() {
                 </button>
 
                 {sections.length > 0 && viewMode !== 'presenter' && (
-                  <button
-                    onClick={handleStartPresenting}
-                    className="ml-auto px-6 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-colors"
-                  >
-                    Start Presenting
-                  </button>
+                  <>
+                    <div className="ml-auto flex items-center gap-2">
+                      {/* Save Button */}
+                      <button
+                        onClick={handleSavePresentation}
+                        className="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                        title="Save presentation"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save
+                      </button>
+
+                      {/* Start Presenting Button */}
+                      <button
+                        onClick={handleStartPresenting}
+                        className="px-6 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-md hover:shadow-lg"
+                      >
+                        Start Presenting
+                      </button>
+                    </div>
+                  </>
                 )}
+
+                {/* Load Button (always visible) */}
+                <div className={sections.length === 0 || viewMode === 'presenter' ? 'ml-auto' : ''}>
+                  <input
+                    type="file"
+                    accept=".verbadeck,.json"
+                    onChange={handleLoadPresentation}
+                    className="hidden"
+                    id="load-presentation"
+                  />
+                  <label htmlFor="load-presentation">
+                    <button
+                      onClick={() => document.getElementById('load-presentation')?.click()}
+                      className="px-5 py-2.5 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-300 font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
+                      title="Load presentation"
+                      type="button"
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                      Load
+                    </button>
+                  </label>
+                </div>
               </div>
             </CardContent>
           </Card>

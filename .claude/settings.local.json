@@ -4,7 +4,13 @@
       "Bash(node test-layout.js:*)",
       "Bash(timeout 15 bash:*)",
       "Bash(node:*)",
-      "Bash(timeout 20 bash:*)"
+      "Bash(timeout 20 bash:*)",
+      "WebSearch",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 10 bash:*)",
+      "mcp__playwright__browser_navigate",
+      "Bash(npm install:*)",
+      "mcp__playwright__browser_click"
     ],
     "deny": [],
     "ask": []

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { X, Sparkles, Check } from 'lucide-react';
+import { X, Sparkles, Check, Upload, Image as ImageIcon } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
 
@@ -30,6 +30,7 @@ export function RichSectionEditor({
   );
   const { suggestTriggers, isProcessing } = useOpenRouter();
   const [aiSuggestions, setAiSuggestions] = useState<string[]>(section.alternativeTriggers || []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tokenize content into clickable words
   const words = content.split(/(\s+|[.,!?;:])/g);
@@ -91,6 +92,18 @@ export function RichSectionEditor({
     }
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Convert image to base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Card className="relative">
       <CardHeader className="pb-3">
@@ -144,16 +157,54 @@ export function RichSectionEditor({
               placeholder="Section content..."
               className="w-full h-32 p-3 rounded-md border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                Image URL (optional):
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                <ImageIcon className="w-4 h-4" />
+                Slide Image (optional):
               </label>
+
+              {/* Image Preview */}
+              {imageUrl && (
+                <div className="relative">
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="w-full h-32 object-contain rounded-md border bg-muted"
+                    onError={() => setImageUrl('')}
+                  />
+                  <button
+                    onClick={() => setImageUrl('')}
+                    className="absolute top-1 right-1 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
+              {/* Upload or URL input */}
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Image
+                </button>
+              </div>
+
               <input
                 type="url"
-                value={imageUrl}
+                value={imageUrl.startsWith('data:') ? '' : imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Or paste image URL..."
+                className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>

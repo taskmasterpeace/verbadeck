@@ -34,6 +34,11 @@ export function PresenterView({
     const triggers = section.selectedTriggers || [section.advanceToken];
     const primaryTrigger = triggers[0];
 
+    // If no triggers defined, just return plain text
+    if (!primaryTrigger || primaryTrigger.trim() === '') {
+      return <p className="whitespace-pre-wrap">{section.content}</p>;
+    }
+
     // Try to find the primary trigger in the content
     let triggerToHighlight = primaryTrigger;
     let triggerIndex = section.content.toLowerCase().indexOf(primaryTrigger.toLowerCase());

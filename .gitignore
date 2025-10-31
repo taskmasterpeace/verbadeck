@@ -13,6 +13,11 @@ dist/
 build/
 *.local
 
+# Uploads
+client/public/uploads/
+server/uploads/
+uploads/
+
 # Logs
 logs
 *.log
