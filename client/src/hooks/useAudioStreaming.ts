@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { WS_URL } from '@/lib/api-config';
 
 interface TranscriptMessage {
   type: 'status' | 'Turn' | 'Begin' | 'Termination' | 'Error';
@@ -71,9 +72,7 @@ export function useAudioStreaming({
       await audioContext.audioWorklet.addModule('/audio-processor.js');
 
       // 4. Create WebSocket connection to our proxy
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      const ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(WS_URL);
       wsRef.current = ws;
 
       ws.binaryType = 'arraybuffer';

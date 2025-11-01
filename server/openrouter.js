@@ -497,6 +497,210 @@ ${presentationContent}`;
   }
 
   /**
+   * Generate questions to understand user's presentation needs
+   * @param {string} topic - The presentation topic
+   * @param {string} model - Model ID
+   * @returns {Promise<Array>} Array of 4-5 questions (mix of multiple choice and fill-in-blank)
+   */
+  async generateQuestions(topic, model = 'anthropic/claude-3.5-sonnet') {
+    const prompt = `You are a presentation planning expert. A user wants to create a presentation about: "${topic}"
+
+Generate 4-5 strategic questions to understand exactly what they need. Use a mix of:
+- Multiple choice questions (3-4 options each)
+- Fill-in-the-blank questions
+
+These questions should help you later generate a high-quality, tailored presentation.
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "question": "What is the primary goal of your presentation?",
+      "options": ["Educate", "Persuade", "Inspire", "Inform"]
+    },
+    {
+      "id": "q2",
+      "type": "fill_in_blank",
+      "question": "Who is your target audience?",
+      "placeholder": "e.g., executives, students, general public"
+    }
+  ]
+}
+
+Requirements:
+- Generate 4-5 questions total
+- Mix of multiple_choice and fill_in_blank types
+- Questions should be strategic and useful for generating slides
+- Multiple choice should have 3-4 options
+- Fill-in-blank should have helpful placeholder text`;
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
+        }
+      );
+
+      const content = response.data.choices[0].message.content;
+
+      // Try to extract JSON from the response
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (e) {
+        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          const objectMatch = content.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            parsed = JSON.parse(objectMatch[0]);
+          } else {
+            throw new Error('No valid JSON found in response');
+          }
+        }
+      }
+
+      return parsed.questions || [];
+    } catch (error) {
+      console.error('Error generating questions:', error.response?.data || error.message);
+      throw new Error('Failed to generate questions');
+    }
+  }
+
+  /**
+   * Generate slide options based on topic and user answers
+   * @param {string} topic - The presentation topic
+   * @param {Array} answers - User's answers to questions
+   * @param {number} numSlides - Number of slides to generate
+   * @param {string} model - Model ID
+   * @returns {Promise<Array>} Array of slide positions, each with 4 options
+   */
+  async generateSlideOptions(topic, answers, numSlides, model = 'anthropic/claude-3.5-sonnet') {
+    const answersContext = answers.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n');
+
+    const prompt = `You are a presentation designer. Create a ${numSlides}-slide presentation about: "${topic}"
+
+User's requirements:
+${answersContext}
+
+For EACH slide position, generate 4 DIFFERENT content options. Each option should:
+- Be 2-4 sentences of presentation narration
+- Suggest a primary trigger word (the last impactful word)
+- Suggest 1-2 alternative trigger words
+- Offer a different approach/angle/style
+
+The 4 options per slide should be diverse enough that the user has real choices.
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "slides": [
+    {
+      "position": 1,
+      "title": "Slide 1 title/topic",
+      "options": [
+        {
+          "content": "First option narrative (2-4 sentences)",
+          "primaryTrigger": "word",
+          "alternativeTriggers": ["word1", "word2"],
+          "style": "direct" or "storytelling" or "data-driven" or "provocative"
+        },
+        {
+          "content": "Second option narrative (different from first)",
+          "primaryTrigger": "word",
+          "alternativeTriggers": ["word1", "word2"],
+          "style": "direct" or "storytelling" or "data-driven" or "provocative"
+        },
+        {
+          "content": "Third option narrative",
+          "primaryTrigger": "word",
+          "alternativeTriggers": ["word1", "word2"],
+          "style": "direct" or "storytelling" or "data-driven" or "provocative"
+        },
+        {
+          "content": "Fourth option narrative",
+          "primaryTrigger": "word",
+          "alternativeTriggers": ["word1", "word2"],
+          "style": "direct" or "storytelling" or "data-driven" or "provocative"
+        }
+      ]
+    }
+  ]
+}
+
+IMPORTANT:
+- Generate exactly ${numSlides} slides
+- Each slide MUST have exactly 4 different options
+- Options should be substantively different, not just minor rewording
+- Content should flow logically from slide to slide`;
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
+        }
+      );
+
+      const content = response.data.choices[0].message.content;
+
+      // Try to extract JSON from the response
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (e) {
+        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          const objectMatch = content.match(/\{[\s\S]*\}/);
+          if (objectMatch) {
+            parsed = JSON.parse(objectMatch[0]);
+          } else {
+            throw new Error('No valid JSON found in response');
+          }
+        }
+      }
+
+      return parsed.slides || [];
+    } catch (error) {
+      console.error('Error generating slide options:', error.response?.data || error.message);
+      throw new Error('Failed to generate slide options');
+    }
+  }
+
+  /**
    * Answer a question with TWO different response options
    * @param {string} question - The question to answer
    * @param {string} presentationContent - Full presentation text
@@ -532,19 +736,30 @@ Question: "${question}"
 Context from presentation:
 ${presentationContent}${kbContext}
 
+Each answer should have THREE parts to give the presenter flexibility:
+1. **Brief**: One concise sentence (for quick answers)
+2. **Bullets**: 3-5 key points as bullet items (for structured responses)
+3. **Full**: A paragraph with 3-5 sentences (for detailed explanations)
+
 Requirements:
-1. Generate TWO complete, different answers (not talking points, but full answers)
-2. Each answer should be 2-4 sentences
-3. Use bullet points if the answer has multiple parts
-4. Make answers concise and easy to speak aloud
-5. Base answers on the presentation content and knowledge base provided
-6. The two answers should offer different approaches or perspectives
-7. CRITICAL: Both answers must match the personality/tone specified in the "act as" instruction above
+- Generate TWO complete answer sets (each with brief, bullets, and full)
+- The two answers should offer different approaches or perspectives
+- Base answers on the presentation content and knowledge base provided
+- CRITICAL: All parts must match the personality/tone specified above
+- Make everything easy to speak aloud
 
 Return ONLY valid JSON in this exact format (no markdown, no extra text):
 {
-  "answer1": "First complete answer option in the specified tone (2-4 sentences, may include bullet points with •)",
-  "answer2": "Second complete answer option in the specified tone (2-4 sentences, different approach or perspective)"
+  "answer1": {
+    "brief": "Complete one-sentence answer to the question",
+    "bullets": ["First key point", "Second key point", "Third key point"],
+    "full": "Full paragraph explanation with 3-5 sentences that elaborates on the topic."
+  },
+  "answer2": {
+    "brief": "Different complete one-sentence answer to the question",
+    "bullets": ["Different first point", "Different second point", "Different third point"],
+    "full": "Different full paragraph with alternative perspective or approach, also 3-5 sentences."
+  }
 }`;
 
     try {

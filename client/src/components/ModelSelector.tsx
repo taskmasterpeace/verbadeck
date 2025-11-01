@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Brain, Globe, Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { RECOMMENDED_MODELS, MODEL_CATEGORIES, getDefaultModel, type Model } from '@/lib/openrouter-models';
+import { RECOMMENDED_MODELS, MODEL_CATEGORIES, getDefaultModel, type Model, getModelById } from '@/lib/openrouter-models';
 
 interface ModelSelectorProps {
   selectedModel: string;

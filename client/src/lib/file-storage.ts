@@ -6,6 +6,13 @@ export interface PresentationData {
   created: string;
   modified: string;
   sections: Section[];
+  knowledgeBase?: { question: string; answer: string }[];
+  settings?: {
+    selectedTone?: string;
+    selectedModel?: string;
+    currentSectionIndex?: number;
+    viewMode?: string;
+  };
   metadata?: {
     model?: string;
     totalSlides?: number;
@@ -15,15 +22,28 @@ export interface PresentationData {
 /**
  * Save presentation to a .verbadeck JSON file
  */
-export async function savePresentation(sections: Section[], title?: string): Promise<void> {
+export async function savePresentation(
+  sections: Section[],
+  title?: string,
+  knowledgeBase?: { question: string; answer: string }[],
+  settings?: {
+    selectedTone?: string;
+    selectedModel?: string;
+    currentSectionIndex?: number;
+    viewMode?: string;
+  }
+): Promise<void> {
   const data: PresentationData = {
     version: '1.0',
     title: title || `Presentation ${new Date().toLocaleDateString()}`,
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     sections,
+    knowledgeBase,
+    settings,
     metadata: {
       totalSlides: sections.length,
+      model: settings?.selectedModel,
     },
   };
 
@@ -81,15 +101,28 @@ export async function loadPresentation(file: File): Promise<PresentationData> {
 /**
  * Export presentation metadata as JSON string
  */
-export function exportPresentationJSON(sections: Section[], title?: string): string {
+export function exportPresentationJSON(
+  sections: Section[],
+  title?: string,
+  knowledgeBase?: { question: string; answer: string }[],
+  settings?: {
+    selectedTone?: string;
+    selectedModel?: string;
+    currentSectionIndex?: number;
+    viewMode?: string;
+  }
+): string {
   const data: PresentationData = {
     version: '1.0',
     title: title || `Presentation ${new Date().toLocaleDateString()}`,
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     sections,
+    knowledgeBase,
+    settings,
     metadata: {
       totalSlides: sections.length,
+      model: settings?.selectedModel,
     },
   };
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve, join } from 'path';
 import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
+import { getModelForOperation } from './model-config.js';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { readFile, writeFile, unlink } from 'fs/promises';
@@ -72,8 +73,9 @@ app.post('/api/process-script', async (req, res) => {
       return res.status(400).json({ error: 'Text too long (max 50,000 characters)' });
     }
 
-    console.log(`📝 Processing script with model: ${model || 'default'}, preserve wording: ${preserveWording}`);
-    const result = await openRouterClient.processScript(text, model, preserveWording);
+    const selectedModel = getModelForOperation('processScript', model);
+    console.log(`📝 Processing script with model: ${selectedModel}, preserve wording: ${preserveWording}`);
+    const result = await openRouterClient.processScript(text, selectedModel, preserveWording);
     console.log(`✅ Processed ${result.sections?.length || 0} sections`);
 
     res.json(result);
@@ -91,8 +93,9 @@ app.post('/api/suggest-triggers', async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    console.log(`💡 Suggesting triggers for section`);
-    const triggers = await openRouterClient.suggestTriggers(text, model);
+    const selectedModel = getModelForOperation('suggestTriggers', model);
+    console.log(`💡 Suggesting triggers for section using ${selectedModel}`);
+    const triggers = await openRouterClient.suggestTriggers(text, selectedModel);
     console.log(`✅ Suggested ${triggers.length} triggers`);
 
     res.json({ triggers });
@@ -111,8 +114,9 @@ app.post('/api/process-images', async (req, res) => {
       return res.status(400).json({ error: 'At least one image is required' });
     }
 
-    console.log(`🖼️ Processing ${images.length} images with aspect ratio ${aspectRatio}`);
-    const result = await openRouterClient.processImages(images, aspectRatio, model);
+    const selectedModel = getModelForOperation('processImages', model);
+    console.log(`🖼️ Processing ${images.length} images with ${selectedModel} (aspect ratio: ${aspectRatio})`);
+    const result = await openRouterClient.processImages(images, aspectRatio, selectedModel);
     console.log(`✅ Generated ${result.sections?.length || 0} sections from images`);
 
     res.json(result);
@@ -225,8 +229,9 @@ app.post('/api/generate-variations', async (req, res) => {
       return res.status(400).json({ error: 'Slide content is required' });
     }
 
-    console.log(`🎨 Generating variations for slide content`);
-    const variations = await openRouterClient.generateVariations(slideContent, model);
+    const selectedModel = getModelForOperation('generateVariations', model);
+    console.log(`🎨 Generating variations for slide content using ${selectedModel}`);
+    const variations = await openRouterClient.generateVariations(slideContent, selectedModel);
     console.log(`✅ Generated ${variations.length} variations`);
 
     res.json({ variations });
@@ -244,8 +249,9 @@ app.post('/api/generate-faqs', async (req, res) => {
       return res.status(400).json({ error: 'Presentation content is required' });
     }
 
-    console.log(`❓ Generating FAQs from presentation content`);
-    const faqs = await openRouterClient.generateFAQs(presentationContent, model);
+    const selectedModel = getModelForOperation('generateFAQs', model);
+    console.log(`❓ Generating FAQs from presentation content using ${selectedModel}`);
+    const faqs = await openRouterClient.generateFAQs(presentationContent, selectedModel);
     console.log(`✅ Generated ${faqs.length} FAQs`);
 
     res.json({ faqs });
@@ -267,12 +273,13 @@ app.post('/api/answer-question', async (req, res) => {
       return res.status(400).json({ error: 'Presentation content is required' });
     }
 
-    console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'})`);
+    const selectedModel = getModelForOperation('answerQuestion', model);
+    console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'}) using ${selectedModel}`);
     const answers = await openRouterClient.answerQuestion(
       question,
       presentationContent,
       knowledgeBase || [],
-      model,
+      selectedModel,
       tone || 'professional'
     );
     console.log(`✅ Generated 2 answer options in ${tone || 'professional'} tone`);
@@ -280,6 +287,54 @@ app.post('/api/answer-question', async (req, res) => {
     res.json(answers);
   } catch (error) {
     console.error('Error answering question:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-questions', async (req, res) => {
+  try {
+    const { topic, model } = req.body;
+
+    if (!topic || topic.trim().length === 0) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    const selectedModel = getModelForOperation('generateQuestions', model);
+    console.log(`❓ Generating questions for topic: "${topic}" using ${selectedModel}`);
+    const questions = await openRouterClient.generateQuestions(topic, selectedModel);
+    console.log(`✅ Generated ${questions.length} questions`);
+
+    res.json({ questions });
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-slide-options', async (req, res) => {
+  try {
+    const { topic, answers, numSlides, model } = req.body;
+
+    if (!topic || topic.trim().length === 0) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    if (!answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ error: 'Answers are required' });
+    }
+
+    if (!numSlides || numSlides < 1 || numSlides > 20) {
+      return res.status(400).json({ error: 'Number of slides must be between 1 and 20' });
+    }
+
+    const selectedModel = getModelForOperation('generateSlideOptions', model);
+    console.log(`🎨 Generating ${numSlides} slide options for topic: "${topic}" using ${selectedModel}`);
+    const slides = await openRouterClient.generateSlideOptions(topic, answers, numSlides, selectedModel);
+    console.log(`✅ Generated ${slides.length} slides with 4 options each`);
+
+    res.json({ slides });
+  } catch (error) {
+    console.error('Error generating slide options:', error);
     res.status(500).json({ error: error.message });
   }
 });

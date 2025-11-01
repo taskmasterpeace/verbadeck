@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
-import { AllModelsSelector } from './AllModelsSelector';
 import { PowerPointUpload } from './PowerPointUpload';
-import { ImageTemplateBuilder } from './ImageTemplateBuilder';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
-import { Loader2, Sparkles, FileText, Upload, HelpCircle, Image as ImageIcon, TestTube } from 'lucide-react';
+import { Loader2, Sparkles, FileText, Upload, TestTube } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
 
 // Test presentation data for quick testing
@@ -75,23 +73,16 @@ Let's talk.`;
 
 interface AIScriptProcessorProps {
   onSectionsGenerated: (sections: Section[]) => void;
+  selectedModel: string;
 }
 
-type InputMethod = 'text' | 'powerpoint' | 'imageTemplate';
+type InputMethod = 'text' | 'powerpoint';
 
-export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProps) {
+export function AIScriptProcessor({ onSectionsGenerated, selectedModel }: AIScriptProcessorProps) {
   const [inputMethod, setInputMethod] = useState<InputMethod>('text');
   const [rawText, setRawText] = useState('');
   const [preserveWording, setPreserveWording] = useState(true); // Default: preserve exact wording
-  const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem('verbadeck-selected-model') || 'anthropic/claude-3.5-sonnet';
-  });
   const { processScript, isProcessing, error, progress } = useOpenRouter();
-
-  // Save model to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('verbadeck-selected-model', selectedModel);
-  }, [selectedModel]);
 
   const loadTestPresentation = () => {
     setRawText(TEST_PRESENTATION);
@@ -135,9 +126,8 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
   };
 
   const methodDescriptions = {
-    text: "You have existing script text that needs to be formatted into VerbaDeck sections with trigger words. Perfect for written speeches or presentations you've already drafted.",
-    powerpoint: "Convert an existing PowerPoint presentation into VerbaDeck format. Extracts text and images from your PPTX file.",
-    imageTemplate: "Upload presentation slide images and AI will analyze them to generate a complete voice-driven script with trigger words."
+    text: "Paste your existing script text and AI will format it into VerbaDeck sections with trigger words.",
+    powerpoint: "Upload a PowerPoint presentation to extract text and images into VerbaDeck format."
   };
 
   return (
@@ -150,7 +140,7 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
             Process Existing Content
           </CardTitle>
           <CardDescription>
-            Choose your starting point: paste text, upload PowerPoint, or generate from images
+            Choose your starting point: paste text or upload PowerPoint
           </CardDescription>
         </CardHeader>
       </Card>
@@ -161,7 +151,7 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
           <div className="flex gap-2">
             <button
               onClick={() => setInputMethod('text')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors flex-1 ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-md transition-colors flex-1 ${
                 inputMethod === 'text'
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted hover:bg-muted/80'
@@ -172,7 +162,7 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
             </button>
             <button
               onClick={() => setInputMethod('powerpoint')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors flex-1 ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-md transition-colors flex-1 ${
                 inputMethod === 'powerpoint'
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted hover:bg-muted/80'
@@ -181,17 +171,6 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
               <Upload className="w-4 h-4" />
               Upload PowerPoint
             </button>
-            <button
-              onClick={() => setInputMethod('imageTemplate')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors flex-1 ${
-                inputMethod === 'imageTemplate'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4" />
-              Generate from Images
-            </button>
           </div>
           <p className="text-sm text-muted-foreground text-center">
             {methodDescriptions[inputMethod]}
@@ -199,9 +178,7 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
         </CardContent>
       </Card>
 
-      {inputMethod === 'imageTemplate' ? (
-        <ImageTemplateBuilder onSectionsGenerated={handlePowerPointExtracted} />
-      ) : inputMethod === 'powerpoint' ? (
+      {inputMethod === 'powerpoint' ? (
         <PowerPointUpload onSlidesExtracted={handlePowerPointExtracted} />
       ) : (
         <Card>
@@ -215,44 +192,6 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Model Selector */}
-            <div>
-              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                Select AI Model
-                <div className="group relative">
-                  <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
-                  <div className="hidden group-hover:block absolute left-0 top-6 z-10 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl">
-                    Choose an AI model to process your script. Free models are marked with a green badge. Your selection is saved automatically.
-                  </div>
-                </div>
-              </label>
-              <AllModelsSelector
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
-              />
-            </div>
-
-            {/* Preservation Mode Checkbox */}
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
-              <input
-                type="checkbox"
-                id="preserve-wording"
-                checked={preserveWording}
-                onChange={(e) => setPreserveWording(e.target.checked)}
-                className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="flex-1">
-                <label htmlFor="preserve-wording" className="text-sm font-medium cursor-pointer flex items-center gap-2">
-                  Preserve exact wording
-                  <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">DEFAULT</span>
-                </label>
-                <p className="text-xs text-gray-600 mt-1">
-                  When checked, AI will only identify trigger words and split sections without editing your carefully crafted text.
-                  Uncheck to allow AI to improve clarity and flow.
-                </p>
-              </div>
-            </div>
-
         {/* Text Input */}
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -260,14 +199,27 @@ export function AIScriptProcessor({ onSectionsGenerated }: AIScriptProcessorProp
               <FileText className="w-4 h-4" />
               Raw Script Text
             </label>
-            <button
-              onClick={loadTestPresentation}
-              disabled={isProcessing}
-              className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <TestTube className="w-3.5 h-3.5" />
-              Load Test Presentation
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Preservation Mode Checkbox */}
+              <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="preserve-wording"
+                  checked={preserveWording}
+                  onChange={(e) => setPreserveWording(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                Preserve exact wording
+              </label>
+              <button
+                onClick={loadTestPresentation}
+                disabled={isProcessing}
+                className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <TestTube className="w-3.5 h-3.5" />
+                Load Test Presentation
+              </button>
+            </div>
           </div>
           <textarea
             value={rawText}

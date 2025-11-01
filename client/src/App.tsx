@@ -9,13 +9,15 @@ import { StatusBar } from './components/StatusBar';
 import { TranscriptTicker } from './components/TranscriptTicker';
 import { AIScriptProcessor } from './components/AIScriptProcessor';
 import { RichSectionEditor } from './components/RichSectionEditor';
+import { KnowledgeBaseEditor } from './components/KnowledgeBaseEditor';
 import { TransitionEffects } from './components/TransitionEffects';
 import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { QAPanel } from './components/QAPanel';
-import { Card, CardContent } from './components/ui/card';
-import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2 } from 'lucide-react';
-import { CreateFromScratch, type PresentationConfig } from './components/CreateFromScratch';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2, MessageCircle } from 'lucide-react';
+import { CreateFromScratch } from './components/CreateFromScratch';
+import { ToneSelector } from './components/ToneSelector';
 
 type ViewMode = 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
@@ -23,9 +25,15 @@ export default function App() {
   const [sections, setSections] = useState<Section[]>([]);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('ai-processor');
-  const [selectedModel] = useState<string>(() => {
+  const [editorTab, setEditorTab] = useState<'sections' | 'knowledge'>('sections');
+  const [selectedModel, setSelectedModel] = useState<string>(() => {
     return localStorage.getItem('verbadeck-selected-model') || 'anthropic/claude-3.5-sonnet';
   });
+
+  const handleModelChange = (modelId: string) => {
+    setSelectedModel(modelId);
+    localStorage.setItem('verbadeck-selected-model', modelId);
+  };
 
   // Broadcast channel for audience view sync
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
@@ -39,9 +47,14 @@ export default function App() {
   // Q&A Feature
   const [isListeningForQuestions, setIsListeningForQuestions] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
-  const [questionTalkingPoints, setQuestionTalkingPoints] = useState<string[]>([]);
+  const [questionAnswers, setQuestionAnswers] = useState<{ answer1: string; answer2: string } | null>(null);
   const [isLoadingQA, setIsLoadingQA] = useState(false);
-  const { suggestTriggers } = useOpenRouter();
+  const [knowledgeBase, setKnowledgeBase] = useState<{ question: string; answer: string }[]>([]);
+  const [isGeneratingFAQs, setIsGeneratingFAQs] = useState(false);
+  const [qaDialogOpen, setQaDialogOpen] = useState(false);
+  const [manualQuestion, setManualQuestion] = useState('');
+  const [selectedTone, setSelectedTone] = useState('professional');
+  const { answerQuestion, generateFAQs } = useOpenRouter();
 
   // Debounce to prevent double-advance/back on echo
   const lastNavTimeRef = useRef<number>(0);
@@ -54,19 +67,27 @@ export default function App() {
   const handleQuestionDetected = async (question: string) => {
     setCurrentQuestion(question);
     setIsLoadingQA(true);
-    setQuestionTalkingPoints([]);
+    setQuestionAnswers(null);
 
     try {
-      // Generate AI talking points using the existing suggestTriggers API
-      // (We'll reuse this since it's similar - generates suggestions based on text)
-      const points = await suggestTriggers(
-        `Generate 3-5 concise talking points to answer this question: ${question}`,
-        selectedModel
+      // Get full presentation content
+      const presentationContent = sections.map(s => s.content).join('\n\n');
+
+      // Use the proper answerQuestion API with tone support
+      const answers = await answerQuestion(
+        question,
+        presentationContent,
+        knowledgeBase,
+        selectedModel,
+        selectedTone
       );
-      setQuestionTalkingPoints(points);
+      setQuestionAnswers(answers);
     } catch (error) {
-      console.error('Failed to generate talking points:', error);
-      setQuestionTalkingPoints(['Unable to generate talking points. Please answer manually.']);
+      console.error('Failed to generate answer:', error);
+      setQuestionAnswers({
+        answer1: 'Unable to generate answer. Please respond manually.',
+        answer2: 'Error occurred while processing the question.'
+      });
     } finally {
       setIsLoadingQA(false);
     }
@@ -74,8 +95,48 @@ export default function App() {
 
   const handleDismissQuestion = () => {
     setCurrentQuestion(null);
-    setQuestionTalkingPoints([]);
+    setQuestionAnswers(null);
     setIsLoadingQA(false);
+    setQaDialogOpen(false);
+  };
+
+  const handleManualQuestion = async () => {
+    if (!manualQuestion.trim()) {
+      alert('Please enter a question');
+      return;
+    }
+    // Close the dialog immediately
+    setQaDialogOpen(false);
+    // Process the question
+    await handleQuestionDetected(manualQuestion);
+    // Clear the question
+    setManualQuestion('');
+  };
+
+  const handleGenerateFAQs = async () => {
+    if (sections.length === 0) {
+      alert('Please create sections first');
+      return;
+    }
+
+    setIsGeneratingFAQs(true);
+    try {
+      const presentationContent = sections.map(s => s.content).join('\n\n');
+      const faqs = await generateFAQs(presentationContent, selectedModel);
+
+      // Replace existing FAQs with newly generated ones
+      setKnowledgeBase(faqs);
+
+      // Switch to knowledge base tab to show results
+      setEditorTab('knowledge');
+
+      console.log(`✅ Generated ${faqs.length} FAQs`);
+    } catch (error) {
+      console.error('Failed to generate FAQs:', error);
+      alert('Failed to generate FAQs. Please try again.');
+    } finally {
+      setIsGeneratingFAQs(false);
+    }
   };
 
   // Advance to next section
@@ -353,8 +414,18 @@ export default function App() {
     }
 
     try {
-      await savePresentation(sections);
-      console.log('✅ Presentation saved');
+      await savePresentation(
+        sections,
+        undefined, // title (use default)
+        knowledgeBase,
+        {
+          selectedTone,
+          selectedModel,
+          currentSectionIndex,
+          viewMode
+        }
+      );
+      console.log('✅ Presentation saved with complete state');
     } catch (error) {
       console.error('Error saving presentation:', error);
       alert('Failed to save presentation');
@@ -369,9 +440,27 @@ export default function App() {
     try {
       const data = await loadPresentation(file);
       setSections(data.sections);
-      setCurrentSectionIndex(0);
-      setViewMode('editor');
-      console.log(`✅ Loaded presentation with ${data.sections.length} sections`);
+
+      // Restore knowledge base if present
+      if (data.knowledgeBase) {
+        setKnowledgeBase(data.knowledgeBase);
+      }
+
+      // Restore settings if present
+      if (data.settings) {
+        if (data.settings.selectedTone) setSelectedTone(data.settings.selectedTone);
+        if (data.settings.selectedModel) setSelectedModel(data.settings.selectedModel);
+        if (data.settings.currentSectionIndex !== undefined) {
+          setCurrentSectionIndex(data.settings.currentSectionIndex);
+        }
+        if (data.settings.viewMode) setViewMode(data.settings.viewMode as ViewMode);
+      } else {
+        // If no settings, use defaults
+        setCurrentSectionIndex(0);
+        setViewMode('editor');
+      }
+
+      console.log(`✅ Loaded presentation with ${data.sections.length} sections and complete state`);
 
       // Reset file input
       event.target.value = '';
@@ -394,157 +483,113 @@ export default function App() {
         onToggleStream={isStreaming ? stopStreaming : startStreaming}
         isListeningForQuestions={isListeningForQuestions}
         onToggleQuestions={() => setIsListeningForQuestions(!isListeningForQuestions)}
+        onManualQuestion={() => setQaDialogOpen(true)}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        sectionsCount={sections.length}
+        onSavePresentation={handleSavePresentation}
+        onLoadPresentation={handleLoadPresentation}
+        selectedModel={selectedModel}
+        onModelChange={handleModelChange}
       />
 
       {/* Floating status indicator */}
       <StatusIndicator isStreaming={isStreaming} />
 
-      <div className="container mx-auto p-4 space-y-4">
-        {/* View Mode Tabs */}
-        {!isStreaming && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setViewMode('create-from-scratch')}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
-                    viewMode === 'create-from-scratch'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
-                  }`}
-                >
-                  <Wand2 className="w-4 h-4" />
-                  Create from Scratch
-                </button>
-                <button
-                  onClick={() => setViewMode('ai-processor')}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold ${
-                    viewMode === 'ai-processor'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Process Existing Content
-                </button>
-                <button
-                  onClick={() => setViewMode('editor')}
-                  disabled={sections.length === 0}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
-                    viewMode === 'editor'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
-                  }`}
-                >
-                  <Edit className="w-4 h-4" />
-                  Edit Sections ({sections.length})
-                </button>
-                <button
-                  onClick={() => setViewMode('presenter')}
-                  disabled={sections.length === 0}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${
-                    viewMode === 'presenter'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  Present
-                </button>
-
-                {sections.length > 0 && viewMode !== 'presenter' && (
-                  <>
-                    <div className="ml-auto flex items-center gap-2">
-                      {/* Save Button */}
-                      <button
-                        onClick={handleSavePresentation}
-                        className="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-                        title="Save presentation"
-                      >
-                        <Save className="w-4 h-4" />
-                        Save
-                      </button>
-
-                      {/* Start Presenting Button */}
-                      <button
-                        onClick={handleStartPresenting}
-                        className="px-6 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold transition-all shadow-md hover:shadow-lg"
-                      >
-                        Start Presenting
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {/* Load Button (always visible) */}
-                <div className={sections.length === 0 || viewMode === 'presenter' ? 'ml-auto' : ''}>
-                  <input
-                    type="file"
-                    accept=".verbadeck,.json"
-                    onChange={handleLoadPresentation}
-                    className="hidden"
-                    id="load-presentation"
-                  />
-                  <label htmlFor="load-presentation">
-                    <button
-                      onClick={() => document.getElementById('load-presentation')?.click()}
-                      className="px-5 py-2.5 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-300 font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
-                      title="Load presentation"
-                      type="button"
-                    >
-                      <FolderOpen className="w-4 h-4" />
-                      Load
-                    </button>
-                  </label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <div className="container mx-auto p-4 space-y-4 pb-20 sm:pb-4">
 
         {/* Create from Scratch View */}
         {viewMode === 'create-from-scratch' && !isStreaming && (
           <CreateFromScratch
-            onGenerate={(config: PresentationConfig) => {
-              console.log('Create from Scratch config:', config);
-              // TODO: Implement backend generation
-              alert('Create from Scratch feature coming soon! Config logged to console.');
-            }}
+            onSectionsGenerated={handleSectionsGenerated}
+            selectedModel={selectedModel}
           />
         )}
 
         {/* AI Script Processor View */}
         {viewMode === 'ai-processor' && !isStreaming && (
-          <AIScriptProcessor onSectionsGenerated={handleSectionsGenerated} />
+          <AIScriptProcessor
+            onSectionsGenerated={handleSectionsGenerated}
+            selectedModel={selectedModel}
+          />
         )}
 
         {/* Section Editor View */}
         {viewMode === 'editor' && !isStreaming && sections.length > 0 && (
           <div className="space-y-4">
+            {/* Tab Navigation */}
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold">Edit Your Sections</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Click words to select trigger points, or use AI to suggest better options
-                    </p>
-                  </div>
+              <CardContent className="p-0">
+                <div className="flex border-b">
+                  <button
+                    onClick={() => setEditorTab('sections')}
+                    className={`flex-1 px-6 py-4 font-medium transition-colors ${
+                      editorTab === 'sections'
+                        ? 'border-b-2 border-primary text-primary bg-primary/5'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    📝 Edit Content & Triggers
+                  </button>
+                  <button
+                    onClick={() => setEditorTab('knowledge')}
+                    className={`flex-1 px-6 py-4 font-medium transition-colors ${
+                      editorTab === 'knowledge'
+                        ? 'border-b-2 border-primary text-primary bg-primary/5'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    💡 Knowledge Base
+                    {knowledgeBase.length > 0 && (
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
+                        {knowledgeBase.length}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </CardContent>
             </Card>
 
-            {sections.map((section, index) => (
-              <RichSectionEditor
-                key={section.id}
-                section={section}
-                sectionIndex={index}
-                totalSections={sections.length}
-                onUpdate={(updatedSection) => handleUpdateSection(index, updatedSection)}
-                onDelete={() => handleDeleteSection(index)}
-                selectedModel={selectedModel}
+            {/* Sections Tab Content */}
+            {editorTab === 'sections' && (
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold">Edit Your Sections</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Click words to select trigger points, or use AI to suggest better options
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {sections.map((section, index) => (
+                  <RichSectionEditor
+                    key={section.id}
+                    section={section}
+                    sectionIndex={index}
+                    totalSections={sections.length}
+                    onUpdate={(updatedSection) => handleUpdateSection(index, updatedSection)}
+                    onDelete={() => handleDeleteSection(index)}
+                    selectedModel={selectedModel}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Knowledge Base Tab Content */}
+            {editorTab === 'knowledge' && (
+              <KnowledgeBaseEditor
+                knowledgeBase={knowledgeBase}
+                sections={sections}
+                onUpdate={setKnowledgeBase}
+                onGenerateFAQs={handleGenerateFAQs}
+                isGenerating={isGeneratingFAQs}
               />
-            ))}
+            )}
           </div>
         )}
 
@@ -579,9 +624,6 @@ export default function App() {
                 totalSections={sections.length}
                 progress={progress}
                 onSectionClick={goToSection}
-                currentQuestion={currentQuestion}
-                questionTalkingPoints={questionTalkingPoints}
-                isLoadingQA={isLoadingQA}
               />
             </TransitionEffects>
           </>
@@ -626,10 +668,69 @@ export default function App() {
       {currentQuestion && (
         <QAPanel
           question={currentQuestion}
-          talkingPoints={questionTalkingPoints}
+          answers={questionAnswers}
           isLoading={isLoadingQA}
           onDismiss={handleDismissQuestion}
         />
+      )}
+
+      {/* Manual Q&A Dialog */}
+      {qaDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-blue-600" />
+                Ask a Question
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Question:</label>
+                <input
+                  type="text"
+                  value={manualQuestion}
+                  onChange={(e) => setManualQuestion(e.target.value)}
+                  placeholder="e.g., What is the pricing for this product?"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && manualQuestion.trim()) {
+                      handleManualQuestion();
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Response Tone:</label>
+                <ToneSelector
+                  selectedTone={selectedTone}
+                  onToneChange={setSelectedTone}
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => {
+                    setQaDialogOpen(false);
+                    setManualQuestion('');
+                  }}
+                  className="px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManualQuestion}
+                  disabled={!manualQuestion.trim() || isLoadingQA}
+                  className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingQA ? 'Generating...' : 'Get AI Answers'}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

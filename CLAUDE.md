@@ -127,6 +127,28 @@ interface Section {
 - `POST /api/suggest-triggers` - AI trigger suggestions for a section
   - Body: `{text: string, model?: string}`
   - Returns: `{triggers: string[]}`
+- `POST /api/generate-questions` - Generate questions for Create from Scratch
+- `POST /api/generate-slide-options` - Generate slide variations
+- `POST /api/generate-faqs` - Generate FAQ pairs
+- `POST /api/answer-question` - Answer live Q&A questions with tone options
+
+## AI Model Configuration
+
+VerbaDeck uses operation-specific AI models for optimal cost/quality balance. All models support structured JSON output.
+
+### Model Defaults (server/model-config.js)
+- **GPT-4o Mini** (fast, cheap): Question generation, slide options, FAQs, trigger suggestions, variations
+- **Claude 3.5 Sonnet** (quality): Script processing, live Q&A, image processing
+
+### How It Works
+1. Each endpoint calls `getModelForOperation(operationName, userModel)`
+2. If user provides a model → use it (override)
+3. Otherwise → use operation-specific default
+4. Server logs show which model is being used
+
+Example: `❓ Generating questions for topic: "AI Ethics" using openai/gpt-4o-mini`
+
+See `MODEL_CONFIGURATION.md` for detailed cost analysis and configuration options.
 
 ## Important Implementation Details
 

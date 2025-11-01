@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '@/lib/api-config';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = `${API_BASE_URL}/api`;
 
 interface ProcessScriptResponse {
   sections: {

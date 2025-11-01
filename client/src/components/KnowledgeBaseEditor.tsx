@@ -1,97 +1,104 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { BookOpen, Plus, X, Sparkles, Loader2 } from 'lucide-react';
+import { Badge } from './ui/badge';
+import { BookOpen, Plus, X, Sparkles, Loader2, Edit2, Check } from 'lucide-react';
+import type { Section } from '@/lib/script-parser';
 
-export interface KnowledgeBaseItem {
-  id: string;
+interface KnowledgeBaseEntry {
   question: string;
   answer: string;
-  category?: string;
 }
 
 interface KnowledgeBaseEditorProps {
-  items: KnowledgeBaseItem[];
-  onUpdate: (items: KnowledgeBaseItem[]) => void;
-  onClose: () => void;
-  presentationContent?: string;
-  selectedModel?: string;
-  onGenerateFAQs?: () => Promise<KnowledgeBaseItem[]>;
+  knowledgeBase: KnowledgeBaseEntry[];
+  sections: Section[];
+  onUpdate: (kb: KnowledgeBaseEntry[]) => void;
+  onGenerateFAQs: () => Promise<void>;
+  isGenerating: boolean;
 }
 
 export function KnowledgeBaseEditor({
-  items,
+  knowledgeBase,
+  sections,
   onUpdate,
-  onClose,
-  onGenerateFAQs
+  onGenerateFAQs,
+  isGenerating,
 }: KnowledgeBaseEditorProps) {
-  const [editingItems, setEditingItems] = useState<KnowledgeBaseItem[]>(items);
-  const [newQuestion, setNewQuestion] = useState('');
-  const [newAnswer, setNewAnswer] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editQuestion, setEditQuestion] = useState('');
+  const [editAnswer, setEditAnswer] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleAdd = () => {
-    if (!newQuestion.trim() || !newAnswer.trim()) {
-      alert('Please enter both question and answer');
-      return;
-    }
-
-    const newItem: KnowledgeBaseItem = {
-      id: `kb-${Date.now()}`,
-      question: newQuestion,
-      answer: newAnswer,
-    };
-
-    setEditingItems([...editingItems, newItem]);
-    setNewQuestion('');
-    setNewAnswer('');
+    setIsAdding(true);
+    setEditQuestion('');
+    setEditAnswer('');
+    setEditingIndex(null);
   };
 
-  const handleDelete = (id: string) => {
-    setEditingItems(editingItems.filter(item => item.id !== id));
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditQuestion(knowledgeBase[index].question);
+    setEditAnswer(knowledgeBase[index].answer);
+    setIsAdding(false);
   };
 
   const handleSave = () => {
-    onUpdate(editingItems);
-    onClose();
+    if (!editQuestion.trim() || !editAnswer.trim()) {
+      alert('Both question and answer are required');
+      return;
+    }
+
+    const newEntry = { question: editQuestion.trim(), answer: editAnswer.trim() };
+
+    if (isAdding) {
+      // Add new entry
+      onUpdate([...knowledgeBase, newEntry]);
+    } else if (editingIndex !== null) {
+      // Update existing entry
+      const updated = [...knowledgeBase];
+      updated[editingIndex] = newEntry;
+      onUpdate(updated);
+    }
+
+    // Reset
+    setIsAdding(false);
+    setEditingIndex(null);
+    setEditQuestion('');
+    setEditAnswer('');
   };
 
-  const handleGenerateFAQs = async () => {
-    if (!onGenerateFAQs) return;
+  const handleCancel = () => {
+    setIsAdding(false);
+    setEditingIndex(null);
+    setEditQuestion('');
+    setEditAnswer('');
+  };
 
-    setIsGenerating(true);
-    try {
-      const generatedFAQs = await onGenerateFAQs();
-      setEditingItems([...editingItems, ...generatedFAQs]);
-    } catch (error) {
-      console.error('Failed to generate FAQs:', error);
-      alert('Failed to generate FAQs. Please try again.');
-    } finally {
-      setIsGenerating(false);
+  const handleDelete = (index: number) => {
+    if (confirm('Are you sure you want to delete this FAQ entry?')) {
+      const updated = knowledgeBase.filter((_, i) => i !== index);
+      onUpdate(updated);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[80vh] flex flex-col">
-        <CardHeader className="border-b">
+    <div className="space-y-4">
+      {/* Header Card */}
+      <Card>
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              Knowledge Base & FAQs
-            </CardTitle>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">
-              ×
-            </button>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm text-gray-600">
-              Add frequently asked questions and answers. The AI will use these to provide better responses during Q&A.
-            </p>
-            {onGenerateFAQs && (
+            <div>
+              <h2 className="text-lg font-semibold">Knowledge Base</h2>
+              <p className="text-sm text-muted-foreground">
+                Prepare answers to frequently asked questions during your presentation
+              </p>
+            </div>
+            <div className="flex gap-2">
               <button
-                onClick={handleGenerateFAQs}
-                disabled={isGenerating}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm"
+                onClick={onGenerateFAQs}
+                disabled={isGenerating || sections.length === 0}
+                className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating ? (
                   <>
@@ -101,93 +108,157 @@ export function KnowledgeBaseEditor({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    AI Generate FAQs
+                    Auto-Generate FAQs
                   </>
                 )}
               </button>
-            )}
+              <button
+                onClick={handleAdd}
+                disabled={isAdding || editingIndex !== null}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" />
+                Add FAQ
+              </button>
+            </div>
           </div>
-        </CardHeader>
-
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Add New FAQ */}
-          <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 space-y-3 bg-blue-50">
-            <div className="flex items-center gap-2 text-sm font-semibold text-blue-900">
-              <Plus className="w-4 h-4" />
-              Add New FAQ
-            </div>
-            <input
-              type="text"
-              placeholder="Question..."
-              value={newQuestion}
-              onChange={(e) => setNewQuestion(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <textarea
-              placeholder="Answer (2-3 sentences recommended)..."
-              value={newAnswer}
-              onChange={(e) => setNewAnswer(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border bg-white text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={handleAdd}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-            >
-              Add to Knowledge Base
-            </button>
-          </div>
-
-          {/* Existing FAQs */}
-          {editingItems.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <p>No FAQs yet</p>
-              <p className="text-sm mt-2">Add your first FAQ above</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {editingItems.map((item, index) => (
-                <div key={item.id} className="border rounded-lg p-4 bg-white">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                          {index + 1}
-                        </span>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900 mb-1">Q: {item.question}</div>
-                          <div className="text-sm text-gray-700">A: {item.answer}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
-
-        <div className="border-t p-4 bg-gray-50 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-md hover:bg-gray-100 transition-colors font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-          >
-            Save Knowledge Base
-          </button>
-        </div>
       </Card>
+
+      {/* Add/Edit Form */}
+      {(isAdding || editingIndex !== null) && (
+        <Card className="border-2 border-blue-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {isAdding ? 'Add New FAQ' : 'Edit FAQ'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Question:</label>
+              <input
+                type="text"
+                value={editQuestion}
+                onChange={(e) => setEditQuestion(e.target.value)}
+                placeholder="e.g., What is the pricing for this product?"
+                className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Answer:</label>
+              <textarea
+                value={editAnswer}
+                onChange={(e) => setEditAnswer(e.target.value)}
+                placeholder="Provide a clear, concise answer that you can reference during the presentation..."
+                className="w-full h-24 p-3 rounded-md border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 rounded-md bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                {isAdding ? 'Add' : 'Save'}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {knowledgeBase.length === 0 && !isAdding && (
+        <Card className="border-dashed border-2">
+          <CardContent className="p-12 text-center">
+            <div className="space-y-4">
+              <div className="text-4xl">💡</div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">No FAQ entries yet</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add questions you might be asked during your presentation, or let AI suggest some based on your content
+                </p>
+              </div>
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={onGenerateFAQs}
+                  disabled={isGenerating || sections.length === 0}
+                  className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Auto-Generate FAQs
+                </button>
+                <button
+                  onClick={handleAdd}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Manually
+                </button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* FAQ List */}
+      {knowledgeBase.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {knowledgeBase.length} {knowledgeBase.length === 1 ? 'entry' : 'entries'}
+            </Badge>
+          </div>
+
+          {knowledgeBase.map((entry, index) => (
+            <Card key={index} className={editingIndex === index ? 'opacity-50' : ''}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <div className="text-xs font-semibold text-blue-600 mb-1">QUESTION:</div>
+                      <div className="text-sm font-medium">{entry.question}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-green-600 mb-1">ANSWER:</div>
+                      <div className="text-sm text-muted-foreground">{entry.answer}</div>
+                    </div>
+                  </div>
+
+                  {editingIndex !== index && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(index)}
+                        disabled={isAdding || editingIndex !== null}
+                        className="p-2 rounded-md hover:bg-muted transition-colors disabled:opacity-50"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(index)}
+                        disabled={isAdding || editingIndex !== null}
+                        className="p-2 rounded-md hover:bg-destructive/10 text-destructive transition-colors disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

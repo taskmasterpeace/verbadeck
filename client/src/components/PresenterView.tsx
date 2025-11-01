@@ -1,6 +1,5 @@
 import { Card, CardContent } from './ui/card';
 import { Progress } from './ui/progress';
-import { MessageCircle, Loader2 } from 'lucide-react';
 import { type Section } from '@/lib/script-parser';
 
 interface PresenterViewProps {
@@ -10,9 +9,6 @@ interface PresenterViewProps {
   totalSections: number;
   progress: number;
   onSectionClick?: (index: number) => void;
-  currentQuestion?: string | null;
-  questionTalkingPoints?: string[];
-  isLoadingQA?: boolean;
 }
 
 export function PresenterView({
@@ -22,9 +18,6 @@ export function PresenterView({
   totalSections,
   progress,
   onSectionClick,
-  currentQuestion,
-  questionTalkingPoints = [],
-  isLoadingQA = false,
 }: PresenterViewProps) {
   if (!currentSection) {
     return (
@@ -117,7 +110,7 @@ export function PresenterView({
         </CardContent>
       </Card>
 
-      {/* Right Column: Next Section + Q&A */}
+      {/* Right Column: Next Section */}
       <div className="flex flex-col gap-4">
         {/* Next Section Preview */}
         <Card className="bg-muted/50">
@@ -139,52 +132,6 @@ export function PresenterView({
             </div>
           </CardContent>
         </Card>
-
-        {/* Q&A Area (only shown when question is present) */}
-        {currentQuestion && (
-          <Card className="bg-blue-50 border-2 border-blue-300">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-blue-700">
-                  <MessageCircle className="w-5 h-5" />
-                  <div className="text-sm font-semibold uppercase tracking-wide">
-                    Live Question
-                  </div>
-                </div>
-
-                {/* Question */}
-                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
-                  <div className="text-xs font-semibold text-gray-500 mb-2">QUESTION:</div>
-                  <div className="text-lg font-medium text-gray-900">{currentQuestion}</div>
-                </div>
-
-                {/* AI Talking Points */}
-                <div>
-                  <div className="text-xs font-semibold text-gray-500 mb-2">AI TALKING POINTS:</div>
-                  {isLoadingQA ? (
-                    <div className="flex items-center gap-2 text-blue-600 p-4">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Generating response...</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {questionTalkingPoints.map((point, index) => (
-                        <div key={index} className="flex gap-2 items-start">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 text-sm text-gray-900 bg-white p-2 rounded border">
-                            {point}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Section Navigation (for testing/setup) */}
