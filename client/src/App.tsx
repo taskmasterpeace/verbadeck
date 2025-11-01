@@ -20,6 +20,7 @@ import { CreateFromScratch } from './components/CreateFromScratch';
 import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
+import { Footer } from './components/Footer';
 
 type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
@@ -885,6 +886,9 @@ export default function App() {
           </Card>
         </div>
       )}
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
