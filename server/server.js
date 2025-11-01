@@ -8,6 +8,7 @@ import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
 import { ReplicateImageGenerator } from './image-generator.js';
 import { getModelForOperation } from './model-config.js';
+import { getAllPromptsMetadata, getPromptExample } from './prompts.js';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { readFile, writeFile, unlink } from 'fs/promises';
@@ -434,6 +435,29 @@ app.post('/api/generate-slide-options', async (req, res) => {
     res.json({ slides });
   } catch (error) {
     console.error('Error generating slide options:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all prompts metadata (for Advanced Settings UI)
+app.get('/api/prompts', (req, res) => {
+  try {
+    const metadata = getAllPromptsMetadata();
+    res.json({ prompts: metadata });
+  } catch (error) {
+    console.error('Error getting prompts metadata:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get specific prompt example for editing
+app.get('/api/prompts/:operation', (req, res) => {
+  try {
+    const { operation } = req.params;
+    const promptExample = getPromptExample(operation);
+    res.json(promptExample);
+  } catch (error) {
+    console.error('Error getting prompt example:', error);
     res.status(500).json({ error: error.message });
   }
 });

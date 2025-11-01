@@ -30,7 +30,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('create');
   const [editorTab, setEditorTab] = useState<'sections' | 'knowledge'>('sections');
   const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem('verbadeck-selected-model') || 'anthropic/claude-3.5-sonnet';
+    return localStorage.getItem('verbadeck-selected-model') || 'openai/gpt-4o-mini';
   });
 
   const handleModelChange = (modelId: string) => {

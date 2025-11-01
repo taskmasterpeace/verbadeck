@@ -3,6 +3,8 @@ import { Play, Square, Info, MessageCircle, Wand2, Sparkles, Edit, FileText, Sav
 import { useState } from 'react';
 import { ModelSelector } from './ModelSelector';
 import { UserGuideViewer } from './UserGuideViewer';
+import { AdvancedSettings } from './AdvancedSettings';
+import { PromptEditor } from './PromptEditor';
 
 type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
@@ -38,7 +40,7 @@ export function StatusBar({
   onModelChange,
 }: StatusBarProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+  const [activeTab, setActiveTab] = useState<'settings' | 'models' | 'prompts' | 'help'>('settings');
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
 
   const statusColor = streamStatus === 'connected' ? 'default' : streamStatus === 'connecting' ? 'secondary' : 'outline';
@@ -288,9 +290,9 @@ export function StatusBar({
             <div className="border-b">
               <div className="flex">
                 <button
-                  onClick={() => setShowHelp(false)}
-                  className={`flex-1 px-6 py-3 font-medium transition-colors ${
-                    !showHelp
+                  onClick={() => setActiveTab('settings')}
+                  className={`flex-1 px-4 py-3 font-medium transition-colors text-sm ${
+                    activeTab === 'settings'
                       ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -298,9 +300,29 @@ export function StatusBar({
                   ⚙️ Settings
                 </button>
                 <button
-                  onClick={() => setShowHelp(true)}
-                  className={`flex-1 px-6 py-3 font-medium transition-colors ${
-                    showHelp
+                  onClick={() => setActiveTab('models')}
+                  className={`flex-1 px-4 py-3 font-medium transition-colors text-sm ${
+                    activeTab === 'models'
+                      ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  🤖 Models
+                </button>
+                <button
+                  onClick={() => setActiveTab('prompts')}
+                  className={`flex-1 px-4 py-3 font-medium transition-colors text-sm ${
+                    activeTab === 'prompts'
+                      ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  📝 Prompts
+                </button>
+                <button
+                  onClick={() => setActiveTab('help')}
+                  className={`flex-1 px-4 py-3 font-medium transition-colors text-sm ${
+                    activeTab === 'help'
                       ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -312,7 +334,7 @@ export function StatusBar({
 
             {/* Content */}
             <div className="p-6">
-              {!showHelp ? (
+              {activeTab === 'settings' ? (
                 /* Settings Tab */
                 <div className="space-y-6">
                   <div>
@@ -343,6 +365,12 @@ export function StatusBar({
                     </div>
                   </div>
                 </div>
+              ) : activeTab === 'models' ? (
+                /* Models Tab */
+                <AdvancedSettings />
+              ) : activeTab === 'prompts' ? (
+                /* Prompts Tab */
+                <PromptEditor />
               ) : (
                 /* Help Tab */
                 <div className="space-y-6 text-sm">
