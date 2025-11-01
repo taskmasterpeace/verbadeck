@@ -1,95 +1,143 @@
 # 🎤 VerbaDeck
 
-**Voice-Driven Presentations with AI-Powered Script Processing**
+**Voice-Driven Presentations with AI-Powered Intelligence**
 
-VerbaDeck is a revolutionary presentation tool that lets you deliver presentations hands-free using voice commands. Speak naturally, and VerbaDeck automatically advances your slides when you say the trigger words. Perfect for demos, speeches, and presentations where you need your hands free.
+> Transform how you present. Speak naturally, advance automatically. No clicker needed.
 
-## 🆕 What's New in v2.0
+<div align="center">
 
-**Latest Update:** October 31, 2025 - Complete 5-Phase Implementation
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)](https://nodejs.org/)
 
-- ✅ **Preservation Mode** - Preserve exact wording for enterprise/legal/medical use
-- ✅ **Rich Text Editor** - Format with bold, italic, headings, bullets (Tiptap)
-- ✅ **Presentation Library** - Save/load to localStorage + file export/import
-- ✅ **Progressive Web App** - Install on mobile/tablet, works offline
-- ✅ **Video Support** - MP4 playback with voice controls ("play", "pause", "restart")
-- ✅ **Live Q&A System** - AI-powered question detection + knowledge base
-- ✅ **Mobile Optimized** - Responsive design for any device
-- ✅ **Load Test Button** - One-click presentation loading for quick testing
-
-**See:** [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) for complete before/after comparison
-
-![Presenter View](presenter-with-image.png)
+</div>
 
 ---
 
-## ✨ Features
+## 🌟 What is VerbaDeck?
 
-### 🗣️ Voice Control
-- **Voice Navigation**: Say trigger words to advance slides automatically
-- **BACK Command**: Navigate to previous slides by saying "back", "previous", or "go back"
-- **Real-time Transcription**: Live speech-to-text powered by AssemblyAI
-- **Hands-Free**: No clicker, no keyboard - just your voice
-- **Video Voice Commands**: Control video playback with "play", "pause", "restart" 🆕
+VerbaDeck is a revolutionary presentation platform that lets you deliver presentations **completely hands-free** using voice commands. Simply speak naturally, and VerbaDeck automatically advances your slides when you say trigger words. Perfect for product demos, sales pitches, conference talks, and any presentation where you need your hands free.
 
-### 🤖 AI-Powered
-- **AI Script Processor**: Transform raw text into presentation sections with smart trigger words
-- **Preservation Mode**: Checkbox to preserve exact wording (no AI editing) - perfect for legal/medical/sales 🆕
-- **Load Test Presentation**: One-click button to load example presentation for quick testing 🆕
-- **Multiple AI Models**: Choose from 50+ models (GPT-4, Claude, Gemini, Llama, etc.) via OpenRouter
-- **Smart Trigger Detection**: AI suggests natural trigger words based on your content
-- **Multi-Trigger Support**: Multiple trigger words per section for flexibility
-- **Live Q&A System**: AI-powered question detection and response generation with knowledge base 🆕
+**Built by [Machine King Labs](https://machinekingdomlabs.com)** - Innovation in AI-powered presentation technology.
+
+![Process Content View](screenshots/01-process-content-home.png)
+
+---
+
+## ✨ Key Features
+
+### 🗣️ Advanced Voice Control
+- **Intelligent Trigger Detection**: AI identifies natural trigger words that advance slides
+- **Multi-Trigger Support**: Multiple trigger words per slide for flexibility
+- **Plural Recognition**: Automatically detects plurals (e.g., "solution" matches "solutions")
+- **BACK Command**: Navigate backwards with "back", "previous", or "go back"
+- **2-Second Debounce**: Prevents accidental double-advances from transcript echoes
+- **Real-Time Transcription**: Powered by AssemblyAI's streaming API
+
+### 🤖 AI-Powered Intelligence
+- **Operation-Specific Model Defaults**:
+  - GPT-4o Mini for fast, cost-effective operations (20x cheaper!)
+  - Claude 3.5 Sonnet for premium quality tasks
+- **50+ AI Models**: Choose from GPT-4, Claude, Gemini, Llama, and more via OpenRouter
+- **Smart Script Processing**: Transform raw text into structured sections
+- **Preservation Mode**: Keep exact wording for legal/medical/enterprise content
+- **AI Trigger Suggestions**: Get intelligent trigger word recommendations
+- **Model Override**: Users can always override defaults via UI
+
+### 🎓 Live Q&A System
+- **Question Detection**: Automatically detects "?" in transcripts when Q&A mode is ON
+- **Dual AI Answers**: Generates TWO complete answer perspectives
+- **8 Personality Tones**:
+  - 💼 Professional - Clear and authoritative
+  - ✨ Witty & Engaging - Clever and memorable
+  - 🧠 Deeply Insightful - Analytical and nuanced
+  - 💬 Conversational - Warm and relatable
+  - 🔥 Bold & Provocative - Challenges assumptions
+  - 🔬 Technical Expert - Precise and data-driven
+  - 📖 Storytelling - Compelling narratives
+  - 😏 Sarcastic & Sharp - Dry wit
+- **Knowledge Base**: AI-powered FAQ generation + manual entry
+- **Context-Aware**: Uses presentation content + knowledge base for accurate responses
+- **Easy Toggle**: "Q&A" button in status bar (green when active)
 
 ### 🎨 Presentation Features
-- **Rich Text Editor**: Format text with bold, italic, headings, bullets, and more (Tiptap) 🆕
-- **Video Support**: Embed MP4 videos with voice-controlled playback 🆕
-- **Image Support**: PowerPoint-style slides with images
+- **Create from Scratch**: AI-guided presentation builder with topic-based generation
+- **Process Existing Content**: Convert scripts or PowerPoint files
+- **Rich Text Editor**: Bold, italic, headings, bullets with Tiptap
+- **Image Support**: Add visuals to slides
 - **Dual-Monitor Mode**: Presenter view with controls + clean audience view
-- **Trigger Word Carousel**: Visual display of current, next, and previous triggers
-- **Live Transcript Bar**: See what's being detected in real-time
-- **Section Editing**: Rich editor for content, images, and triggers
+- **BroadcastChannel Sync**: Real-time window synchronization
+- **Smooth Transitions**: Framer Motion animations
 - **Progress Tracking**: Visual progress bar and section counter
+- **Trigger Carousel**: Shows previous, current, and next trigger words
 
-### 💾 Persistence & Library
-- **Save/Load Presentations**: Export to .verbadeck files or load from disk 🆕
-- **Presentation Library**: Save presentations to browser localStorage 🆕
-- **Auto-Persistence**: Never lose your work
-- **Quick Access**: Instantly load previous presentations
+### 💾 Save & Load
+- **File Export/Import**: Save as `.verbadeck` files
+- **LocalStorage**: Auto-save presentations in browser
+- **Quick Load**: One-click test presentation loading
+- **Cross-Device**: Load presentations on any device
 
-### 📱 Mobile & PWA
-- **Progressive Web App**: Install on any device (mobile/tablet/desktop) 🆕
-- **Offline Mode**: Works without internet after initial load 🆕
-- **Responsive Design**: Optimized for portrait and landscape 🆕
-- **Mobile-First**: Single presenter view for on-the-go presentations 🆕
+### 📱 Modern Web App
+- **Progressive Web App**: Install on mobile/tablet/desktop
+- **Offline Mode**: Works without internet after initial load
+- **Responsive Design**: Optimized for all screen sizes
+- **Mobile-First UI**: Portrait and landscape support
 
-### 🎓 Q&A & Knowledge Base
-- **Question Detection**: Automatically detects "?" in live transcripts when Q&A mode is ON 🆕
-- **Dual-Answer AI**: Generates TWO complete answer options with different perspectives 🆕
-- **8 Personality Tones**: Choose how AI answers - Professional, Witty, Insightful, Conversational, Bold, Technical, Storytelling, or Sarcastic 🆕✨
-- **"I want you to act as..." Prompting**: Each tone uses persona-based prompts for consistent personality 🆕
-- **Knowledge Base Editor**: AI-powered FAQ generation + manual FAQ entry 🆕
-- **Context-Aware Answers**: Uses presentation content + knowledge base for accurate responses 🆕
-- **Toggle Mode**: "Listen for Questions" button in top bar (appears when listening) 🆕
-- **Presenter Display**: Q&A panel below "Next Up" in presenter view for dual-monitor setups 🆕
-- **Professional Formatting**: Answers are concise, easy to speak aloud, with bullet points 🆕
+---
 
-**Available Tones**:
-- 💼 **Professional**: Clear, direct, credible - confident and authoritative
-- ✨ **Witty & Engaging**: Clever wordplay and memorable phrasing
-- 🧠 **Deeply Insightful**: Analytical, nuanced, reveals deeper connections
-- 💬 **Conversational**: Warm and relatable, no corporate jargon
-- 🔥 **Bold & Provocative**: Challenges assumptions, strong statements
-- 🔬 **Technical Expert**: Precise, data-driven, metrics-focused
-- 📖 **Storytelling**: Compelling narratives with vivid examples
-- 😏 **Sarcastic & Sharp**: Dry wit and ironic observations
+## 🎯 Use Cases
 
-### 🎯 Presenter Experience
-- **Presenter View**: Full controls, trigger words visible, next section preview
-- **Audience View**: Clean 50/50 split layout for images and text
-- **BroadcastChannel Sync**: Real-time synchronization between windows
-- **Smooth Transitions**: Animated slide transitions with framer-motion
-- **Section Navigation**: Manual navigation for testing and practice
+### 🚀 Product Demos & Sales Pitches
+**Perfect for**: Software demos, product launches, sales presentations
+
+**Why VerbaDeck**: Keep your hands free to operate your product while advancing slides naturally. No fumbling with a clicker when you need to demonstrate features.
+
+**Example**: Demo a mobile app while advancing through feature slides by saying "dashboard", "analytics", "reporting" as trigger words.
+
+---
+
+### 🎤 Conference Talks & Keynotes
+**Perfect for**: Tech conferences, TEDx talks, academic presentations
+
+**Why VerbaDeck**: Maintain natural body language and eye contact with your audience. No distractions from clickers or keyboard shortcuts.
+
+**Example**: Deliver a keynote about AI ethics with hands-free navigation, using Q&A mode to handle audience questions with AI-generated talking points.
+
+---
+
+### 📊 Executive Briefings & Board Meetings
+**Perfect for**: Quarterly reviews, strategy presentations, investor pitches
+
+**Why VerbaDeck**: Professional dual-monitor setup with preservation mode for exact wording. AI-powered Q&A ensures accurate responses.
+
+**Example**: Present quarterly financials with "revenue", "growth", "forecast" as triggers, with Q&A mode providing professional-toned answers to board questions.
+
+---
+
+### 🏥 Medical & Healthcare Presentations
+**Perfect for**: Grand rounds, medical conferences, patient education
+
+**Why VerbaDeck**: Preservation mode keeps medical terminology exact. Hands-free for gestures and demonstrations.
+
+**Example**: Present treatment protocols with clinical terms as triggers, maintaining precise medical language.
+
+---
+
+### 🎓 Academic Lectures & Training
+**Perfect for**: University lectures, corporate training, workshops
+
+**Why VerbaDeck**: Engage students with natural presentation flow. Use Q&A knowledge base for common student questions.
+
+**Example**: Teach machine learning concepts with "supervised", "neural", "training" as triggers, generating insightful answers for student questions.
+
+---
+
+### 💼 Internal Team Presentations
+**Perfect for**: Sprint reviews, project updates, team meetings
+
+**Why VerbaDeck**: Conversational tone options and quick setup. Save/load presentations for recurring meetings.
+
+**Example**: Weekly sprint review with "completed", "progress", "blockers" as triggers, using conversational Q&A tone.
 
 ---
 
@@ -97,8 +145,8 @@ VerbaDeck is a revolutionary presentation tool that lets you deliver presentatio
 
 ### Prerequisites
 - **Node.js** 18+ and npm
-- **AssemblyAI API Key**: [Get free API key](https://www.assemblyai.com/) (100 free hours/month)
-- **OpenRouter API Key**: [Get API key](https://openrouter.ai/) for AI processing
+- **AssemblyAI API Key**: [Get free key](https://www.assemblyai.com/) (100 hours/month free)
+- **OpenRouter API Key**: [Get key](https://openrouter.ai/) for AI models
 - **Browser**: Chrome, Edge, or Chromium-based (for Web Audio API)
 - **Microphone**: Required for voice input
 
@@ -109,30 +157,22 @@ VerbaDeck is a revolutionary presentation tool that lets you deliver presentatio
 git clone https://github.com/taskmasterpeace/verbadeck.git
 cd verbadeck
 
-# Install root dependencies
+# Install dependencies (root, server, and client)
 npm install
-
-# Install server dependencies
-cd server
-npm install
-cd ..
-
-# Install client dependencies
-cd client
-npm install
-cd ..
+cd server && npm install && cd ..
+cd client && npm install && cd ..
 ```
 
 ### Configuration
 
-Create a `.env` file in the project root:
+Create `.env` in the project root:
 
 ```env
 AAI_API_KEY=your_assemblyai_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
-**🔒 Security**: Never commit your `.env` file. It's already in `.gitignore`.
+🔒 **Security**: Never commit `.env` - it's already in `.gitignore`
 
 ### Run Development
 
@@ -142,60 +182,74 @@ npm run dev
 ```
 
 This launches:
-- **Server**: `http://localhost:3001` (WebSocket proxy)
+- **Server**: `http://localhost:3001` (WebSocket proxy + API)
 - **Client**: `http://localhost:5173` (Vite dev server)
 
-Open `http://localhost:5173` in your browser and start presenting!
+Open `http://localhost:5173` and start presenting!
 
 ---
 
 ## 📖 How to Use
 
-### 1. Process Your Script with AI
+### Method 1: Create from Scratch (AI-Guided)
 
-1. Click on the **AI Script Processor** tab
-2. Choose your preferred AI model (GPT-4, Claude Sonnet, etc.)
-3. Paste your raw presentation text
-4. Click **"Process with AI"**
-5. Wait 30-60 seconds for AI to segment and suggest trigger words
+1. Click **"Create from Scratch"** tab
+2. Describe your presentation topic
+3. Choose tone (Professional, Witty, Technical, etc.)
+4. Select number of slides (3-20)
+5. Pick target audience
+6. Click **"Generate Presentation"**
+7. AI creates slides with trigger words - ready to present!
 
-The AI will:
-- Split your text into digestible sections
-- Suggest natural trigger words for each section
-- Provide alternative trigger options
-- Format everything for voice navigation
+![Create from Scratch](screenshots/02-create-from-scratch.png)
 
-### 2. Edit Sections (Optional)
+---
 
-- Switch to the **Edit Sections** tab
-- Click **Edit** on any section to modify content
-- Add image URLs for PowerPoint-style slides
-- Toggle trigger words on/off
-- Reorder or remove sections as needed
+### Method 2: Process Existing Content
 
-### 3. Start Presenting
+#### Option A: Paste Text
+1. Click **"Process Content"** tab
+2. Select AI model (or use default)
+3. Check "Preserve exact wording" (recommended for legal/medical)
+4. Paste your script
+5. Click **"Process with AI"**
+6. AI segments text and suggests triggers
 
-1. Click **"Start Listening"** (grant microphone permission)
-2. Wait for "Connected" status
-3. Begin speaking your presentation naturally
-4. When you say a trigger word, VerbaDeck automatically advances
-5. Say "back" to return to the previous slide
-6. Use **"Open Audience View"** for dual-monitor presentations
+#### Option B: Upload PowerPoint
+1. Click **"Upload PowerPoint"**
+2. Select `.pptx` file
+3. Text and images extracted automatically
+4. AI generates trigger words
+5. Edit as needed
 
-### 4. Trigger Word Carousel
+---
 
-At the bottom of the screen, you'll see:
-- **Left**: "Say back" hint (or previous trigger)
-- **Center**: Current section's trigger words (prominently displayed)
-- **Right**: Next section's trigger word (preview)
+### Presenting with Voice Control
 
-### 5. Dual-Monitor Presenter Mode
+1. **Start Listening**: Click 🎤 Voice button (grant mic permission)
+2. **Wait for Connected**: Status turns green
+3. **Speak Naturally**: Say your presentation
+4. **Auto-Advance**: Slides advance when you say trigger words
+5. **Go Back**: Say "back" to return to previous slide
+6. **Q&A Mode**: Click "Q&A" button to enable question detection
+
+**Trigger Carousel** (bottom of screen):
+- **Left**: Previous trigger or "Say back"
+- **Center**: Current slide's trigger words (highlighted)
+- **Right**: Next slide's trigger (preview)
+
+---
+
+### Dual-Monitor Presenter Mode
 
 1. Click **"Open Audience View"** button
-2. A new window opens with the clean audience view
-3. Drag the audience window to your second monitor/projector
-4. Present from the main window (shows triggers and controls)
-5. Audience sees only content and images (no trigger words)
+2. New window opens with clean view
+3. Drag to second monitor/projector
+4. Press F11 for full-screen
+5. Present from main window (shows triggers, controls)
+6. Audience sees only content and images
+
+**BroadcastChannel** keeps both windows synchronized in real-time!
 
 ---
 
@@ -203,72 +257,76 @@ At the bottom of the screen, you'll see:
 
 ### Tech Stack
 
-**Frontend:**
+**Frontend**:
 - React 18 + TypeScript
-- Vite (build tool)
-- Tailwind CSS + shadcn/ui components
+- Vite (ultra-fast HMR)
+- Tailwind CSS + shadcn/ui
 - Framer Motion (animations)
-- React Router (routing)
-- Web Audio API + AudioWorklet
-- **Tiptap** (rich text editor) 🆕
-- **vite-plugin-pwa** (Progressive Web App) 🆕
-- **Workbox** (service worker & caching) 🆕
+- React Router
+- Tiptap (rich text)
+- vite-plugin-pwa (PWA support)
 
-**Backend:**
+**Backend**:
 - Node.js + Express
 - WebSocket proxy for AssemblyAI
-- OpenRouter API integration
+- OpenRouter API client
+- Operation-specific model defaults
 
-**APIs:**
+**APIs**:
 - AssemblyAI Universal-Streaming v3 (real-time STT)
-- OpenRouter (50+ AI models via unified API)
+- OpenRouter (unified access to 50+ AI models)
 
-**Storage:**
-- LocalStorage (presentation library) 🆕
-- File System (import/export .verbadeck files) 🆕
+**Storage**:
+- LocalStorage (presentation library)
+- File System (.verbadeck export/import)
 
-**Testing:**
-- Playwright (E2E and visual regression)
+**Testing**:
+- Playwright (E2E + visual regression)
 
-### How It Works
+### How Voice Control Works
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       User Speaks                           │
-└──────────────────┬──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    User Speaks                           │
+└──────────────────┬──────────────────────────────────────┘
                    │
                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Browser: Web Audio API captures microphone                │
-│  AudioWorklet converts Float32 → PCM16 (16kHz mono)        │
-└──────────────────┬──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  Browser: Web Audio API captures microphone             │
+│  AudioWorklet converts Float32 → PCM16 (16kHz mono)     │
+└──────────────────┬──────────────────────────────────────┘
                    │
                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  WebSocket → Node.js Proxy (localhost:3001)                │
-│  Adds AssemblyAI auth header                                │
-└──────────────────┬──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  WebSocket → Node.js Proxy (localhost:3001)             │
+│  Adds AssemblyAI Authorization header                   │
+└──────────────────┬──────────────────────────────────────┘
                    │
                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  AssemblyAI Real-time STT                                   │
-│  Returns transcript events via WebSocket                    │
-└──────────────────┬──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  AssemblyAI Real-Time STT                                │
+│  Returns transcript events via WebSocket                 │
+└──────────────────┬──────────────────────────────────────┘
                    │
                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  React App: Trigger Detection Engine                        │
-│  - Checks for BACK commands first                           │
-│  - Matches transcript against trigger words (with plurals)  │
-│  - Debounces to prevent double-advances                     │
-│  - Updates current section index                            │
-└──────────────────┬──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  React App: Trigger Detection Engine                     │
+│  1. Q&A Mode Check: If enabled and "?" detected →        │
+│     generate answers                                     │
+│  2. BACK Check: "back", "previous", "go back" →          │
+│     go to previous slide                                 │
+│  3. Trigger Match: Check current slide triggers          │
+│     - Normalize (lowercase, strip punctuation)           │
+│     - Regex: \b{trigger}(s|es|ies)?\b (plural support)  │
+│  4. Debounce: 2-second delay prevents double-advance     │
+│  5. Navigate: Update section index                       │
+└──────────────────┬──────────────────────────────────────┘
                    │
                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  BroadcastChannel syncs state to audience view              │
-│  Presenter and audience windows stay in sync                │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  BroadcastChannel syncs to audience view                 │
+│  Both windows stay in perfect sync                       │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -277,71 +335,57 @@ At the bottom of the screen, you'll see:
 
 ```
 verbadeck/
-├── client/                      # React frontend
+├── client/                          # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── AIScriptProcessor.tsx    # AI script processing UI
-│   │   │   ├── AudienceView.tsx         # Clean view for audience
-│   │   │   ├── PresenterView.tsx        # Main presenter display
-│   │   │   ├── RichSectionEditor.tsx    # Section editing
-│   │   │   ├── StatusBar.tsx            # Top navigation
-│   │   │   ├── StatusIndicator.tsx      # Listening badge
-│   │   │   ├── TranscriptTicker.tsx     # Live transcript bar
-│   │   │   ├── TriggerCarousel.tsx      # Trigger word display
-│   │   │   ├── TransitionEffects.tsx    # Slide animations
-│   │   │   ├── ModelSelector.tsx        # AI model picker
-│   │   │   └── ui/                      # shadcn/ui components
+│   │   │   ├── AIScriptProcessor.tsx       # Text processing UI
+│   │   │   ├── CreateFromScratch.tsx       # AI-guided builder
+│   │   │   ├── PresenterView.tsx           # Main presentation
+│   │   │   ├── AudienceView.tsx            # Clean audience display
+│   │   │   ├── RichSectionEditor.tsx       # Content editing
+│   │   │   ├── QAPanel.tsx                 # Q&A interface
+│   │   │   ├── KnowledgeBaseEditor.tsx     # FAQ management
+│   │   │   ├── StatusBar.tsx               # Top navigation
+│   │   │   ├── TriggerCarousel.tsx         # Trigger display
+│   │   │   ├── TranscriptTicker.tsx        # Live transcript
+│   │   │   ├── ModelSelector.tsx           # AI model picker
+│   │   │   ├── ToneSelector.tsx            # Q&A tone picker
+│   │   │   └── UserGuideViewer.tsx         # In-app help
 │   │   ├── hooks/
-│   │   │   ├── useAudioStreaming.ts     # Audio + WebSocket
-│   │   │   ├── useOpenRouter.ts         # AI API integration
-│   │   │   └── useTransitions.ts        # Animation hooks
+│   │   │   ├── useAudioStreaming.ts        # WebSocket + Audio
+│   │   │   ├── useOpenRouter.ts            # AI API client
+│   │   │   ├── useAllModels.ts             # Model management
+│   │   │   └── useTransitions.ts           # Animations
 │   │   ├── lib/
-│   │   │   ├── script-parser.ts         # Token matching logic
-│   │   │   ├── openrouter-models.ts     # Model definitions
-│   │   │   └── utils.ts                 # Utilities
-│   │   ├── pages/
-│   │   │   └── AudiencePage.tsx         # /audience route
-│   │   ├── App.tsx                      # Main application
-│   │   └── main.tsx                     # Entry point
+│   │   │   ├── script-parser.ts            # Trigger matching
+│   │   │   ├── openrouter-models.ts        # Model definitions
+│   │   │   ├── file-storage.ts             # Save/load logic
+│   │   │   └── api-config.ts               # API configuration
+│   │   ├── App.tsx                         # Main application
+│   │   └── main.tsx                        # Entry point
 │   ├── public/
-│   │   └── audio-processor.js           # AudioWorklet processor
+│   │   ├── audio-processor.js              # AudioWorklet
+│   │   └── USER_GUIDE.md                   # User documentation
 │   └── package.json
 ├── server/
-│   ├── server.js                        # Express + WebSocket proxy
-│   ├── openrouter.js                    # OpenRouter API client
+│   ├── server.js                           # Express + WebSocket
+│   ├── openrouter.js                       # AI API client
+│   ├── model-config.js                     # Operation defaults
 │   └── package.json
-├── tests/
-│   ├── verbadeck.spec.ts               # Main E2E tests
-│   └── ai-features.spec.ts             # AI feature tests
-├── .env                                 # API keys (gitignored)
-├── .gitignore
-├── package.json                         # Root workspace
-├── playwright.config.ts
-└── README.md
+├── tests/                                   # Playwright tests
+│   ├── create-from-scratch.spec.ts
+│   ├── process-existing-content.spec.ts
+│   ├── qa-functionality.spec.ts
+│   ├── qa-tone-features.spec.ts
+│   ├── save-load.spec.ts
+│   └── visual-regression.spec.ts
+├── .env                                     # API keys (gitignored)
+├── .gitignore                               # Excludes secrets
+├── MODEL_CONFIGURATION.md                   # Model docs
+├── USER_GUIDE.md                            # Full user guide
+├── package.json                             # Root workspace
+└── README.md                                # This file
 ```
-
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run with UI mode (visual debugging)
-npm run test:ui
-
-# Update visual snapshots
-npx playwright test --update-snapshots
-```
-
-Tests cover:
-- ✅ UI rendering and component visibility
-- ✅ Voice navigation and section advancement
-- ✅ AI script processing
-- ✅ Section editing and trigger management
-- ✅ Visual regression (screenshot comparisons)
-- ✅ Dual-monitor synchronization
 
 ---
 
@@ -351,27 +395,29 @@ Tests cover:
 
 ```bash
 # Root workspace
-npm run dev          # Start both server and client
+npm run dev          # Start server + client concurrently
 npm test             # Run Playwright tests
 npm run test:ui      # Run tests with UI mode
 
 # Client only
 cd client
-npm run dev          # Start Vite dev server (port 5173)
-npm run build        # Build for production
+npm run dev          # Vite dev server (port 5173)
+npm run build        # Production build
 npm run preview      # Preview production build
 
 # Server only
 cd server
-npm start            # Start Express server (port 3001)
+npm start            # Express server (port 3001)
 ```
 
 ### Environment Variables
 
-**`.env` (root):**
 ```env
+# .env (project root)
 AAI_API_KEY=your_assemblyai_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
+PORT=3001                # Optional, defaults to 3001
+NODE_ENV=development     # Optional
 ```
 
 ---
@@ -388,31 +434,30 @@ npm run build
 
 ### Deploy Options
 
-**Option 1: Static + Serverless**
-- Deploy `client/dist/` to Vercel, Netlify, or Cloudflare Pages
-- Deploy `server/` as serverless function or separate Node.js app
-- Update WebSocket URL in client to production server
+**Option 1: Vercel/Netlify (Recommended)**
+- Deploy `client/dist/` to Vercel or Netlify
+- Deploy `server/` as separate Node.js app (Railway, Render, Heroku)
+- Update WebSocket URL in client for production server
 
-**Option 2: All-in-One**
-- Deploy server with static file serving
-- Point Express to serve `client/dist/`
+**Option 2: All-in-One Server**
+- Serve `client/dist/` from Express
+- Single deployment to Railway, Render, or any Node.js host
 
-**Option 3: Separate Hosts**
-- Client on CDN/static host
-- Server on Railway, Render, or Heroku
-- Update CORS settings for cross-origin WebSocket
+**Option 3: Docker**
+- Use multi-stage Dockerfile
+- Build client, run server, serve static files
 
 ### HTTPS Requirement
 
-⚠️ **Required for Production:**
+⚠️ **Critical for Production**:
 - Microphone access requires HTTPS (except localhost)
 - WebSocket should use `wss://` in production
-- Use reverse proxy (nginx, Caddy) or platform SSL
+- Use platform SSL or reverse proxy (nginx, Caddy)
 
-### Environment Setup
+### Production Environment
 
-Set these in your production environment:
 ```bash
+# Set these in your production environment
 AAI_API_KEY=<your-key>
 OPENROUTER_API_KEY=<your-key>
 PORT=3001
@@ -421,121 +466,107 @@ NODE_ENV=production
 
 ---
 
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run with UI mode (debugging)
+npm run test:ui
+
+# Update visual snapshots
+npx playwright test --update-snapshots
+```
+
+**Test Coverage**:
+- ✅ Create from Scratch workflow
+- ✅ Process existing content (text + PowerPoint)
+- ✅ Voice navigation and trigger detection
+- ✅ Q&A functionality and tones
+- ✅ Save/load presentations
+- ✅ Visual regression (screenshots)
+- ✅ Dual-monitor synchronization
+
+---
+
 ## 🐛 Troubleshooting
 
 ### WebSocket Connection Failed
-- Check server is running on port 3001
-- Verify `.env` file exists with valid API keys
-- Check browser console for detailed error
+- ✓ Check server is running on port 3001
+- ✓ Verify `.env` file exists with valid API keys
+- ✓ Check browser console for errors
 
 ### Microphone Not Working
-- Grant microphone permissions in browser
-- HTTPS required (except localhost)
-- Try different browser (Chrome recommended)
+- ✓ Grant microphone permissions in browser
+- ✓ HTTPS required in production (localhost OK for dev)
+- ✓ Try Chrome (best Web Audio API support)
 
 ### Trigger Words Not Detected
-- Check transcript bar at bottom - is text appearing?
-- Verify you're connected (green "Listening" badge)
-- Speak clearly and at normal pace
-- Check trigger words in carousel match your speech
-- Try saying alternative triggers
+- ✓ Check transcript bar - is text appearing?
+- ✓ Verify "Connected" status (green badge)
+- ✓ Speak clearly at normal pace
+- ✓ Check trigger word matches your speech
+- ✓ Try alternative triggers (shown in editor)
 
 ### AI Processing Fails
-- Verify OpenRouter API key is correct
-- Check model availability (some require credits)
-- Ensure raw text is not empty
-- Try a different AI model
+- ✓ Verify OpenRouter API key is correct
+- ✓ Check model availability (some require credits)
+- ✓ Ensure text is not empty
+- ✓ Try different AI model (GPT-4o Mini is free)
 
 ### Audience View Not Syncing
-- Both windows must be from same origin
-- Check BroadcastChannel support in browser
-- Try closing and reopening audience view
+- ✓ Both windows must be same origin (same domain)
+- ✓ Check BroadcastChannel support (all modern browsers)
+- ✓ Try closing and reopening audience view
+- ✓ Check browser console for errors
 
 ---
 
-## 🎯 Tips for Best Results
+## 💡 Tips for Best Results
 
 ### Script Writing
-- **Clear sections**: Separate topics with natural breaks
-- **Strong trigger words**: Use distinctive words, not "the", "and", "a"
+- **Clear sections**: Natural topic breaks
+- **Strong triggers**: Unique words, not "the", "and", "a"
 - **Natural flow**: Write like you speak
-- **Image placement**: Add images to key sections for visual impact
+- **Plural-friendly**: Triggers auto-match plurals
 
 ### Presenting
-- **Test first**: Run through once before the real presentation
-- **Speak naturally**: Don't overemphasize trigger words
-- **Check venue**: Test Wi-Fi and ambient noise beforehand
-- **Have backup**: Keep a clicker or keyboard handy just in case
+- **Test first**: Practice run before real presentation
+- **Speak naturally**: Don't overemphasize triggers
+- **Check venue**: Test Wi-Fi and ambient noise
+- **Have backup**: Keep keyboard handy (arrow keys work!)
 
 ### AI Model Selection
-- **GPT-4 Turbo**: Best overall quality, good speed
-- **Claude Sonnet**: Excellent for long scripts, creative triggers
-- **Gemini Pro**: Fast, cost-effective for simpler content
-- **Llama 3.1 70B**: Free tier available, good for testing
-
----
-
-## 📸 Screenshots
-
-### Presenter View
-Full control interface with trigger words, next section preview, and manual navigation.
-
-![Presenter View](presenter-with-image.png)
-
-### AI Script Processor
-Transform raw text into structured presentation sections with smart trigger words.
-
-![AI Processing](streaming-active.png)
-
-### Trigger Carousel
-See current, next, and previous triggers at a glance.
-
-![Trigger Carousel](section-1.png)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-Please ensure:
-- Code follows existing style
-- Tests pass (`npm test`)
-- Add tests for new features
-- Update documentation as needed
+- **GPT-4o Mini**: Fast, cost-effective, free tier (default for many operations)
+- **Claude 3.5 Sonnet**: Best quality (default for presentations and Q&A)
+- **GPT-4 Turbo**: Most creative
+- **Gemini Pro**: Fast and free
+- **See**: `MODEL_CONFIGURATION.md` for operation-specific defaults
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License - see [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Credits & Acknowledgments
+## 🙏 Credits
 
-Built with amazing open-source tools:
+**Built by Machine King Labs**
+Website: [machinekingdomlabs.com](https://machinekingdomlabs.com)
 
-- [AssemblyAI](https://www.assemblyai.com/) - Real-time speech-to-text API
-- [OpenRouter](https://openrouter.ai/) - Unified AI model API
+**Powered by amazing open-source tools**:
+- [AssemblyAI](https://www.assemblyai.com/) - Real-time speech-to-text
+- [OpenRouter](https://openrouter.ai/) - Unified AI model access
 - [React](https://react.dev/) - UI framework
-- [Vite](https://vitejs.dev/) - Lightning-fast build tool
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
-- [Framer Motion](https://www.framer.com/motion/) - Animation library
-- [Playwright](https://playwright.dev/) - Reliable testing framework
-
----
-
-## 🌟 Star History
-
-If you find VerbaDeck useful, please consider giving it a star ⭐ on GitHub!
+- [Vite](https://vitejs.dev/) - Build tool
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+- [Framer Motion](https://www.framer.com/motion/) - Animations
+- [Tiptap](https://tiptap.dev/) - Rich text editor
+- [Playwright](https://playwright.dev/) - Testing framework
 
 ---
 
@@ -543,13 +574,22 @@ If you find VerbaDeck useful, please consider giving it a star ⭐ on GitHub!
 
 - **Issues**: [GitHub Issues](https://github.com/taskmasterpeace/verbadeck/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/taskmasterpeace/verbadeck/discussions)
+- **Documentation**: [USER_GUIDE.md](USER_GUIDE.md) - Complete guide with examples
+
+---
+
+## 🌟 Star History
+
+If VerbaDeck helps you deliver better presentations, please star ⭐ this repository!
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the VerbaDeck Team**
+**Made with ❤️ by [Machine King Labs](https://machinekingdomlabs.com)**
 
-**Happy Presenting! 🎤🚀**
+**Redefining Presentations with AI**
+
+🎤 **Happy Presenting!** 🚀
 
 </div>
