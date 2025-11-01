@@ -5,6 +5,8 @@ export interface Section {
   alternativeTriggers?: string[]; // AI-suggested alternative trigger words
   selectedTriggers?: string[]; // User-selected trigger words (for multi-trigger support)
   imageUrl?: string; // Optional image URL for PowerPoint-style slides
+  speakerNotes?: string; // Optional speaker notes - what to say vs what audience sees
+  imageOnly?: boolean; // If true, only display image (no text) to audience
 }
 
 /**

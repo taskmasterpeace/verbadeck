@@ -10,7 +10,8 @@
       "Bash(timeout 10 bash:*)",
       "mcp__playwright__browser_navigate",
       "Bash(npm install:*)",
-      "mcp__playwright__browser_click"
+      "mcp__playwright__browser_click",
+      "WebFetch(domain:replicate.com)"
     ],
     "deny": [],
     "ask": []

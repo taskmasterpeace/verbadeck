@@ -25,11 +25,32 @@ export function AudienceView({
 
   // Check if we have an image
   const hasImage = !!currentSection.imageUrl;
+  const isImageOnly = currentSection.imageOnly && hasImage;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* If we have an image, split 50/50, otherwise just show text */}
-      {hasImage ? (
+      {/* Image only mode - fullscreen image */}
+      {isImageOnly ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-muted">
+          <img
+            src={currentSection.imageUrl}
+            alt={`Slide ${sectionIndex + 1}`}
+            className="max-w-full max-h-full object-contain"
+            onError={(e) => {
+              console.error('Failed to load image:', currentSection.imageUrl);
+            }}
+          />
+
+          {/* Progress bar at bottom */}
+          <div className="mt-8 w-full max-w-md space-y-2">
+            <Progress value={progress} className="h-2" />
+            <div className="text-sm text-muted-foreground text-center">
+              Slide {sectionIndex + 1} of {totalSections}
+            </div>
+          </div>
+        </div>
+      ) : hasImage ? (
+        /* Has image but not image-only - split 50/50 */
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Image side */}
           <div className="flex items-center justify-center bg-muted p-8">

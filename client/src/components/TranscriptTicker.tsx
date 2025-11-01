@@ -7,16 +7,7 @@ interface TranscriptTickerProps {
 }
 
 export function TranscriptTicker({ transcript, lastTranscript }: TranscriptTickerProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when new transcript arrives
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [transcript, lastTranscript]);
-
-  const isListening = transcript.length === 0 && !lastTranscript;
+  const isListening = !lastTranscript;
 
   return (
     <Card className="bg-background border-t-2 border-primary/20">
@@ -29,30 +20,16 @@ export function TranscriptTicker({ transcript, lastTranscript }: TranscriptTicke
             </span>
             {isListening ? 'Listening...' : 'Live Transcript'}
           </CardTitle>
-          {transcript.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {transcript.length} line{transcript.length !== 1 ? 's' : ''}
-            </span>
-          )}
         </div>
       </CardHeader>
       <CardContent className="pb-3">
-        <div
-          ref={scrollRef}
-          className="h-20 overflow-y-auto text-sm space-y-1 font-mono"
-        >
-          {transcript.map((text, i) => (
-            <div key={i} className="text-muted-foreground">
-              {text}
-            </div>
-          ))}
-          {lastTranscript && (
-            <div className="text-foreground font-medium bg-primary/10 px-2 py-1 rounded animate-pulse">
+        <div className="h-20 flex items-center justify-center text-sm font-mono">
+          {lastTranscript ? (
+            <div className="text-foreground font-medium bg-primary/10 px-4 py-2 rounded w-full text-center">
               {lastTranscript}
             </div>
-          )}
-          {isListening && (
-            <div className="text-center text-muted-foreground py-4 italic">
+          ) : (
+            <div className="text-center text-muted-foreground italic">
               🎤 Speak into your microphone...
             </div>
           )}

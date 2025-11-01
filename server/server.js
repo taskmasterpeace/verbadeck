@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve, join } from 'path';
 import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
+import { ReplicateImageGenerator } from './image-generator.js';
 import { getModelForOperation } from './model-config.js';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
@@ -20,6 +21,7 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
 
 const AAI_API_KEY = process.env.AAI_API_KEY;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
 const PORT = process.env.PORT || 3001;
 
 if (!AAI_API_KEY) {
@@ -32,8 +34,16 @@ if (!OPENROUTER_API_KEY) {
   process.exit(1);
 }
 
+if (!REPLICATE_API_KEY) {
+  console.error('ERROR: REPLICATE_API_KEY not found in .env file');
+  process.exit(1);
+}
+
 // Initialize OpenRouter client
 const openRouterClient = new OpenRouterClient(OPENROUTER_API_KEY);
+
+// Initialize Replicate Image Generator client
+const replicateClient = new ReplicateImageGenerator(REPLICATE_API_KEY);
 
 const app = express();
 app.use(cors());
@@ -103,6 +113,95 @@ app.post('/api/suggest-triggers', async (req, res) => {
     console.error('Error suggesting triggers:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Generate image with AI using Replicate
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const { prompt, aspectRatio, imageInput, outputFormat } = req.body;
+
+    if (!prompt || prompt.trim().length === 0) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    console.log(`🎨 ${imageInput ? 'Editing' : 'Generating'} image with Replicate`);
+    console.log(`Prompt: "${prompt}"`);
+    console.log(`Aspect ratio: ${aspectRatio || '16:9'}, Format: ${outputFormat || 'png'}`);
+
+    const base64Image = await replicateClient.generateImage(prompt, {
+      aspectRatio: aspectRatio || '16:9',
+      imageInput: imageInput || null,
+      outputFormat: outputFormat || 'png'
+    });
+
+    res.json({ imageUrl: base64Image });
+  } catch (error) {
+    console.error('❌ Error generating image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Suggest image prompt from section content
+app.post('/api/suggest-image-prompt', async (req, res) => {
+  try {
+    const { content, presentationContext, model } = req.body;
+
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    const selectedModel = getModelForOperation('suggestImagePrompt', model);
+    console.log(`🎨 Generating image prompt for slide using ${selectedModel}`);
+
+    // Build context-aware prompt for AI
+    let userPrompt = `This slide contains: "${content}"`;
+
+    if (presentationContext && presentationContext.trim().length > 0) {
+      userPrompt = `This is part of a presentation about: ${presentationContext}\n\nThis specific slide contains: "${content}"\n\nGenerate a detailed image prompt (2-3 sentences) that would create a professional, visually compelling presentation slide image. The prompt should fit the presentation theme and accurately represent this slide's content. Focus on professional, clean, presentation-appropriate visuals. Return ONLY the image prompt, nothing else.`;
+    } else {
+      userPrompt = `Create a detailed image prompt (2-3 sentences) for this presentation slide: "${content}"\n\nThe prompt should create a professional, visually compelling image. Return ONLY the image prompt, nothing else.`;
+    }
+
+    // Use OpenRouter to generate intelligent prompt
+    const axios = await import('axios');
+    const response = await axios.default.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: selectedModel,
+        messages: [
+          {
+            role: 'user',
+            content: userPrompt,
+          },
+        ],
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const suggestedPrompt = response.data.choices[0].message.content.trim();
+    console.log(`✅ Generated prompt: "${suggestedPrompt}"`);
+
+    res.json({ prompt: suggestedPrompt });
+  } catch (error) {
+    console.error('Error generating image prompt:', error);
+    // Fallback: return a basic prompt based on the content
+    const fallbackPrompt = `Professional presentation slide showing: ${req.body.content.substring(0, 100)}`;
+    console.log(`⚠️  Using fallback prompt: "${fallbackPrompt}"`);
+    res.json({ prompt: fallbackPrompt });
+  }
+});
+
+// Get available aspect ratios and formats
+app.get('/api/image-options', (req, res) => {
+  res.json({
+    aspectRatios: ReplicateImageGenerator.getSupportedAspectRatios(),
+    formats: ReplicateImageGenerator.getSupportedFormats()
+  });
 });
 
 // Process images with AI to generate presentation

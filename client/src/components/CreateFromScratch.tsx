@@ -200,7 +200,7 @@ export function CreateFromScratch({ onSectionsGenerated, selectedModel }: Create
               <input
                 type="range"
                 min="3"
-                max="12"
+                max="25"
                 value={numSlides}
                 onChange={(e) => setNumSlides(parseInt(e.target.value))}
                 className="w-full"
@@ -208,7 +208,7 @@ export function CreateFromScratch({ onSectionsGenerated, selectedModel }: Create
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>3 slides</span>
-                <span>12 slides</span>
+                <span>25 slides</span>
               </div>
             </div>
 

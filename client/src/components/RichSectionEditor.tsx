@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { X, Sparkles, Check, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Sparkles, Check, Upload, Image as ImageIcon, Eye } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
+import { AIImageGenerator } from './AIImageGenerator';
+import { SlidePreview } from './SlidePreview';
 
 interface RichSectionEditorProps {
   section: Section;
@@ -12,6 +14,7 @@ interface RichSectionEditorProps {
   onUpdate: (section: Section) => void;
   onDelete: () => void;
   selectedModel: string;
+  allSections?: Section[]; // Full presentation for context
 }
 
 export function RichSectionEditor({
@@ -21,19 +24,35 @@ export function RichSectionEditor({
   onUpdate,
   onDelete,
   selectedModel,
+  allSections,
 }: RichSectionEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(section.content);
   const [imageUrl, setImageUrl] = useState(section.imageUrl || '');
+  const [speakerNotes, setSpeakerNotes] = useState(section.speakerNotes || '');
+  const [imageOnly, setImageOnly] = useState(section.imageOnly || false);
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>(
     section.selectedTriggers || [section.advanceToken]
   );
   const { suggestTriggers, isProcessing } = useOpenRouter();
   const [aiSuggestions, setAiSuggestions] = useState<string[]>(section.alternativeTriggers || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Auto-resize textarea to fit content
+  const handleTextareaResize = (textarea: HTMLTextAreaElement | null) => {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  };
 
   // Tokenize content into clickable words
-  const words = content.split(/(\s+|[.,!?;:])/g);
+  // Use speaker notes for trigger selection if available
+  const textForTriggers = speakerNotes.trim() || content;
+  const words = textForTriggers.split(/(\s+|[.,!?;:])/g);
 
   const handleWordClick = (word: string) => {
     if (!isEditing) return;
@@ -65,6 +84,8 @@ export function RichSectionEditor({
       advanceToken: primaryTrigger,
       selectedTriggers,
       imageUrl: imageUrl || undefined,
+      speakerNotes: speakerNotes.trim() || undefined,
+      imageOnly,
     });
     setIsEditing(false);
   };
@@ -72,13 +93,17 @@ export function RichSectionEditor({
   const handleCancel = () => {
     setContent(section.content);
     setImageUrl(section.imageUrl || '');
+    setSpeakerNotes(section.speakerNotes || '');
+    setImageOnly(section.imageOnly || false);
     setSelectedTriggers(section.selectedTriggers || [section.advanceToken]);
     setIsEditing(false);
   };
 
   const handleAISuggest = async () => {
     try {
-      const suggestions = await suggestTriggers(content, selectedModel);
+      // Use speaker notes for AI suggestions if available
+      const textForSuggestions = speakerNotes.trim() || content;
+      const suggestions = await suggestTriggers(textForSuggestions, selectedModel);
       setAiSuggestions(suggestions);
     } catch (err) {
       console.error('Failed to get AI suggestions:', err);
@@ -105,11 +130,14 @@ export function RichSectionEditor({
   };
 
   return (
-    <Card className="relative">
-      <CardHeader className="pb-3">
+    <Card className={`relative border-2 shadow-lg mb-6 transition-all hover:shadow-xl hover:border-primary/30 ${sectionIndex % 2 === 0 ? 'bg-muted/20' : 'bg-background'}`}>
+      <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            Section {sectionIndex + 1} of {totalSections}
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              {sectionIndex + 1}
+            </span>
+            <span className="text-muted-foreground font-normal text-sm">of {totalSections}</span>
             {section.imageUrl && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-normal">
                 <ImageIcon className="w-3 h-3" />
@@ -120,6 +148,14 @@ export function RichSectionEditor({
           <div className="flex items-center gap-2">
             {!isEditing ? (
               <>
+                <button
+                  onClick={() => setShowPreview(true)}
+                  className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
+                  title="Preview how this slide will look to the audience"
+                >
+                  <Eye className="w-3 h-3" />
+                  Preview
+                </button>
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-xs px-3 py-1 rounded-md bg-muted hover:bg-muted/80 transition-colors"
@@ -135,6 +171,14 @@ export function RichSectionEditor({
               </>
             ) : (
               <>
+                <button
+                  onClick={() => setShowPreview(true)}
+                  className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
+                  title="Preview how this slide will look to the audience"
+                >
+                  <Eye className="w-3 h-3" />
+                  Preview
+                </button>
                 <button
                   onClick={handleSave}
                   className="text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1"
@@ -157,12 +201,45 @@ export function RichSectionEditor({
         {/* Content Editor */}
         {isEditing ? (
           <>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Section content..."
-              className="w-full h-32 p-3 rounded-md border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Slide Content (what audience sees):
+              </label>
+              <textarea
+                ref={contentTextareaRef}
+                value={content}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  handleTextareaResize(e.target);
+                }}
+                onFocus={(e) => handleTextareaResize(e.target)}
+                placeholder="Section content..."
+                className="w-full min-h-32 p-3 rounded-md border bg-background text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{ height: 'auto' }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Speaker Notes (optional - what you'll say):
+              </label>
+              <textarea
+                ref={notesTextareaRef}
+                value={speakerNotes}
+                onChange={(e) => {
+                  setSpeakerNotes(e.target.value);
+                  handleTextareaResize(e.target);
+                }}
+                onFocus={(e) => handleTextareaResize(e.target)}
+                placeholder="Leave empty to use slide content... Add your own script here if you want to say something different from what's on the slide."
+                className="w-full min-h-24 p-3 rounded-md border border-dashed bg-amber-50/50 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400"
+                style={{ height: 'auto' }}
+              />
+              <p className="text-xs text-muted-foreground italic">
+                💡 Tip: Voice navigation will use your speaker notes (if provided) instead of slide content
+              </p>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
@@ -203,6 +280,13 @@ export function RichSectionEditor({
                   <Upload className="w-4 h-4" />
                   Upload Image
                 </button>
+                <button
+                  onClick={() => setShowAIGenerator(true)}
+                  className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Generate with AI
+                </button>
               </div>
 
               <input
@@ -212,6 +296,22 @@ export function RichSectionEditor({
                 placeholder="Or paste image URL..."
                 className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+
+              {/* Display Image Only Option */}
+              {imageUrl && (
+                <div className="flex items-center gap-2 p-3 rounded-md bg-blue-50 border border-blue-200">
+                  <input
+                    type="checkbox"
+                    id={`imageOnly-${section.id}`}
+                    checked={imageOnly}
+                    onChange={(e) => setImageOnly(e.target.checked)}
+                    className="w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor={`imageOnly-${section.id}`} className="text-sm font-medium text-blue-900 cursor-pointer">
+                    Display image only (hide text from audience)
+                  </label>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -342,6 +442,36 @@ export function RichSectionEditor({
           </div>
         )}
       </CardContent>
+
+      {/* AI Image Generator Modal */}
+      {showAIGenerator && (
+        <AIImageGenerator
+          sectionContent={content}
+          existingImage={imageUrl || undefined}
+          presentationContext={allSections?.map(s => s.content).join('\n\n')}
+          selectedModel={selectedModel}
+          onImageGenerated={(url) => {
+            setImageUrl(url);
+            setShowAIGenerator(false);
+          }}
+          onClose={() => setShowAIGenerator(false)}
+        />
+      )}
+
+      {/* Slide Preview Modal */}
+      {showPreview && (
+        <SlidePreview
+          section={{
+            ...section,
+            content,
+            imageUrl: imageUrl || undefined,
+            speakerNotes: speakerNotes.trim() || undefined,
+          }}
+          sectionIndex={sectionIndex}
+          totalSections={totalSections}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </Card>
   );
 }

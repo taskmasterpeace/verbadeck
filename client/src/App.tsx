@@ -15,16 +15,18 @@ import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { QAPanel } from './components/QAPanel';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2, MessageCircle } from 'lucide-react';
+import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2, MessageCircle, ImagePlus } from 'lucide-react';
 import { CreateFromScratch } from './components/CreateFromScratch';
 import { ToneSelector } from './components/ToneSelector';
+import { CreatePresentation } from './components/CreatePresentation';
+import { useImageGeneration } from './hooks/useImageGeneration';
 
-type ViewMode = 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
+type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
 export default function App() {
   const [sections, setSections] = useState<Section[]>([]);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<ViewMode>('ai-processor');
+  const [viewMode, setViewMode] = useState<ViewMode>('create');
   const [editorTab, setEditorTab] = useState<'sections' | 'knowledge'>('sections');
   const [selectedModel, setSelectedModel] = useState<string>(() => {
     return localStorage.getItem('verbadeck-selected-model') || 'anthropic/claude-3.5-sonnet';
@@ -55,6 +57,12 @@ export default function App() {
   const [manualQuestion, setManualQuestion] = useState('');
   const [selectedTone, setSelectedTone] = useState('professional');
   const { answerQuestion, generateFAQs } = useOpenRouter();
+  const { generateImage, suggestPrompt } = useImageGeneration();
+
+  // Bulk image generation state
+  const [isBulkGenerating, setIsBulkGenerating] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [bulkStatus, setBulkStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   // Debounce to prevent double-advance/back on echo
   const lastNavTimeRef = useRef<number>(0);
@@ -136,6 +144,108 @@ export default function App() {
       alert('Failed to generate FAQs. Please try again.');
     } finally {
       setIsGeneratingFAQs(false);
+    }
+  };
+
+  // Bulk generate images for all sections without images
+  const handleBulkGenerateImages = async () => {
+    setBulkStatus(null); // Clear any previous status
+
+    if (sections.length === 0) {
+      setBulkStatus({ type: 'error', message: 'Please create sections first' });
+      return;
+    }
+
+    console.log('📊 Checking sections for images...');
+    sections.forEach((section, idx) => {
+      console.log(`Section ${idx + 1}: imageUrl =`, section.imageUrl ? 'HAS IMAGE' : 'NO IMAGE');
+    });
+
+    // Find sections without images (check for both undefined and empty string)
+    const sectionsNeedingImages = sections
+      .map((section, index) => ({ section, index }))
+      .filter(({ section }) => !section.imageUrl || section.imageUrl.trim() === '');
+
+    console.log(`📝 Found ${sectionsNeedingImages.length} sections needing images out of ${sections.length} total`);
+
+    if (sectionsNeedingImages.length === 0) {
+      setBulkStatus({ type: 'info', message: 'All sections already have images!' });
+      return;
+    }
+
+    setBulkStatus({ type: 'info', message: `Starting generation for ${sectionsNeedingImages.length} section(s)...` });
+
+    setIsBulkGenerating(true);
+    setBulkProgress({ current: 0, total: sectionsNeedingImages.length });
+
+    const presentationContext = sections.map(s => s.content).join('\n\n');
+
+    try {
+      for (let i = 0; i < sectionsNeedingImages.length; i++) {
+        const { section, index } = sectionsNeedingImages[i];
+        setBulkProgress({ current: i + 1, total: sectionsNeedingImages.length });
+
+        console.log(`🎨 Generating image ${i + 1}/${sectionsNeedingImages.length} for section ${index + 1}`);
+
+        // Generate AI prompt with full context
+        const prompt = await suggestPrompt(section.content, presentationContext, selectedModel);
+        console.log(`📝 Generated prompt for section ${index + 1}:`, prompt);
+
+        // Generate image with default settings (1:1, JPG)
+        const imageUrl = await generateImage(prompt, {
+          aspectRatio: '1:1',
+          outputFormat: 'jpg',
+        });
+
+        if (!imageUrl || imageUrl.trim() === '') {
+          console.error(`❌ Generated image URL is empty for section ${index + 1}!`);
+          throw new Error(`Image generation returned empty URL for section ${index + 1}`);
+        }
+
+        console.log(`✅ Generated image for section ${index + 1}`);
+        console.log(`   Length: ${imageUrl.length} chars`);
+        console.log(`   Starts with: ${imageUrl.substring(0, 30)}`);
+
+        // Update sections state incrementally - create new array with the updated section
+        setSections(prevSections => {
+          console.log(`🔄 Updating section ${index + 1}...`);
+          console.log(`   Previous imageUrl: ${prevSections[index].imageUrl ? 'EXISTS' : 'NONE'}`);
+
+          const newSections = [...prevSections];
+          newSections[index] = {
+            ...newSections[index],
+            imageUrl,
+          };
+
+          console.log(`   New imageUrl set: ${newSections[index].imageUrl ? 'SUCCESS' : 'FAILED'}`);
+          console.log(`   New imageUrl length: ${newSections[index].imageUrl?.length || 0}`);
+
+          return newSections;
+        });
+
+        // Give React time to process the state update
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // Force a complete re-render by creating entirely new section objects
+      setSections(prevSections => prevSections.map(s => ({ ...s })));
+
+      setBulkStatus({
+        type: 'success',
+        message: `Successfully generated ${sectionsNeedingImages.length} image${sectionsNeedingImages.length > 1 ? 's' : ''}!`
+      });
+
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setBulkStatus(null), 5000);
+    } catch (error) {
+      console.error('Bulk generation error:', error);
+      setBulkStatus({
+        type: 'error',
+        message: `Failed to generate images. Generated ${bulkProgress.current} of ${bulkProgress.total}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    } finally {
+      setIsBulkGenerating(false);
+      setBulkProgress({ current: 0, total: 0 });
     }
   };
 
@@ -498,6 +608,14 @@ export default function App() {
 
       <div className="container mx-auto p-4 space-y-4 pb-20 sm:pb-4">
 
+        {/* Create Presentation View - Choice between From Scratch or Process Content */}
+        {viewMode === 'create' && !isStreaming && (
+          <CreatePresentation
+            onSelectFromScratch={() => setViewMode('create-from-scratch')}
+            onSelectProcessContent={() => setViewMode('ai-processor')}
+          />
+        )}
+
         {/* Create from Scratch View */}
         {viewMode === 'create-from-scratch' && !isStreaming && (
           <CreateFromScratch
@@ -555,13 +673,47 @@ export default function App() {
               <div className="space-y-4">
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-lg font-semibold">Edit Your Sections</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Click words to select trigger points, or use AI to suggest better options
-                        </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-lg font-semibold">Edit Your Sections</h2>
+                          <p className="text-sm text-muted-foreground">
+                            Click words to select trigger points, or use AI to suggest better options
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleBulkGenerateImages}
+                          disabled={isBulkGenerating || sections.length === 0}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isBulkGenerating ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              Generating {bulkProgress.current}/{bulkProgress.total}...
+                            </>
+                          ) : (
+                            <>
+                              <ImagePlus className="w-4 h-4" />
+                              Generate All Images with AI
+                            </>
+                          )}
+                        </button>
                       </div>
+
+                      {/* Status Message */}
+                      {bulkStatus && (
+                        <div
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            bulkStatus.type === 'success'
+                              ? 'bg-green-100 text-green-800 border border-green-300'
+                              : bulkStatus.type === 'error'
+                              ? 'bg-red-100 text-red-800 border border-red-300'
+                              : 'bg-blue-100 text-blue-800 border border-blue-300'
+                          }`}
+                        >
+                          {bulkStatus.message}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -575,6 +727,7 @@ export default function App() {
                     onUpdate={(updatedSection) => handleUpdateSection(index, updatedSection)}
                     onDelete={() => handleDeleteSection(index)}
                     selectedModel={selectedModel}
+                    allSections={sections}
                   />
                 ))}
               </div>

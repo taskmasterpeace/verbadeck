@@ -30,23 +30,37 @@ export function PresenterView({
   }
 
   // Render content with trigger words bolded
+  // If speaker notes exist, show those to the presenter instead of slide content
   const renderContent = (section: Section) => {
     const triggers = section.selectedTriggers || [section.advanceToken];
     const primaryTrigger = triggers[0];
 
+    // Use speaker notes if available, otherwise use slide content
+    const textToDisplay = section.speakerNotes || section.content;
+    const isShowingNotes = !!section.speakerNotes;
+
     // If no triggers defined, just return plain text
     if (!primaryTrigger || primaryTrigger.trim() === '') {
-      return <p className="whitespace-pre-wrap">{section.content}</p>;
+      return (
+        <div>
+          {isShowingNotes && (
+            <div className="mb-2 px-2 py-1 bg-amber-100 border border-amber-300 rounded text-xs text-amber-900 font-medium">
+              📝 Speaker Notes (audience sees slide content)
+            </div>
+          )}
+          <p className="whitespace-pre-wrap">{textToDisplay}</p>
+        </div>
+      );
     }
 
-    // Try to find the primary trigger in the content
+    // Try to find the primary trigger in the text
     let triggerToHighlight = primaryTrigger;
-    let triggerIndex = section.content.toLowerCase().indexOf(primaryTrigger.toLowerCase());
+    let triggerIndex = textToDisplay.toLowerCase().indexOf(primaryTrigger.toLowerCase());
 
     // If primary trigger not found, try alternatives
     if (triggerIndex === -1 && triggers.length > 1) {
       for (const trigger of triggers) {
-        const idx = section.content.toLowerCase().indexOf(trigger.toLowerCase());
+        const idx = textToDisplay.toLowerCase().indexOf(trigger.toLowerCase());
         if (idx !== -1) {
           triggerToHighlight = trigger;
           triggerIndex = idx;
@@ -55,23 +69,39 @@ export function PresenterView({
       }
     }
 
-    // If no trigger found in content, just return plain text
+    // If no trigger found in text, just return plain text
     if (triggerIndex === -1) {
-      return <p className="whitespace-pre-wrap">{section.content}</p>;
+      return (
+        <div>
+          {isShowingNotes && (
+            <div className="mb-2 px-2 py-1 bg-amber-100 border border-amber-300 rounded text-xs text-amber-900 font-medium">
+              📝 Speaker Notes (audience sees slide content)
+            </div>
+          )}
+          <p className="whitespace-pre-wrap">{textToDisplay}</p>
+        </div>
+      );
     }
 
-    const before = section.content.substring(0, triggerIndex);
-    const word = section.content.substring(triggerIndex, triggerIndex + triggerToHighlight.length);
-    const after = section.content.substring(triggerIndex + triggerToHighlight.length);
+    const before = textToDisplay.substring(0, triggerIndex);
+    const word = textToDisplay.substring(triggerIndex, triggerIndex + triggerToHighlight.length);
+    const after = textToDisplay.substring(triggerIndex + triggerToHighlight.length);
 
     return (
-      <p className="whitespace-pre-wrap">
-        {before}
-        <strong className="font-bold text-primary underline decoration-2 underline-offset-4">
-          {word}
-        </strong>
-        {after}
-      </p>
+      <div>
+        {isShowingNotes && (
+          <div className="mb-2 px-2 py-1 bg-amber-100 border border-amber-300 rounded text-xs text-amber-900 font-medium">
+            📝 Speaker Notes (audience sees slide content)
+          </div>
+        )}
+        <p className="whitespace-pre-wrap">
+          {before}
+          <strong className="font-bold text-primary underline decoration-2 underline-offset-4">
+            {word}
+          </strong>
+          {after}
+        </p>
+      </div>
     );
   };
 

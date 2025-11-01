@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ModelSelector } from './ModelSelector';
 import { UserGuideViewer } from './UserGuideViewer';
 
-type ViewMode = 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
+type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
 interface StatusBarProps {
   streamStatus: 'connecting' | 'connected' | 'disconnected';
@@ -123,31 +123,26 @@ export function StatusBar({
           {/* Bottom Row: Navigation (desktop) / Hidden on mobile when not needed */}
           {!isStreaming && setViewMode && (
             <div className="hidden sm:flex items-center gap-2 border-t pt-3 mt-3">
-              {/* Mode Toggle Buttons */}
+              {/* Workflow: CREATE → EDIT → PRESENT → VOICE */}
+
+              {/* Step 1: CREATE (combines Create from Scratch + Process Content) */}
               <button
-                onClick={() => setViewMode('create-from-scratch')}
+                onClick={() => setViewMode('create')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-semibold ${
-                  viewMode === 'create-from-scratch'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
-                }`}
-              >
-                <Wand2 className="w-4 h-4" />
-                <span className="hidden lg:inline">Create from Scratch</span>
-                <span className="lg:hidden">Create</span>
-              </button>
-              <button
-                onClick={() => setViewMode('ai-processor')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-semibold ${
-                  viewMode === 'ai-processor'
+                  viewMode === 'create' || viewMode === 'create-from-scratch' || viewMode === 'ai-processor'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
-                <span className="hidden lg:inline">Process Content</span>
-                <span className="lg:hidden">Process</span>
+                <span className="hidden lg:inline">1. Create</span>
+                <span className="lg:hidden">Create</span>
               </button>
+
+              {/* Arrow */}
+              <span className="text-gray-400 font-bold">→</span>
+
+              {/* Step 2: EDIT */}
               <button
                 onClick={() => setViewMode('editor')}
                 disabled={sectionsCount === 0}
@@ -158,9 +153,14 @@ export function StatusBar({
                 }`}
               >
                 <Edit className="w-4 h-4" />
-                <span className="hidden lg:inline">Edit ({sectionsCount})</span>
+                <span className="hidden lg:inline">2. Edit ({sectionsCount})</span>
                 <span className="lg:hidden">Edit</span>
               </button>
+
+              {/* Arrow */}
+              <span className="text-gray-400 font-bold">→</span>
+
+              {/* Step 3: PRESENT */}
               <button
                 onClick={() => setViewMode('presenter')}
                 disabled={sectionsCount === 0}
@@ -171,9 +171,19 @@ export function StatusBar({
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden lg:inline">Present</span>
-                <span className="lg:hidden">Show</span>
+                <span className="hidden lg:inline">3. Present</span>
+                <span className="lg:hidden">Present</span>
               </button>
+
+              {/* Arrow */}
+              <span className="text-gray-400 font-bold">→</span>
+
+              {/* Step 4: VOICE (shown as status, actual button is top-right) */}
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 font-semibold">
+                <Play className="w-4 h-4" />
+                <span className="hidden lg:inline">4. Voice</span>
+                <span className="lg:hidden">Voice</span>
+              </div>
 
               {/* Action Buttons */}
               {sectionsCount > 0 && viewMode !== 'presenter' && onSavePresentation && (
@@ -221,26 +231,15 @@ export function StatusBar({
         <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
           <div className="flex items-center justify-around px-2 py-2">
             <button
-              onClick={() => setViewMode('create-from-scratch')}
+              onClick={() => setViewMode('create')}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
-                viewMode === 'create-from-scratch'
-                  ? 'text-blue-600'
-                  : 'text-gray-600'
-              }`}
-            >
-              <Wand2 className="w-5 h-5" />
-              <span className="text-xs font-medium">Create</span>
-            </button>
-            <button
-              onClick={() => setViewMode('ai-processor')}
-              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
-                viewMode === 'ai-processor'
+                viewMode === 'create' || viewMode === 'create-from-scratch' || viewMode === 'ai-processor'
                   ? 'text-blue-600'
                   : 'text-gray-600'
               }`}
             >
               <Sparkles className="w-5 h-5" />
-              <span className="text-xs font-medium">Process</span>
+              <span className="text-xs font-medium">Create</span>
             </button>
             <button
               onClick={() => setViewMode('editor')}
