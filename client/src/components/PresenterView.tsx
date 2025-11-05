@@ -116,13 +116,18 @@ export function PresenterView({
               <span className="text-xs font-mono">Trigger: "{currentSection.advanceToken}"</span>
             </div>
 
+            {/* Heading - always show, use section number as fallback */}
+            <h2 className="text-5xl font-bold text-primary mb-4 border-b-2 border-primary/20 pb-4">
+              {currentSection.heading || `Section ${sectionIndex + 1}`}
+            </h2>
+
             {/* Image (if provided) */}
             {currentSection.imageUrl && (
               <div className="rounded-lg overflow-hidden border">
                 <img
                   src={currentSection.imageUrl}
                   alt={`Slide ${sectionIndex + 1}`}
-                  className="w-full h-auto max-h-96 object-contain bg-muted"
+                  className="w-full h-auto max-h-64 object-contain bg-muted"
                   onError={(e) => {
                     // Hide image if it fails to load
                     e.currentTarget.style.display = 'none';

@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { getPrompt } from './prompts.js';
+import { parseAIResponse } from './utils/json-parser.js';
+import { TONE_PERSONAS } from './constants.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
@@ -106,29 +109,7 @@ ${text}`;
       );
 
       const content = response.data.choices[0].message.content;
-
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        // First try direct parse
-        parsed = JSON.parse(content);
-      } catch (e) {
-        // Try to extract JSON from markdown code blocks
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          // Try to find JSON object in the text
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
-        }
-      }
-
-      return parsed;
+      return parseAIResponse(content);
     } catch (error) {
       console.error('Error processing script:', error.response?.data || error.message);
       throw new Error('Failed to process script with AI');
@@ -207,24 +188,7 @@ Images are provided as base64 data URLs. Use your visual understanding to genera
 
       const content = response.data.choices[0].message.content;
 
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        // Try to extract JSON from markdown code blocks
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
-        }
-      }
+      const parsed = parseAIResponse(content);
 
       // Add the actual image data URLs to the sections
       if (parsed.sections) {
@@ -470,25 +434,7 @@ ${presentationContent}`;
       );
 
       const content = response.data.choices[0].message.content;
-
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
-        }
-      }
-
+      const parsed = parseAIResponse(content);
       return parsed.faqs || [];
     } catch (error) {
       console.error('Error generating FAQs:', error.response?.data || error.message);
@@ -560,24 +506,7 @@ Requirements:
 
       const content = response.data.choices[0].message.content;
 
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
-        }
-      }
-
+      const parsed = parseAIResponse(content);
       return parsed.questions || [];
     } catch (error) {
       console.error('Error generating questions:', error.response?.data || error.message);
@@ -675,24 +604,7 @@ IMPORTANT:
 
       const content = response.data.choices[0].message.content;
 
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
-        }
-      }
-
+      const parsed = parseAIResponse(content);
       return parsed.slides || [];
     } catch (error) {
       console.error('Error generating slide options:', error.response?.data || error.message);
@@ -714,18 +626,7 @@ IMPORTANT:
       : '';
 
     // Tone personas using "I want you to act as..." format
-    const tonePersonas = {
-      professional: 'I want you to act as a professional business presenter who delivers clear, direct, and credible answers. Be confident and authoritative while remaining approachable.',
-      witty: 'I want you to act as a witty and engaging presenter who uses clever wordplay, light humor, and memorable phrasing to make answers entertaining while still being informative.',
-      insightful: 'I want you to act as a deeply insightful thought leader who provides analytical, nuanced answers that reveal deeper connections and implications beyond the obvious.',
-      conversational: 'I want you to act as a friendly, conversational presenter who answers like talking to a colleague - warm, relatable, and easy to understand without corporate jargon.',
-      bold: 'I want you to act as a bold, provocative presenter who challenges assumptions, uses strong statements, and isn\'t afraid to be controversial or make people think differently.',
-      technical: 'I want you to act as a technical expert who provides precise, data-driven answers with specific details, metrics, and technical accuracy for sophisticated audiences.',
-      storytelling: 'I want you to act as a storytelling presenter who weaves answers into compelling narratives, using anecdotes, scenarios, and vivid examples to illustrate points.',
-      sarcastic: 'I want you to act as a sharp, sarcastic presenter who uses dry wit, subtle jabs, and ironic observations to make memorable points (while still being helpful).'
-    };
-
-    const selectedPersona = tonePersonas[tone] || tonePersonas.professional;
+    const selectedPersona = TONE_PERSONAS[tone] || TONE_PERSONAS.professional;
 
     const prompt = `${selectedPersona}
 
@@ -785,29 +686,57 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
       );
 
       const content = response.data.choices[0].message.content;
+      return parseAIResponse(content);
+    } catch (error) {
+      console.error('Error answering question:', error.response?.data || error.message);
+      throw new Error('Failed to answer question');
+    }
+  }
 
-      // Try to extract JSON from the response
-      let parsed;
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
-        if (jsonMatch) {
-          parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          const objectMatch = content.match(/\{[\s\S]*\}/);
-          if (objectMatch) {
-            parsed = JSON.parse(objectMatch[0]);
-          } else {
-            throw new Error('No valid JSON found in response');
-          }
+  /**
+   * Generate concise titles for slides based on their content
+   * Tries to extract titles from processed content first, then infers from content
+   * @param {Array} sections - Array of section objects with content
+   * @param {string} model - Model ID
+   * @returns {Promise<Array>} Array of title strings
+   */
+  async generateSlideTitles(sections, model = 'openai/gpt-4o-mini') {
+    const prompt = getPrompt('generateTitles', sections);
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
         }
+      );
+
+      const content = response.data.choices[0].message.content;
+      const parsed = parseAIResponse(content);
+
+      // Validate we got the right number of titles
+      if (!Array.isArray(parsed) || parsed.length !== sections.length) {
+        throw new Error(`Expected ${sections.length} titles, got ${parsed?.length || 0}`);
       }
 
       return parsed;
     } catch (error) {
-      console.error('Error answering question:', error.response?.data || error.message);
-      throw new Error('Failed to answer question');
+      console.error('Error generating titles:', error.response?.data || error.message);
+      throw new Error('Failed to generate slide titles');
     }
   }
 }

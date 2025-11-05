@@ -22,6 +22,7 @@ export const MODEL_DEFAULTS = {
   suggestTriggers: 'openai/gpt-4o-mini',
   generateVariations: 'openai/gpt-4o-mini',
   suggestImagePrompt: 'openai/gpt-4o-mini', // Fast, creative prompt generation
+  generateTitles: 'openai/gpt-4o-mini', // Fast title generation
 
   // Vision tasks - needs capable multimodal model
   processImages: 'anthropic/claude-3.5-sonnet',

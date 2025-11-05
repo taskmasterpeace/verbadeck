@@ -8,7 +8,7 @@ import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
 import { ReplicateImageGenerator } from './image-generator.js';
 import { getModelForOperation } from './model-config.js';
-import { getAllPromptsMetadata, getPromptExample } from './prompts.js';
+import { getAllPromptsMetadata, getPromptExample, getPrompt } from './prompts.js';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { readFile, writeFile, unlink } from 'fs/promises';
@@ -23,7 +23,7 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
 const AAI_API_KEY = process.env.AAI_API_KEY;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 if (!AAI_API_KEY) {
   console.error('ERROR: AAI_API_KEY not found in .env file');
@@ -145,7 +145,7 @@ app.post('/api/generate-image', async (req, res) => {
 // Suggest image prompt from section content
 app.post('/api/suggest-image-prompt', async (req, res) => {
   try {
-    const { content, presentationContext, model } = req.body;
+    const { content, presentationContext, model, presentationStyle } = req.body;
 
     if (!content || content.trim().length === 0) {
       return res.status(400).json({ error: 'Content is required' });
@@ -153,14 +153,17 @@ app.post('/api/suggest-image-prompt', async (req, res) => {
 
     const selectedModel = getModelForOperation('suggestImagePrompt', model);
     console.log(`🎨 Generating image prompt for slide using ${selectedModel}`);
+    if (presentationStyle) {
+      console.log(`   🎨 Using presentation style: ${presentationStyle.name}`);
+    }
 
-    // Build context-aware prompt for AI
-    let userPrompt = `This slide contains: "${content}"`;
+    // Use centralized prompt from prompts.js
+    let userPrompt = getPrompt('suggestImagePrompt', content, presentationContext);
 
-    if (presentationContext && presentationContext.trim().length > 0) {
-      userPrompt = `This is part of a presentation about: ${presentationContext}\n\nThis specific slide contains: "${content}"\n\nGenerate a detailed image prompt (2-3 sentences) that would create a professional, visually compelling presentation slide image. The prompt should fit the presentation theme and accurately represent this slide's content. Focus on professional, clean, presentation-appropriate visuals. Return ONLY the image prompt, nothing else.`;
-    } else {
-      userPrompt = `Create a detailed image prompt (2-3 sentences) for this presentation slide: "${content}"\n\nThe prompt should create a professional, visually compelling image. Return ONLY the image prompt, nothing else.`;
+    // If presentation style is provided, append style constraints to the prompt
+    if (presentationStyle) {
+      const styleGuidance = `\n\nIMPORTANT: Apply the following presentation style consistently:\n- Style Name: ${presentationStyle.name}\n- Color Scheme: ${presentationStyle.colorScheme}\n- Visual Style: ${presentationStyle.visualStyle}\n- Mood: ${presentationStyle.mood}\n- Examples: ${presentationStyle.examples.join(', ')}\n\nYour image prompt MUST incorporate these style elements to ensure consistency across all slides.`;
+      userPrompt += styleGuidance;
     }
 
     // Use OpenRouter to generate intelligent prompt
@@ -184,16 +187,44 @@ app.post('/api/suggest-image-prompt', async (req, res) => {
       }
     );
 
-    const suggestedPrompt = response.data.choices[0].message.content.trim();
-    console.log(`✅ Generated prompt: "${suggestedPrompt}"`);
+    const responseText = response.data.choices[0].message.content.trim();
+    console.log(`✅ Generated image prompt response:`, responseText.substring(0, 200) + '...');
 
-    res.json({ prompt: suggestedPrompt });
+    // Parse JSON response
+    let promptData;
+    try {
+      // Remove markdown code blocks if present
+      const jsonText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      promptData = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.warn('⚠️  Failed to parse JSON response, treating as plain text:', parseError.message);
+      // Fallback: treat as plain text prompt (backwards compatibility)
+      promptData = {
+        imagePrompt: responseText,
+        style: 'photorealistic',
+        mood: 'professional',
+        keywords: []
+      };
+    }
+
+    // Return structured response (backwards compatible with { prompt: "..." })
+    res.json({
+      prompt: promptData.imagePrompt || promptData.prompt || responseText,
+      style: promptData.style,
+      mood: promptData.mood,
+      keywords: promptData.keywords
+    });
   } catch (error) {
     console.error('Error generating image prompt:', error);
     // Fallback: return a basic prompt based on the content
     const fallbackPrompt = `Professional presentation slide showing: ${req.body.content.substring(0, 100)}`;
     console.log(`⚠️  Using fallback prompt: "${fallbackPrompt}"`);
-    res.json({ prompt: fallbackPrompt });
+    res.json({
+      prompt: fallbackPrompt,
+      style: 'photorealistic',
+      mood: 'professional',
+      keywords: []
+    });
   }
 });
 
@@ -391,6 +422,27 @@ app.post('/api/answer-question', async (req, res) => {
   }
 });
 
+app.post('/api/generate-titles', async (req, res) => {
+  try {
+    const { sections, model } = req.body;
+
+    if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      return res.status(400).json({ error: 'Sections array is required' });
+    }
+
+    const selectedModel = getModelForOperation('generateTitles', model);
+    console.log(`📋 Generating titles for ${sections.length} sections using ${selectedModel}`);
+
+    const titles = await openRouterClient.generateSlideTitles(sections, selectedModel);
+    console.log(`✅ Generated ${titles.length} slide titles`);
+
+    res.json({ titles });
+  } catch (error) {
+    console.error('Error generating titles:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/generate-questions', async (req, res) => {
   try {
     const { topic, model } = req.body;
@@ -583,3 +635,4 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+

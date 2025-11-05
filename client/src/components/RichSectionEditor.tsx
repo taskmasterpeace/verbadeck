@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { X, Sparkles, Check, Upload, Image as ImageIcon, Eye } from 'lucide-react';
-import type { Section } from '@/lib/script-parser';
+import { Check, Image as ImageIcon, Eye } from 'lucide-react';
+import type { Section, SlideLayout } from '@/lib/script-parser';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
-import { AIImageGenerator } from './AIImageGenerator';
 import { SlidePreview } from './SlidePreview';
+import { ImageUploadSection } from './ImageUploadSection';
 
 interface RichSectionEditorProps {
   section: Section;
@@ -15,6 +15,7 @@ interface RichSectionEditorProps {
   onDelete: () => void;
   selectedModel: string;
   allSections?: Section[]; // Full presentation for context
+  presentationStyle?: any; // Presentation style for consistent image generation
 }
 
 export function RichSectionEditor({
@@ -25,22 +26,35 @@ export function RichSectionEditor({
   onDelete,
   selectedModel,
   allSections,
+  presentationStyle,
 }: RichSectionEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [heading, setHeading] = useState(section.heading || '');
   const [content, setContent] = useState(section.content);
   const [imageUrl, setImageUrl] = useState(section.imageUrl || '');
   const [speakerNotes, setSpeakerNotes] = useState(section.speakerNotes || '');
   const [imageOnly, setImageOnly] = useState(section.imageOnly || false);
+  const [layout, setLayout] = useState<SlideLayout | undefined>(section.layout || 'balanced');
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>(
     section.selectedTriggers || [section.advanceToken]
   );
   const { suggestTriggers, isProcessing } = useOpenRouter();
   const [aiSuggestions, setAiSuggestions] = useState<string[]>(section.alternativeTriggers || []);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Sync state with section prop changes (e.g., when images are added)
+  useEffect(() => {
+    setHeading(section.heading || '');
+    setContent(section.content);
+    setImageUrl(section.imageUrl || '');
+    setSpeakerNotes(section.speakerNotes || '');
+    setImageOnly(section.imageOnly || false);
+    setLayout(section.layout || 'balanced');
+    setSelectedTriggers(section.selectedTriggers || [section.advanceToken]);
+    setAiSuggestions(section.alternativeTriggers || []);
+  }, [section]);
 
   // Auto-resize textarea to fit content
   const handleTextareaResize = (textarea: HTMLTextAreaElement | null) => {
@@ -80,21 +94,25 @@ export function RichSectionEditor({
     const primaryTrigger = selectedTriggers[0];
     onUpdate({
       ...section,
+      heading: heading.trim() || undefined,
       content,
       advanceToken: primaryTrigger,
       selectedTriggers,
       imageUrl: imageUrl || undefined,
       speakerNotes: speakerNotes.trim() || undefined,
       imageOnly,
+      layout,
     });
     setIsEditing(false);
   };
 
   const handleCancel = () => {
+    setHeading(section.heading || '');
     setContent(section.content);
     setImageUrl(section.imageUrl || '');
     setSpeakerNotes(section.speakerNotes || '');
     setImageOnly(section.imageOnly || false);
+    setLayout(section.layout || 'balanced');
     setSelectedTriggers(section.selectedTriggers || [section.advanceToken]);
     setIsEditing(false);
   };
@@ -112,21 +130,15 @@ export function RichSectionEditor({
 
   const handleApplySuggestion = (suggestion: string) => {
     const cleanSuggestion = suggestion.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!selectedTriggers.includes(cleanSuggestion)) {
-      setSelectedTriggers((prev) => [...prev, cleanSuggestion]);
-    }
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Convert image to base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImageUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setSelectedTriggers((prev) => {
+      if (prev.includes(cleanSuggestion)) {
+        // Remove if already selected (toggle off)
+        return prev.filter((t) => t !== cleanSuggestion);
+      } else {
+        // Add if not selected (toggle on)
+        return [...prev, cleanSuggestion];
+      }
+    });
   };
 
   return (
@@ -148,14 +160,16 @@ export function RichSectionEditor({
           <div className="flex items-center gap-2">
             {!isEditing ? (
               <>
-                <button
-                  onClick={() => setShowPreview(true)}
-                  className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
-                  title="Preview how this slide will look to the audience"
-                >
-                  <Eye className="w-3 h-3" />
-                  Preview
-                </button>
+                {(imageUrl || content) && (
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
+                    title="Preview how this slide will look to the audience"
+                  >
+                    <Eye className="w-3 h-3" />
+                    Preview
+                  </button>
+                )}
                 <button
                   onClick={() => setIsEditing(true)}
                   className="text-xs px-3 py-1 rounded-md bg-muted hover:bg-muted/80 transition-colors"
@@ -171,14 +185,16 @@ export function RichSectionEditor({
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setShowPreview(true)}
-                  className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
-                  title="Preview how this slide will look to the audience"
-                >
-                  <Eye className="w-3 h-3" />
-                  Preview
-                </button>
+                {(imageUrl || content) && (
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    className="text-xs px-3 py-1 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1"
+                    title="Preview how this slide will look to the audience"
+                  >
+                    <Eye className="w-3 h-3" />
+                    Preview
+                  </button>
+                )}
                 <button
                   onClick={handleSave}
                   className="text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1"
@@ -201,6 +217,23 @@ export function RichSectionEditor({
         {/* Content Editor */}
         {isEditing ? (
           <>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Slide Title/Heading (optional):
+              </label>
+              <input
+                type="text"
+                value={heading}
+                onChange={(e) => setHeading(e.target.value)}
+                placeholder="e.g., Introduction, Key Benefits, Next Steps..."
+                className="w-full p-3 rounded-md border bg-background text-base font-semibold focus:outline-none focus:ring-2 focus:ring-ring"
+                maxLength={100}
+              />
+              <p className="text-xs text-muted-foreground italic">
+                💡 This heading will appear prominently at the top of your slide
+              </p>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">
                 Slide Content (what audience sees):
@@ -240,105 +273,82 @@ export function RichSectionEditor({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                Slide Image (optional):
-              </label>
-
-              {/* Image Preview */}
-              {imageUrl && (
-                <div className="relative">
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-32 object-contain rounded-md border bg-muted"
-                    onError={() => setImageUrl('')}
-                  />
-                  <button
-                    onClick={() => setImageUrl('')}
-                    className="absolute top-1 right-1 p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-
-              {/* Upload or URL input */}
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload Image
-                </button>
-                <button
-                  onClick={() => setShowAIGenerator(true)}
-                  className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Generate with AI
-                </button>
-              </div>
-
-              <input
-                type="url"
-                value={imageUrl.startsWith('data:') ? '' : imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Or paste image URL..."
-                className="w-full px-3 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              {/* Display Image Only Option */}
-              {imageUrl && (
-                <div className="flex items-center gap-2 p-3 rounded-md bg-blue-50 border border-blue-200">
-                  <input
-                    type="checkbox"
-                    id={`imageOnly-${section.id}`}
-                    checked={imageOnly}
-                    onChange={(e) => setImageOnly(e.target.checked)}
-                    className="w-4 h-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor={`imageOnly-${section.id}`} className="text-sm font-medium text-blue-900 cursor-pointer">
-                    Display image only (hide text from audience)
-                  </label>
-                </div>
-              )}
-            </div>
+            <ImageUploadSection
+              sectionId={section.id}
+              imageUrl={imageUrl}
+              imageOnly={imageOnly}
+              layout={layout}
+              allSections={allSections}
+              presentationStyle={presentationStyle}
+              selectedModel={selectedModel}
+              content={content}
+              onImageChange={setImageUrl}
+              onImageOnlyChange={setImageOnly}
+              onLayoutChange={setLayout}
+            />
           </>
         ) : (
-          <div className="text-base leading-relaxed">
-            {words.map((word, i) => {
-              const cleanWord = word.toLowerCase().replace(/[^a-z0-9]/g, '');
-              const isTrigger = selectedTriggers.includes(cleanWord);
-              const isPrimary = cleanWord === selectedTriggers[0];
+          <div className="space-y-2">
+            {/* Heading Preview (View Mode) - Always show, use section number as fallback */}
+            <div className="pb-2 mb-3 border-b-2 border-primary/20">
+              <h3 className="text-xl font-bold text-primary">
+                {heading || `Section ${sectionIndex + 1}`}
+              </h3>
+            </div>
 
-              if (cleanWord && isTrigger) {
-                return (
-                  <span
-                    key={i}
-                    className={`relative inline-block px-1 rounded ${
-                      isPrimary
-                        ? 'bg-primary text-primary-foreground font-bold'
-                        : 'bg-accent text-accent-foreground'
-                    }`}
-                  >
-                    {word}
-                    {isPrimary && <span className="ml-1">★</span>}
-                  </span>
-                );
-              }
+            {/* Image Preview (View Mode) */}
+            {imageUrl && (
+              <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 w-fit max-w-full mb-2">
+                <img
+                  src={imageUrl}
+                  alt="Slide preview"
+                  className="h-48 w-auto object-contain bg-gray-50"
+                  onError={() => console.error('Failed to load image')}
+                />
+                {imageOnly && (
+                  <div className="absolute top-2 right-2 px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded">
+                    Image Only
+                  </div>
+                )}
+              </div>
+            )}
 
-              return <span key={i}>{word}</span>;
-            })}
+            {/* Content Preview (View Mode) */}
+            {!imageOnly && (
+              <div className="text-base leading-relaxed">
+                {words.map((word, i) => {
+                  const cleanWord = word.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const isTrigger = selectedTriggers.includes(cleanWord);
+                  const isPrimary = cleanWord === selectedTriggers[0];
+
+                  if (cleanWord && isTrigger) {
+                    return (
+                      <span
+                        key={i}
+                        className={`relative inline-block px-1 rounded ${
+                          isPrimary
+                            ? 'bg-primary text-primary-foreground font-bold'
+                            : 'bg-accent text-accent-foreground'
+                        }`}
+                      >
+                        {word}
+                        {isPrimary && <span className="ml-1">★</span>}
+                      </span>
+                    );
+                  }
+
+                  return <span key={i}>{word}</span>;
+                })}
+              </div>
+            )}
+
+            {/* Speaker Notes Preview (if present) */}
+            {speakerNotes && (
+              <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-xs font-semibold text-amber-900 mb-1">📝 Speaker Notes:</p>
+                <p className="text-sm text-amber-800">{speakerNotes}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -409,21 +419,79 @@ export function RichSectionEditor({
               </div>
             )}
 
-            {/* AI Suggestions */}
-            {aiSuggestions.length > 0 && (
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-muted-foreground">AI Suggestions:</span>
-                <div className="flex flex-wrap gap-2">
-                  {aiSuggestions.map((suggestion, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleApplySuggestion(suggestion)}
-                      className="text-xs px-2 py-1 rounded-md border border-dashed hover:bg-accent/20 transition-colors"
-                    >
-                      + {suggestion}
-                    </button>
-                  ))}
+            {/* Alternative Triggers with Checkboxes */}
+            {section.alternativeTriggers && section.alternativeTriggers.length > 0 && (
+              <div className="space-y-2 border-t pt-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Alternative Triggers
+                  </span>
+                  <span className="text-xs text-muted-foreground/70">
+                    Check to activate
+                  </span>
                 </div>
+                <div className="grid gap-2">
+                  {section.alternativeTriggers.map((trigger, i) => {
+                    const normalizedTrigger = trigger.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const isSelected = selectedTriggers.includes(normalizedTrigger);
+
+                    return (
+                      <label
+                        key={i}
+                        className="flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-accent/10 cursor-pointer transition-colors group"
+                      >
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleApplySuggestion(trigger)}
+                            className="peer h-4 w-4 rounded border-2 border-primary/40 bg-background checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer transition-all"
+                          />
+                          {isSelected && (
+                            <svg
+                              className="absolute w-3 h-3 text-primary-foreground pointer-events-none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium group-hover:text-foreground transition-colors">
+                          {trigger}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {aiSuggestions.length > 0 && (
+                  <div className="pt-2 border-t">
+                    <span className="text-xs font-medium text-muted-foreground mb-2 block">
+                      AI Suggested Triggers:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {aiSuggestions.map((suggestion, i) => {
+                        // Don't show suggestions that are already in alternativeTriggers
+                        if (section.alternativeTriggers?.includes(suggestion)) return null;
+
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => handleApplySuggestion(suggestion)}
+                            className="text-xs px-2 py-1 rounded-md border border-dashed hover:bg-accent/20 transition-colors"
+                          >
+                            + {suggestion}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -442,21 +510,6 @@ export function RichSectionEditor({
           </div>
         )}
       </CardContent>
-
-      {/* AI Image Generator Modal */}
-      {showAIGenerator && (
-        <AIImageGenerator
-          sectionContent={content}
-          existingImage={imageUrl || undefined}
-          presentationContext={allSections?.map(s => s.content).join('\n\n')}
-          selectedModel={selectedModel}
-          onImageGenerated={(url) => {
-            setImageUrl(url);
-            setShowAIGenerator(false);
-          }}
-          onClose={() => setShowAIGenerator(false)}
-        />
-      )}
 
       {/* Slide Preview Modal */}
       {showPreview && (

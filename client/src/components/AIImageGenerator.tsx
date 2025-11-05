@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { X, Sparkles, Loader2, Check } from 'lucide-react';
 import { useImageGeneration } from '@/hooks/useImageGeneration';
+import { detectOptimalLayout, type SlideLayout } from '@/lib/script-parser';
 
 interface AIImageGeneratorProps {
   sectionContent: string;
   existingImage?: string;
-  onImageGenerated: (imageUrl: string) => void;
+  onImageGenerated: (imageUrl: string, layout?: SlideLayout) => void;
   onClose: () => void;
   presentationContext?: string; // Full presentation context for better prompts
   selectedModel?: string; // AI model to use for prompt generation
+  presentationStyle?: any; // Presentation style for consistent styling
 }
 
 export function AIImageGenerator({
@@ -18,6 +20,7 @@ export function AIImageGenerator({
   onClose,
   presentationContext,
   selectedModel,
+  presentationStyle,
 }: AIImageGeneratorProps) {
   const {
     generateImage,
@@ -51,7 +54,7 @@ export function AIImageGenerator({
       if (sectionContent) {
         setIsSuggesting(true);
         try {
-          const suggested = await suggestPrompt(sectionContent, presentationContext, selectedModel);
+          const suggested = await suggestPrompt(sectionContent, presentationContext, selectedModel, presentationStyle);
           setPrompt(suggested);
         } catch (err) {
           console.error('Error suggesting prompt:', err);
@@ -62,12 +65,12 @@ export function AIImageGenerator({
       }
     };
     generateInitialPrompt();
-  }, [sectionContent, presentationContext, selectedModel]);
+  }, [sectionContent, presentationContext, selectedModel, presentationStyle]);
 
   const handleAutoSuggest = async () => {
     setIsSuggesting(true);
     try {
-      const suggested = await suggestPrompt(sectionContent, presentationContext, selectedModel);
+      const suggested = await suggestPrompt(sectionContent, presentationContext, selectedModel, presentationStyle);
       setPrompt(suggested);
     } catch (err) {
       console.error('Error suggesting prompt:', err);
@@ -96,7 +99,9 @@ export function AIImageGenerator({
 
   const handleUseImage = () => {
     if (generatedImageUrl) {
-      onImageGenerated(generatedImageUrl);
+      // Auto-detect optimal layout based on selected aspect ratio
+      const optimalLayout = detectOptimalLayout(aspectRatio);
+      onImageGenerated(generatedImageUrl, optimalLayout);
       onClose();
     }
   };
@@ -105,7 +110,7 @@ export function AIImageGenerator({
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200] p-4">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 flex items-center justify-between rounded-t-lg">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between rounded-t-lg">
           <div className="flex items-center gap-3">
             <Sparkles className="w-6 h-6" />
             <div>
@@ -158,7 +163,7 @@ export function AIImageGenerator({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe the image you want to generate..."
-              className="w-full h-24 p-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:outline-none resize-none text-sm"
+              className="w-full h-24 p-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none text-sm"
               disabled={isSuggesting || isGenerating}
             />
             <p className="text-xs text-gray-500">
@@ -175,7 +180,7 @@ export function AIImageGenerator({
               value={aspectRatio}
               onChange={(e) => setAspectRatio(e.target.value)}
               disabled={isGenerating}
-              className="w-full p-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:outline-none text-sm font-medium"
+              className="w-full p-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-sm font-medium"
             >
               {aspectRatios.map((ratio) => (
                 <option key={ratio.value} value={ratio.value}>
@@ -194,7 +199,7 @@ export function AIImageGenerator({
               value={outputFormat}
               onChange={(e) => setOutputFormat(e.target.value as 'png' | 'jpg')}
               disabled={isGenerating}
-              className="w-full p-3 rounded-lg border-2 border-gray-300 focus:border-purple-500 focus:outline-none text-sm font-medium"
+              className="w-full p-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none text-sm font-medium"
             >
               <option value="jpg">JPG - Smaller file size</option>
               <option value="png">PNG - Lossless, transparency support</option>
@@ -209,7 +214,7 @@ export function AIImageGenerator({
             <div className="w-full min-h-[300px] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
               {isGenerating ? (
                 <div className="text-center py-12">
-                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-purple-600 animate-spin" />
+                  <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-600 animate-spin" />
                   <p className="text-sm font-medium text-gray-700">Generating your image...</p>
                   <p className="text-xs text-gray-500 mt-1">This may take 5-15 seconds</p>
                 </div>
@@ -285,7 +290,7 @@ export function AIImageGenerator({
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || !prompt.trim()}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold transition-colors shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating ? (
                   <>

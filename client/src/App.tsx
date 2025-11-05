@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useTransitions } from './hooks/useTransitions';
 import { useOpenRouter } from './hooks/useOpenRouter';
+import { useFileOperations } from './hooks/useFileOperations';
+import { useBulkImageGeneration } from './hooks/useBulkImageGeneration';
 import { createTokenPattern, type Section } from './lib/script-parser';
-import { savePresentation, loadPresentation } from './lib/file-storage';
 import { PresenterView } from './components/PresenterView';
 import { StatusBar } from './components/StatusBar';
 import { TranscriptTicker } from './components/TranscriptTicker';
@@ -21,6 +22,7 @@ import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
 import { Footer } from './components/Footer';
+import { PresentationStyleManager, type PresentationStyle } from './components/PresentationStyleManager';
 
 type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
 
@@ -57,13 +59,37 @@ export default function App() {
   const [qaDialogOpen, setQaDialogOpen] = useState(false);
   const [manualQuestion, setManualQuestion] = useState('');
   const [selectedTone, setSelectedTone] = useState('professional');
-  const { answerQuestion, generateFAQs } = useOpenRouter();
-  const { generateImage, suggestPrompt } = useImageGeneration();
 
-  // Bulk image generation state
-  const [isBulkGenerating, setIsBulkGenerating] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
-  const [bulkStatus, setBulkStatus] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  // Presentation style state
+  const [presentationStyle, setPresentationStyle] = useState<PresentationStyle | null>(() => {
+    const saved = localStorage.getItem('verbadeck-presentation-style');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const { answerQuestion, generateFAQs, generateTitles } = useOpenRouter();
+  const { generateImage, suggestPrompt } = useImageGeneration();
+  const { handleSavePresentation, handleLoadPresentation } = useFileOperations({
+    sections,
+    setSections,
+    knowledgeBase,
+    setKnowledgeBase,
+    selectedTone,
+    setSelectedTone,
+    selectedModel,
+    setSelectedModel,
+    currentSectionIndex,
+    setCurrentSectionIndex,
+    viewMode,
+    setViewMode,
+  });
+  const { isBulkGenerating, bulkProgress, bulkStatus, setBulkStatus, handleBulkGenerateImages } = useBulkImageGeneration({
+    sections,
+    setSections,
+    selectedModel,
+    presentationStyle,
+    generateImage,
+    suggestPrompt,
+  });
 
   // Debounce to prevent double-advance/back on echo
   const lastNavTimeRef = useRef<number>(0);
@@ -148,101 +174,83 @@ export default function App() {
     }
   };
 
-  // Bulk generate images for all sections without images
-  const handleBulkGenerateImages = async () => {
-    setBulkStatus(null); // Clear any previous status
+  // Handle presentation style selection
+  const handleStyleSelect = (style: PresentationStyle) => {
+    setPresentationStyle(style);
+    localStorage.setItem('verbadeck-presentation-style', JSON.stringify(style));
+    console.log(`🎨 Presentation style set to: ${style.name}`);
+  };
+
+  // Apply current style to all slides (regenerate all images with consistent style)
+  const handleApplyStyleToAll = async () => {
+    if (!presentationStyle) {
+      alert('Please select a presentation style first');
+      return;
+    }
 
     if (sections.length === 0) {
       setBulkStatus({ type: 'error', message: 'Please create sections first' });
       return;
     }
 
-    console.log('📊 Checking sections for images...');
-    sections.forEach((section, idx) => {
-      console.log(`Section ${idx + 1}: imageUrl =`, section.imageUrl ? 'HAS IMAGE' : 'NO IMAGE');
-    });
+    const confirmed = confirm(
+      `This will regenerate images for ALL ${sections.length} slides using the "${presentationStyle.name}" style. This may take a few minutes and will replace existing images. Continue?`
+    );
 
-    // Find sections without images (check for both undefined and empty string)
-    const sectionsNeedingImages = sections
-      .map((section, index) => ({ section, index }))
-      .filter(({ section }) => !section.imageUrl || section.imageUrl.trim() === '');
+    if (!confirmed) return;
 
-    console.log(`📝 Found ${sectionsNeedingImages.length} sections needing images out of ${sections.length} total`);
-
-    if (sectionsNeedingImages.length === 0) {
-      setBulkStatus({ type: 'info', message: 'All sections already have images!' });
-      return;
-    }
-
-    setBulkStatus({ type: 'info', message: `Starting generation for ${sectionsNeedingImages.length} section(s)...` });
-
+    setBulkStatus({ type: 'info', message: `Applying "${presentationStyle.name}" style to all slides...` });
     setIsBulkGenerating(true);
-    setBulkProgress({ current: 0, total: sectionsNeedingImages.length });
+    setBulkProgress({ current: 0, total: sections.length });
 
     const presentationContext = sections.map(s => s.content).join('\n\n');
 
     try {
-      for (let i = 0; i < sectionsNeedingImages.length; i++) {
-        const { section, index } = sectionsNeedingImages[i];
-        setBulkProgress({ current: i + 1, total: sectionsNeedingImages.length });
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        setBulkProgress({ current: i + 1, total: sections.length });
 
-        console.log(`🎨 Generating image ${i + 1}/${sectionsNeedingImages.length} for section ${index + 1}`);
+        console.log(`🎨 Generating styled image ${i + 1}/${sections.length} for section ${i + 1}`);
 
-        // Generate AI prompt with full context
-        const prompt = await suggestPrompt(section.content, presentationContext, selectedModel);
-        console.log(`📝 Generated prompt for section ${index + 1}:`, prompt);
+        // Generate AI prompt with full context AND presentation style
+        const prompt = await suggestPrompt(section.content, presentationContext, selectedModel, presentationStyle);
+        console.log(`📝 Generated styled prompt for section ${i + 1}:`, prompt.substring(0, 100) + '...');
 
-        // Generate image with default settings (1:1, JPG)
+        // Generate image
         const imageUrl = await generateImage(prompt, {
-          aspectRatio: '1:1',
+          aspectRatio: '16:9',
           outputFormat: 'jpg',
         });
 
         if (!imageUrl || imageUrl.trim() === '') {
-          console.error(`❌ Generated image URL is empty for section ${index + 1}!`);
-          throw new Error(`Image generation returned empty URL for section ${index + 1}`);
+          throw new Error(`Image generation returned empty URL for section ${i + 1}`);
         }
 
-        console.log(`✅ Generated image for section ${index + 1}`);
-        console.log(`   Length: ${imageUrl.length} chars`);
-        console.log(`   Starts with: ${imageUrl.substring(0, 30)}`);
-
-        // Update sections state incrementally - create new array with the updated section
+        // Update section with new image
         setSections(prevSections => {
-          console.log(`🔄 Updating section ${index + 1}...`);
-          console.log(`   Previous imageUrl: ${prevSections[index].imageUrl ? 'EXISTS' : 'NONE'}`);
-
           const newSections = [...prevSections];
-          newSections[index] = {
-            ...newSections[index],
+          newSections[i] = {
+            ...newSections[i],
             imageUrl,
           };
-
-          console.log(`   New imageUrl set: ${newSections[index].imageUrl ? 'SUCCESS' : 'FAILED'}`);
-          console.log(`   New imageUrl length: ${newSections[index].imageUrl?.length || 0}`);
-
           return newSections;
         });
 
-        // Give React time to process the state update
+        // Small delay between generations
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Force a complete re-render by creating entirely new section objects
-      setSections(prevSections => prevSections.map(s => ({ ...s })));
-
       setBulkStatus({
         type: 'success',
-        message: `Successfully generated ${sectionsNeedingImages.length} image${sectionsNeedingImages.length > 1 ? 's' : ''}!`
+        message: `Successfully applied "${presentationStyle.name}" style to all ${sections.length} slides!`
       });
 
-      // Auto-hide success message after 5 seconds
       setTimeout(() => setBulkStatus(null), 5000);
     } catch (error) {
-      console.error('Bulk generation error:', error);
+      console.error('Style application error:', error);
       setBulkStatus({
         type: 'error',
-        message: `Failed to generate images. Generated ${bulkProgress.current} of ${bulkProgress.total}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Failed to apply style. Completed ${bulkProgress.current} of ${bulkProgress.total}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     } finally {
       setIsBulkGenerating(false);
@@ -359,16 +367,13 @@ export default function App() {
   useEffect(() => {
     setSections(prevSections =>
       prevSections.map(section => {
-        // If selectedTriggers is missing, populate it from existing data
+        // If selectedTriggers is missing, populate it with ONLY the primary trigger
         if (!section.selectedTriggers || section.selectedTriggers.length === 0) {
-          const normalized = (section.alternativeTriggers || []).map(t =>
-            t.toLowerCase().replace(/[^a-z0-9]/g, '')
-          );
           const fixed = {
             ...section,
-            selectedTriggers: [section.advanceToken, ...normalized]
+            selectedTriggers: [section.advanceToken] // ONLY primary trigger active by default
           };
-          console.log(`🔧 Auto-fixed section "${section.id}" - added ${normalized.length} alternative triggers`);
+          console.log(`🔧 Auto-fixed section "${section.id}" - set primary trigger only: ${section.advanceToken}`);
           return fixed;
         }
         return section;
@@ -386,17 +391,36 @@ export default function App() {
   };
 
   // Handle AI-generated sections
-  const handleSectionsGenerated = (newSections: Section[]) => {
+  const handleSectionsGenerated = async (newSections: Section[]) => {
     console.log('📋 handleSectionsGenerated - Received sections:', newSections.length);
-    newSections.forEach((sec, i) => {
-      console.log(`  Section ${i + 1}:`, {
-        id: sec.id,
-        advanceToken: sec.advanceToken,
-        selectedTriggers: sec.selectedTriggers,
-        alternativeTriggers: sec.alternativeTriggers
-      });
+
+    // Fix sections to only have primary trigger selected by default
+    let fixedSections = newSections.map(sec => {
+      const fixed = {
+        ...sec,
+        selectedTriggers: [sec.advanceToken] // ONLY primary trigger active
+      };
+      console.log(`  Section ${sec.id}: Primary="${sec.advanceToken}", Alternatives=${sec.alternativeTriggers?.join(', ')}`);
+      return fixed;
     });
-    setSections(newSections);
+
+    // Auto-generate titles for sections that don't have them
+    try {
+      console.log('📋 Generating titles for sections...');
+      const titles = await generateTitles(fixedSections, selectedModel);
+      console.log('✅ Generated titles:', titles);
+
+      // Apply titles to sections that don't already have one
+      fixedSections = fixedSections.map((sec, i) => ({
+        ...sec,
+        heading: sec.heading || titles[i] // Only set if not already present
+      }));
+    } catch (error) {
+      console.error('❌ Failed to generate titles:', error);
+      // Continue without titles on error - not critical
+    }
+
+    setSections(fixedSections);
     setCurrentSectionIndex(0);
     setViewMode('editor'); // Show editor to allow customization
   };
@@ -517,69 +541,6 @@ export default function App() {
     }
   };
 
-  // Save presentation to file
-  const handleSavePresentation = async () => {
-    if (sections.length === 0) {
-      alert('No presentation to save');
-      return;
-    }
-
-    try {
-      await savePresentation(
-        sections,
-        undefined, // title (use default)
-        knowledgeBase,
-        {
-          selectedTone,
-          selectedModel,
-          currentSectionIndex,
-          viewMode
-        }
-      );
-      console.log('✅ Presentation saved with complete state');
-    } catch (error) {
-      console.error('Error saving presentation:', error);
-      alert('Failed to save presentation');
-    }
-  };
-
-  // Load presentation from file
-  const handleLoadPresentation = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const data = await loadPresentation(file);
-      setSections(data.sections);
-
-      // Restore knowledge base if present
-      if (data.knowledgeBase) {
-        setKnowledgeBase(data.knowledgeBase);
-      }
-
-      // Restore settings if present
-      if (data.settings) {
-        if (data.settings.selectedTone) setSelectedTone(data.settings.selectedTone);
-        if (data.settings.selectedModel) setSelectedModel(data.settings.selectedModel);
-        if (data.settings.currentSectionIndex !== undefined) {
-          setCurrentSectionIndex(data.settings.currentSectionIndex);
-        }
-        if (data.settings.viewMode) setViewMode(data.settings.viewMode as ViewMode);
-      } else {
-        // If no settings, use defaults
-        setCurrentSectionIndex(0);
-        setViewMode('editor');
-      }
-
-      console.log(`✅ Loaded presentation with ${data.sections.length} sections and complete state`);
-
-      // Reset file input
-      event.target.value = '';
-    } catch (error) {
-      console.error('Error loading presentation:', error);
-      alert(error instanceof Error ? error.message : 'Failed to load presentation');
-    }
-  };
 
   const currentSection = sections[currentSectionIndex];
   const previousSection = sections[currentSectionIndex - 1];
@@ -672,6 +633,14 @@ export default function App() {
             {/* Sections Tab Content */}
             {editorTab === 'sections' && (
               <div className="space-y-4">
+                {/* Presentation Style Manager */}
+                <PresentationStyleManager
+                  currentStyle={presentationStyle}
+                  onStyleSelect={handleStyleSelect}
+                  onApplyToAll={handleApplyStyleToAll}
+                  sectionsCount={sections.length}
+                />
+
                 <Card>
                   <CardContent className="p-4">
                     <div className="space-y-3">
@@ -729,6 +698,7 @@ export default function App() {
                     onDelete={() => handleDeleteSection(index)}
                     selectedModel={selectedModel}
                     allSections={sections}
+                    presentationStyle={presentationStyle}
                   />
                 ))}
               </div>

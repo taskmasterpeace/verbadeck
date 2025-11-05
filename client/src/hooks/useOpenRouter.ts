@@ -195,12 +195,42 @@ export function useOpenRouter() {
     }
   };
 
+  const generateTitles = async (sections: any[], model: string): Promise<string[]> => {
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/generate-titles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sections, model }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate titles');
+      }
+
+      const data = await response.json();
+      return data.titles;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(message);
+      throw err;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return {
     processScript,
     suggestTriggers,
     processImagesWithAI,
     generateFAQs,
     answerQuestion,
+    generateTitles,
     isProcessing,
     error,
     progress,

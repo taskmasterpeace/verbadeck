@@ -76,7 +76,8 @@ export function useImageGeneration() {
   const suggestPrompt = async (
     content: string,
     presentationContext?: string,
-    model?: string
+    model?: string,
+    presentationStyle?: any
   ): Promise<string> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/suggest-image-prompt`, {
@@ -88,6 +89,7 @@ export function useImageGeneration() {
           content,
           presentationContext: presentationContext || '',
           model: model || undefined,
+          presentationStyle: presentationStyle || undefined,
         }),
       });
 
