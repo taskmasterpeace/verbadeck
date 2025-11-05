@@ -191,7 +191,7 @@ export function KnowledgeBaseEditor({
                 <button
                   onClick={onGenerateFAQs}
                   disabled={isGenerating || sections.length === 0}
-                  className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
                   Auto-Generate FAQs
