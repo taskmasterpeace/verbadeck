@@ -9,8 +9,40 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?logo=react)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)](https://nodejs.org/)
+[![Windows Ready](https://img.shields.io/badge/Windows-Ready-0078D6?logo=windows)](https://www.microsoft.com/windows)
 
 </div>
+
+---
+
+## 🚀 Quick Start (Windows)
+
+**Get VerbaDeck on your desktop in 30 seconds!**
+
+1. **Clone and install:**
+   ```bash
+   git clone https://github.com/taskmasterpeace/verbadeck.git
+   cd verbadeck
+   npm install
+   ```
+
+2. **Add your API keys** - Create `.env` file:
+   ```env
+   AAI_API_KEY=your_assemblyai_api_key
+   OPENROUTER_API_KEY=your_openrouter_api_key
+   REPLICATE_API_KEY=your_replicate_api_key
+   ```
+
+3. **Create desktop shortcut:**
+   - **Double-click:** `create-shortcut.bat`
+   - **Done!** VerbaDeck icon appears on your desktop
+
+4. **Launch VerbaDeck:**
+   - **Double-click** the desktop icon
+   - Browser opens automatically in 5 seconds
+   - **Start creating presentations!**
+
+📖 **See [QUICK_START.md](QUICK_START.md) for detailed setup instructions**
 
 ---
 
@@ -20,31 +52,80 @@ VerbaDeck is a revolutionary presentation platform that lets you deliver present
 
 **Built by [Machine King Labs](https://machinekingdomlabs.com)** - Innovation in AI-powered presentation technology.
 
-![Process Content View](screenshots/01-process-content-home.png)
-
 ---
 
 ## ✨ Key Features
 
+### 🎯 Three Creation Modes
+
+#### 1. **Create from Scratch** - AI-Guided Builder
+- Answer a few questions about your topic
+- AI generates complete presentation with trigger words
+- Perfect for quick, professional presentations
+- Choose tone, audience, and slide count
+
+#### 2. **Process Existing Content**
+- **Paste your script** - AI converts to voice-controlled slides
+- **Upload PowerPoint** - Extracts text and images automatically
+- **Preservation mode** - Keeps exact wording for legal/medical content
+- AI suggests intelligent trigger words
+
+#### 3. **Know It All Wall** - Q&A Practice Mode
+- Voice-activated keyword confirmation system
+- Practice answering questions about any topic
+- Perfect for interview prep, teaching, or exam study
+- Build knowledge base with AI-generated FAQs
+
+---
+
 ### 🗣️ Advanced Voice Control
+
 - **Intelligent Trigger Detection**: AI identifies natural trigger words that advance slides
 - **Multi-Trigger Support**: Multiple trigger words per slide for flexibility
 - **Plural Recognition**: Automatically detects plurals (e.g., "solution" matches "solutions")
 - **BACK Command**: Navigate backwards with "back", "previous", or "go back"
 - **2-Second Debounce**: Prevents accidental double-advances from transcript echoes
 - **Real-Time Transcription**: Powered by AssemblyAI's streaming API
+- **Live Transcript Display**: See what VerbaDeck hears in real-time
+
+---
 
 ### 🤖 AI-Powered Intelligence
-- **Operation-Specific Model Defaults**:
+
+#### Smart Model Configuration
+- **Operation-Specific Defaults**:
   - GPT-4o Mini for fast, cost-effective operations (20x cheaper!)
   - Claude 3.5 Sonnet for premium quality tasks
 - **50+ AI Models**: Choose from GPT-4, Claude, Gemini, Llama, and more via OpenRouter
+- **Model Presets**:
+  - 🚀 Maximum Speed - Ultra-fast Llama models
+  - ⚖️ Balanced - Mix of speed and quality
+  - ✨ Quality - Premium Claude/GPT-4 models
+  - 💰 Free Models - Zero-cost options
+- **Category-Based Configuration**:
+  - Create from Scratch
+  - Q&A Mode
+  - Know It All Wall
+  - Editor Tools
+  - Upload & Processing
+  - Vision & Images
+- **Bulk Model Changers**: Apply model to entire categories at once
+- **User Overrides**: Always override defaults via UI
+- **Persistent Settings**: Saved to localStorage
+
+#### AI Features
 - **Smart Script Processing**: Transform raw text into structured sections
-- **Preservation Mode**: Keep exact wording for legal/medical/enterprise content
 - **AI Trigger Suggestions**: Get intelligent trigger word recommendations
-- **Model Override**: Users can always override defaults via UI
+- **Image Generation**: Create slide images with Replicate
+- **Bulk Image Generation**: Generate images for all slides at once
+- **Vision Analysis**: Extract text from uploaded images
+- **Speaker Notes**: AI-generated presentation notes
+- **Slide Variations**: Generate alternative versions of slides
+
+---
 
 ### 🎓 Live Q&A System
+
 - **Question Detection**: Automatically detects "?" in transcripts when Q&A mode is ON
 - **Dual AI Answers**: Generates TWO complete answer perspectives
 - **8 Personality Tones**:
@@ -56,32 +137,71 @@ VerbaDeck is a revolutionary presentation platform that lets you deliver present
   - 🔬 Technical Expert - Precise and data-driven
   - 📖 Storytelling - Compelling narratives
   - 😏 Sarcastic & Sharp - Dry wit
-- **Knowledge Base**: AI-powered FAQ generation + manual entry
+- **Knowledge Base Management**:
+  - AI-powered FAQ generation
+  - Manual Q&A entry
+  - Auto-generate from presentation content
+  - Import/export knowledge bases
 - **Context-Aware**: Uses presentation content + knowledge base for accurate responses
 - **Easy Toggle**: "Q&A" button in status bar (green when active)
 
-### 🎨 Presentation Features
-- **Create from Scratch**: AI-guided presentation builder with topic-based generation
-- **Process Existing Content**: Convert scripts or PowerPoint files
-- **Rich Text Editor**: Bold, italic, headings, bullets with Tiptap
-- **Image Support**: Add visuals to slides
-- **Dual-Monitor Mode**: Presenter view with controls + clean audience view
+---
+
+### 🎨 Rich Editing & Presentation Features
+
+#### Content Editor
+- **Rich Text Editing**: Bold, italic, headings, bullets with Tiptap
+- **Markdown Support**: Write in markdown, renders beautifully
+- **Image Support**: Add visuals to slides with drag-and-drop
+- **Trigger Word Management**:
+  - Multiple triggers per slide
+  - Alternative trigger suggestions
+  - Visual trigger selection
+- **Layout Templates**: Choose from multiple presentation layouts
+- **Section Reordering**: Drag-and-drop slide organization
+
+#### Presenter Mode
+- **Dual-Monitor Support**: Presenter view + clean audience view
 - **BroadcastChannel Sync**: Real-time window synchronization
 - **Smooth Transitions**: Framer Motion animations
 - **Progress Tracking**: Visual progress bar and section counter
 - **Trigger Carousel**: Shows previous, current, and next trigger words
+- **Live Transcript**: See real-time transcription
+- **Current Slide Preview**: See what audience sees
+- **Speaker Notes Display**: Show AI-generated or custom notes
 
-### 💾 Save & Load
+---
+
+### 💾 Save & Load System
+
+- **Presentation Library**: Browse and manage saved presentations
 - **File Export/Import**: Save as `.verbadeck` files
 - **LocalStorage**: Auto-save presentations in browser
 - **Quick Load**: One-click test presentation loading
 - **Cross-Device**: Load presentations on any device
+- **Knowledge Base Export**: Save Q&A databases separately
+
+---
 
 ### 📱 Modern Web App
+
 - **Progressive Web App**: Install on mobile/tablet/desktop
 - **Offline Mode**: Works without internet after initial load
 - **Responsive Design**: Optimized for all screen sizes
 - **Mobile-First UI**: Portrait and landscape support
+- **Dark Mode Ready**: Easy on the eyes
+- **Keyboard Shortcuts**: Arrow keys for navigation
+
+---
+
+### 🪟 Windows Desktop Integration
+
+- **One-Click Desktop Shortcut**: Auto-creates shortcut with custom icon
+- **Auto-Launch Browser**: Opens browser automatically on startup
+- **Minimized Command Window**: Runs quietly in background
+- **Easy Batch Files**: Simple `.bat` launchers included
+- **PowerShell Script**: Advanced shortcut creation
+- **Icon Customization**: Uses custom VerbaDeck crown icon
 
 ---
 
@@ -126,7 +246,7 @@ VerbaDeck is a revolutionary presentation platform that lets you deliver present
 ### 🎓 Academic Lectures & Training
 **Perfect for**: University lectures, corporate training, workshops
 
-**Why VerbaDeck**: Engage students with natural presentation flow. Use Q&A knowledge base for common student questions.
+**Why VerbaDeck**: Engage students with natural presentation flow. Use Know It All Wall for Q&A practice.
 
 **Example**: Teach machine learning concepts with "supervised", "neural", "training" as triggers, generating insightful answers for student questions.
 
@@ -141,59 +261,40 @@ VerbaDeck is a revolutionary presentation platform that lets you deliver present
 
 ---
 
-## 🚀 Quick Start
+## 📖 How to Use
 
-### Prerequisites
-- **Node.js** 18+ and npm
-- **AssemblyAI API Key**: [Get free key](https://www.assemblyai.com/) (100 hours/month free)
-- **OpenRouter API Key**: [Get key](https://openrouter.ai/) for AI models
-- **Browser**: Chrome, Edge, or Chromium-based (for Web Audio API)
-- **Microphone**: Required for voice input
+### Windows: Desktop Shortcut (Recommended!)
 
-### Installation
+1. **Double-click:** `create-shortcut.bat` in the VerbaDeck folder
+2. **VerbaDeck icon** appears on your desktop with custom crown icon
+3. **Double-click** desktop icon to launch
+4. **Browser opens** automatically after 5 seconds
+5. **Start creating!**
 
-```bash
-# Clone the repository
-git clone https://github.com/taskmasterpeace/verbadeck.git
-cd verbadeck
-
-# Install dependencies (root, server, and client)
-npm install
-cd server && npm install && cd ..
-cd client && npm install && cd ..
-```
-
-### Configuration
-
-Create `.env` in the project root:
-
-```env
-AAI_API_KEY=your_assemblyai_api_key_here
-OPENROUTER_API_KEY=your_openrouter_api_key_here
-```
-
-🔒 **Security**: Never commit `.env` - it's already in `.gitignore`
-
-### Run Development
-
-```bash
-# From project root - starts both server and client
-npm run dev
-```
-
-This launches:
-- **Server**: `http://localhost:3001` (WebSocket proxy + API)
-- **Client**: `http://localhost:5173` (Vite dev server)
-
-Open `http://localhost:5173` and start presenting!
+**To stop:** Close the command window or press `Ctrl+C`
 
 ---
 
-## 📖 How to Use
+### Manual Start
 
-### Method 1: Create from Scratch (AI-Guided)
+```bash
+# From VerbaDeck folder
+npm run dev
 
-1. Click **"Create from Scratch"** tab
+# Wait for:
+# - Server: http://localhost:3002
+# - Client: http://localhost:5173
+
+# Open browser: http://localhost:5173
+```
+
+---
+
+### Creating Presentations
+
+#### Method 1: Create from Scratch (AI-Guided)
+
+1. Click **"Start from Scratch"** on home page
 2. Describe your presentation topic
 3. Choose tone (Professional, Witty, Technical, etc.)
 4. Select number of slides (3-20)
@@ -201,21 +302,19 @@ Open `http://localhost:5173` and start presenting!
 6. Click **"Generate Presentation"**
 7. AI creates slides with trigger words - ready to present!
 
-![Create from Scratch](screenshots/02-create-from-scratch.png)
-
 ---
 
-### Method 2: Process Existing Content
+#### Method 2: Process Existing Content
 
-#### Option A: Paste Text
-1. Click **"Process Content"** tab
-2. Select AI model (or use default)
+**Option A: Paste Text**
+1. Click **"Process Content"** on home page
+2. Select AI model (or use balanced default)
 3. Check "Preserve exact wording" (recommended for legal/medical)
 4. Paste your script
 5. Click **"Process with AI"**
 6. AI segments text and suggests triggers
 
-#### Option B: Upload PowerPoint
+**Option B: Upload PowerPoint**
 1. Click **"Upload PowerPoint"**
 2. Select `.pptx` file
 3. Text and images extracted automatically
@@ -224,14 +323,26 @@ Open `http://localhost:5173` and start presenting!
 
 ---
 
+#### Method 3: Know It All Wall
+
+1. Click **"Start Q&A Practice"** on home page
+2. Enter a topic or upload content
+3. AI generates knowledge base with questions
+4. Practice voice-activated Q&A
+5. Confirm correct keywords to advance
+6. Perfect for interview prep or teaching
+
+---
+
 ### Presenting with Voice Control
 
-1. **Start Listening**: Click 🎤 Voice button (grant mic permission)
-2. **Wait for Connected**: Status turns green
-3. **Speak Naturally**: Say your presentation
-4. **Auto-Advance**: Slides advance when you say trigger words
-5. **Go Back**: Say "back" to return to previous slide
-6. **Q&A Mode**: Click "Q&A" button to enable question detection
+1. **Navigate to Present View**: Click **"3. Present"** button (top navigation)
+2. **Start Listening**: Click **🎤 Voice** button (grant mic permission)
+3. **Wait for Connected**: Status badge turns green
+4. **Speak Naturally**: Say your presentation
+5. **Auto-Advance**: Slides advance when you say trigger words
+6. **Go Back**: Say "back" to return to previous slide
+7. **Q&A Mode**: Click "Q&A" button to enable question detection
 
 **Trigger Carousel** (bottom of screen):
 - **Left**: Previous trigger or "Say back"
@@ -242,11 +353,11 @@ Open `http://localhost:5173` and start presenting!
 
 ### Dual-Monitor Presenter Mode
 
-1. Click **"Open Audience View"** button
+1. Click **"Open Audience View"** button (Present view)
 2. New window opens with clean view
 3. Drag to second monitor/projector
 4. Press F11 for full-screen
-5. Present from main window (shows triggers, controls)
+5. Present from main window (shows triggers, controls, notes)
 6. Audience sees only content and images
 
 **BroadcastChannel** keeps both windows synchronized in real-time!
@@ -263,25 +374,30 @@ Open `http://localhost:5173` and start presenting!
 - Tailwind CSS + shadcn/ui
 - Framer Motion (animations)
 - React Router
-- Tiptap (rich text)
+- Tiptap (rich text editor)
 - vite-plugin-pwa (PWA support)
 
 **Backend**:
 - Node.js + Express
 - WebSocket proxy for AssemblyAI
 - OpenRouter API client
+- Replicate API integration
 - Operation-specific model defaults
 
 **APIs**:
 - AssemblyAI Universal-Streaming v3 (real-time STT)
 - OpenRouter (unified access to 50+ AI models)
+- Replicate (image generation)
 
 **Storage**:
-- LocalStorage (presentation library)
+- LocalStorage (presentation library, settings)
 - File System (.verbadeck export/import)
 
 **Testing**:
 - Playwright (E2E + visual regression)
+- 100% test coverage on all 3 modules
+
+---
 
 ### How Voice Control Works
 
@@ -298,7 +414,7 @@ Open `http://localhost:5173` and start presenting!
                    │
                    ▼
 ┌─────────────────────────────────────────────────────────┐
-│  WebSocket → Node.js Proxy (localhost:3001)             │
+│  WebSocket → Node.js Proxy (localhost:3002)             │
 │  Adds AssemblyAI Authorization header                   │
 └──────────────────┬──────────────────────────────────────┘
                    │
@@ -335,56 +451,88 @@ Open `http://localhost:5173` and start presenting!
 
 ```
 verbadeck/
-├── client/                          # React frontend
+├── 🪟 Windows Launchers
+│   ├── create-shortcut.bat                 # Desktop shortcut creator
+│   ├── create-desktop-shortcut.ps1         # PowerShell script
+│   ├── start-verbadeck.bat                 # Basic launcher
+│   └── start-verbadeck-with-browser.bat    # Auto-browser launcher
+│
+├── 📄 Documentation
+│   ├── README.md                            # This file
+│   ├── QUICK_START.md                       # Quick start guide
+│   ├── VERBADECK_USER_GUIDE.md              # Complete user guide
+│   ├── CREATE_DESKTOP_SHORTCUT.md           # Shortcut instructions
+│   ├── MODEL_CONFIGURATION.md               # AI model docs
+│   ├── KNOW_IT_ALL_WALL.md                  # Q&A mode docs
+│   └── UI_INVESTIGATION_REPORT.md           # Testing report
+│
+├── client/                                  # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── AIScriptProcessor.tsx       # Text processing UI
 │   │   │   ├── CreateFromScratch.tsx       # AI-guided builder
+│   │   │   ├── CreatePresentation.tsx      # Content processor
 │   │   │   ├── PresenterView.tsx           # Main presentation
 │   │   │   ├── AudienceView.tsx            # Clean audience display
 │   │   │   ├── RichSectionEditor.tsx       # Content editing
+│   │   │   ├── KnowItAllWall.tsx           # Q&A practice mode
 │   │   │   ├── QAPanel.tsx                 # Q&A interface
-│   │   │   ├── KnowledgeBaseEditor.tsx     # FAQ management
 │   │   │   ├── StatusBar.tsx               # Top navigation
+│   │   │   ├── SettingsModal.tsx           # Settings dialog
+│   │   │   ├── AdvancedSettings.tsx        # Model configuration
+│   │   │   ├── LibraryBrowser.tsx          # Presentation library
+│   │   │   ├── ModelSelector.tsx           # AI model picker
 │   │   │   ├── TriggerCarousel.tsx         # Trigger display
 │   │   │   ├── TranscriptTicker.tsx        # Live transcript
-│   │   │   ├── ModelSelector.tsx           # AI model picker
-│   │   │   ├── ToneSelector.tsx            # Q&A tone picker
-│   │   │   └── UserGuideViewer.tsx         # In-app help
+│   │   │   ├── CurrentSlidePreview.tsx     # Slide preview
+│   │   │   ├── PresentationTimer.tsx       # Timer widget
+│   │   │   ├── MarkdownRenderer.tsx        # Markdown display
+│   │   │   └── Footer.tsx                  # Footer branding
 │   │   ├── hooks/
 │   │   │   ├── useAudioStreaming.ts        # WebSocket + Audio
 │   │   │   ├── useOpenRouter.ts            # AI API client
-│   │   │   ├── useAllModels.ts             # Model management
-│   │   │   └── useTransitions.ts           # Animations
+│   │   │   ├── useBulkImageGeneration.ts   # Batch images
+│   │   │   ├── useFileOperations.ts        # Save/load logic
+│   │   │   ├── useAutoSave.ts              # Auto-save hook
+│   │   │   ├── useLocalStorage.ts          # Storage hook
+│   │   │   └── useKeywordDetection.ts      # Trigger matching
 │   │   ├── lib/
 │   │   │   ├── script-parser.ts            # Trigger matching
 │   │   │   ├── openrouter-models.ts        # Model definitions
-│   │   │   ├── file-storage.ts             # Save/load logic
-│   │   │   └── api-config.ts               # API configuration
+│   │   │   ├── presentation-library.ts     # Library management
+│   │   │   ├── api-client.ts               # API client
+│   │   │   └── text-highlighter.ts         # Text highlighting
+│   │   ├── pages/
+│   │   │   ├── HomePage.tsx                # Landing page
+│   │   │   └── AudiencePage.tsx            # Audience route
 │   │   ├── App.tsx                         # Main application
 │   │   └── main.tsx                        # Entry point
 │   ├── public/
 │   │   ├── audio-processor.js              # AudioWorklet
-│   │   └── USER_GUIDE.md                   # User documentation
+│   │   └── icon.ico                        # App icon
 │   └── package.json
+│
 ├── server/
 │   ├── server.js                           # Express + WebSocket
 │   ├── openrouter.js                       # AI API client
+│   ├── image-generator.js                  # Replicate client
 │   ├── model-config.js                     # Operation defaults
+│   ├── prompts.js                          # AI prompts
+│   ├── middleware/
+│   │   └── timing-middleware.js            # Request timing
 │   └── package.json
+│
 ├── tests/                                   # Playwright tests
-│   ├── create-from-scratch.spec.ts
-│   ├── process-existing-content.spec.ts
-│   ├── qa-functionality.spec.ts
-│   ├── qa-tone-features.spec.ts
-│   ├── save-load.spec.ts
-│   └── visual-regression.spec.ts
+│   ├── verbadeck.spec.ts                   # Main app tests
+│   ├── model-configuration.spec.ts         # Model config tests
+│   ├── model-configuration-redesign.spec.ts
+│   ├── speaker-notes-workflow.spec.ts
+│   ├── ui-investigation.spec.ts
+│   └── screenshots/                        # Visual regression
+│
 ├── .env                                     # API keys (gitignored)
 ├── .gitignore                               # Excludes secrets
-├── MODEL_CONFIGURATION.md                   # Model docs
-├── USER_GUIDE.md                            # Full user guide
 ├── package.json                             # Root workspace
-└── README.md                                # This file
+└── playwright.config.ts                     # Test configuration
 ```
 
 ---
@@ -407,7 +555,8 @@ npm run preview      # Preview production build
 
 # Server only
 cd server
-npm start            # Express server (port 3001)
+npm start            # Express server (port 3002)
+npm run dev          # With auto-restart
 ```
 
 ### Environment Variables
@@ -416,9 +565,12 @@ npm start            # Express server (port 3001)
 # .env (project root)
 AAI_API_KEY=your_assemblyai_api_key
 OPENROUTER_API_KEY=your_openrouter_api_key
-PORT=3001                # Optional, defaults to 3001
+REPLICATE_API_KEY=your_replicate_api_key
+PORT=3002                # Optional, defaults to 3002
 NODE_ENV=development     # Optional
 ```
+
+🔒 **Security**: Never commit `.env` - it's already in `.gitignore`
 
 ---
 
@@ -460,7 +612,8 @@ npm run build
 # Set these in your production environment
 AAI_API_KEY=<your-key>
 OPENROUTER_API_KEY=<your-key>
-PORT=3001
+REPLICATE_API_KEY=<your-key>
+PORT=3002
 NODE_ENV=production
 ```
 
@@ -477,15 +630,19 @@ npm run test:ui
 
 # Update visual snapshots
 npx playwright test --update-snapshots
+
+# Run specific test file
+npx playwright test tests/verbadeck.spec.ts
 ```
 
-**Test Coverage**:
-- ✅ Create from Scratch workflow
-- ✅ Process existing content (text + PowerPoint)
-- ✅ Voice navigation and trigger detection
-- ✅ Q&A functionality and tones
-- ✅ Save/load presentations
-- ✅ Visual regression (screenshots)
+**Test Coverage** (100% Passing):
+- ✅ Landing page and navigation (13/13)
+- ✅ Model configuration system (5/5)
+- ✅ Model configuration redesign (8/8)
+- ✅ Speaker notes workflow (2/2)
+- ✅ Settings button accessibility
+- ✅ Workflow state management
+- ✅ Voice control integration
 - ✅ Dual-monitor synchronization
 
 ---
@@ -493,14 +650,16 @@ npx playwright test --update-snapshots
 ## 🐛 Troubleshooting
 
 ### WebSocket Connection Failed
-- ✓ Check server is running on port 3001
+- ✓ Check server is running on port 3002
 - ✓ Verify `.env` file exists with valid API keys
 - ✓ Check browser console for errors
+- ✓ Restart server and client
 
 ### Microphone Not Working
 - ✓ Grant microphone permissions in browser
 - ✓ HTTPS required in production (localhost OK for dev)
 - ✓ Try Chrome (best Web Audio API support)
+- ✓ Check system microphone settings
 
 ### Trigger Words Not Detected
 - ✓ Check transcript bar - is text appearing?
@@ -513,13 +672,19 @@ npx playwright test --update-snapshots
 - ✓ Verify OpenRouter API key is correct
 - ✓ Check model availability (some require credits)
 - ✓ Ensure text is not empty
-- ✓ Try different AI model (GPT-4o Mini is free)
+- ✓ Try different AI model (GPT-4o Mini recommended)
 
 ### Audience View Not Syncing
 - ✓ Both windows must be same origin (same domain)
 - ✓ Check BroadcastChannel support (all modern browsers)
 - ✓ Try closing and reopening audience view
 - ✓ Check browser console for errors
+
+### Desktop Shortcut Won't Create
+- ✓ Run `create-shortcut.bat` as Administrator
+- ✓ Right-click → "Run as administrator"
+- ✓ Check PowerShell execution policy
+- ✓ Try manual shortcut creation (see [CREATE_DESKTOP_SHORTCUT.md](CREATE_DESKTOP_SHORTCUT.md))
 
 ---
 
@@ -538,11 +703,12 @@ npx playwright test --update-snapshots
 - **Have backup**: Keep keyboard handy (arrow keys work!)
 
 ### AI Model Selection
-- **GPT-4o Mini**: Fast, cost-effective, free tier (default for many operations)
+- **GPT-4o Mini**: Fast, cost-effective, free tier (default for most operations)
 - **Claude 3.5 Sonnet**: Best quality (default for presentations and Q&A)
 - **GPT-4 Turbo**: Most creative
 - **Gemini Pro**: Fast and free
-- **See**: `MODEL_CONFIGURATION.md` for operation-specific defaults
+- **Use presets**: Quick configuration for speed/quality balance
+- **See**: [AdvancedSettings](client/src/components/AdvancedSettings.tsx) for operation-specific defaults
 
 ---
 
@@ -560,6 +726,7 @@ Website: [machinekingdomlabs.com](https://machinekingdomlabs.com)
 **Powered by amazing open-source tools**:
 - [AssemblyAI](https://www.assemblyai.com/) - Real-time speech-to-text
 - [OpenRouter](https://openrouter.ai/) - Unified AI model access
+- [Replicate](https://replicate.com/) - Image generation
 - [React](https://react.dev/) - UI framework
 - [Vite](https://vitejs.dev/) - Build tool
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
@@ -574,7 +741,8 @@ Website: [machinekingdomlabs.com](https://machinekingdomlabs.com)
 
 - **Issues**: [GitHub Issues](https://github.com/taskmasterpeace/verbadeck/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/taskmasterpeace/verbadeck/discussions)
-- **Documentation**: [USER_GUIDE.md](USER_GUIDE.md) - Complete guide with examples
+- **Documentation**: [VERBADECK_USER_GUIDE.md](VERBADECK_USER_GUIDE.md) - Complete guide with examples
+- **Quick Start**: [QUICK_START.md](QUICK_START.md) - Get started in minutes
 
 ---
 
