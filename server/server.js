@@ -9,6 +9,7 @@ import { OpenRouterClient } from './openrouter.js';
 import { ReplicateImageGenerator } from './image-generator.js';
 import { getModelForOperation } from './model-config.js';
 import { getAllPromptsMetadata, getPromptExample, getPrompt } from './prompts.js';
+import { createTimingMiddleware, timingErrorMiddleware } from './middleware/timing-middleware.js';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { readFile, writeFile, unlink } from 'fs/promises';
@@ -72,7 +73,7 @@ app.get('/api/models', async (req, res) => {
   }
 });
 
-app.post('/api/process-script', async (req, res) => {
+app.post('/api/process-script', createTimingMiddleware('processScript'), async (req, res) => {
   try {
     const { text, model, preserveWording = true } = req.body;
 
@@ -96,7 +97,7 @@ app.post('/api/process-script', async (req, res) => {
   }
 });
 
-app.post('/api/suggest-triggers', async (req, res) => {
+app.post('/api/suggest-triggers', createTimingMiddleware('suggestTriggers'), async (req, res) => {
   try {
     const { text, model } = req.body;
 
@@ -143,7 +144,7 @@ app.post('/api/generate-image', async (req, res) => {
 });
 
 // Suggest image prompt from section content
-app.post('/api/suggest-image-prompt', async (req, res) => {
+app.post('/api/suggest-image-prompt', createTimingMiddleware('suggestImagePrompt'), async (req, res) => {
   try {
     const { content, presentationContext, model, presentationStyle } = req.body;
 
@@ -237,7 +238,7 @@ app.get('/api/image-options', (req, res) => {
 });
 
 // Process images with AI to generate presentation
-app.post('/api/process-images', async (req, res) => {
+app.post('/api/process-images', createTimingMiddleware('processImages'), async (req, res) => {
   try {
     const { images, aspectRatio, model } = req.body;
 
@@ -352,7 +353,7 @@ app.post('/api/upload-pptx', upload.single('file'), async (req, res) => {
 });
 
 // Generate script variations endpoint
-app.post('/api/generate-variations', async (req, res) => {
+app.post('/api/generate-variations', createTimingMiddleware('generateVariations'), async (req, res) => {
   try {
     const { slideContent, model } = req.body;
 
@@ -372,7 +373,7 @@ app.post('/api/generate-variations', async (req, res) => {
   }
 });
 
-app.post('/api/generate-faqs', async (req, res) => {
+app.post('/api/generate-faqs', createTimingMiddleware('generateFAQs'), async (req, res) => {
   try {
     const { presentationContent, model } = req.body;
 
@@ -392,7 +393,7 @@ app.post('/api/generate-faqs', async (req, res) => {
   }
 });
 
-app.post('/api/answer-question', async (req, res) => {
+app.post('/api/answer-question', createTimingMiddleware('answerQuestion'), async (req, res) => {
   try {
     const { question, presentationContent, knowledgeBase, model, tone } = req.body;
 
@@ -422,7 +423,112 @@ app.post('/api/answer-question', async (req, res) => {
   }
 });
 
-app.post('/api/generate-titles', async (req, res) => {
+app.post('/api/answer-question-with-keywords', createTimingMiddleware('answerQuestionWithKeywords'), async (req, res) => {
+  try {
+    const { question, knowledgeBase, model, tone } = req.body;
+
+    if (!question || question.trim().length === 0) {
+      return res.status(400).json({ error: 'Question is required' });
+    }
+
+    if (!knowledgeBase || knowledgeBase.trim().length === 0) {
+      return res.status(400).json({ error: 'Knowledge base is required' });
+    }
+
+    const selectedModel = getModelForOperation('answerQuestion', model);
+    console.log(`🧠 Answering question with keywords: "${question}" using ${selectedModel} (tone: ${tone || 'professional'})`);
+
+    const answers = await openRouterClient.answerQuestionWithKeywords(
+      question,
+      knowledgeBase,
+      selectedModel,
+      tone
+    );
+
+    console.log(`✅ Generated 2 answer options with keywords and headings in ${tone || 'professional'} tone`);
+    res.json(answers);
+  } catch (error) {
+    console.error('Error answering question with keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/analyze-knowledge-base', createTimingMiddleware('analyzeKnowledgeBase'), async (req, res) => {
+  try {
+    const { knowledgeBase, model } = req.body;
+
+    if (!knowledgeBase || knowledgeBase.trim().length === 0) {
+      return res.status(400).json({ error: 'Knowledge base content is required' });
+    }
+
+    const selectedModel = getModelForOperation('analyzeKnowledgeBase', model);
+    console.log(`🔍 Analyzing knowledge base (${knowledgeBase.length} chars) using ${selectedModel}`);
+
+    const analysis = await openRouterClient.analyzeKnowledgeBase(
+      knowledgeBase,
+      selectedModel
+    );
+
+    console.log(`✅ Detected: ${analysis.documentTypes.join(', ')} | Use case: ${analysis.primaryUseCase}`);
+    res.json(analysis);
+  } catch (error) {
+    console.error('Error analyzing knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-context-questions', createTimingMiddleware('generateContextQuestions'), async (req, res) => {
+  try {
+    const { analysis, knowledgeBase, model } = req.body;
+
+    if (!analysis || !knowledgeBase) {
+      return res.status(400).json({ error: 'Analysis and knowledge base are required' });
+    }
+
+    const selectedModel = getModelForOperation('generateContextQuestions', model);
+    console.log(`❓ Generating context questions for ${analysis.primaryUseCase} using ${selectedModel}`);
+
+    const questions = await openRouterClient.generateContextQuestions(
+      analysis,
+      knowledgeBase,
+      selectedModel
+    );
+
+    console.log(`✅ Generated ${questions.questions.length} context questions`);
+    res.json(questions);
+  } catch (error) {
+    console.error('Error generating context questions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-followup-questions', createTimingMiddleware('generateFollowupQuestions'), async (req, res) => {
+  try {
+    const { analysis, initialAnswers, knowledgeBase, model } = req.body;
+
+    if (!analysis || !initialAnswers || !knowledgeBase) {
+      return res.status(400).json({ error: 'Analysis, initial answers, and knowledge base are required' });
+    }
+
+    const selectedModel = getModelForOperation('generateFollowupQuestions', model);
+    console.log(`🎯 Generating follow-up questions based on ${initialAnswers.length} initial answers using ${selectedModel}`);
+
+    const questions = await openRouterClient.generateFollowupQuestions(
+      analysis,
+      initialAnswers,
+      knowledgeBase,
+      selectedModel
+    );
+
+    console.log(`✅ Generated ${questions.questions.length} follow-up questions`);
+    res.json(questions);
+  } catch (error) {
+    console.error('Error generating followup questions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-titles', createTimingMiddleware('generateTitles'), async (req, res) => {
   try {
     const { sections, model } = req.body;
 
@@ -443,17 +549,18 @@ app.post('/api/generate-titles', async (req, res) => {
   }
 });
 
-app.post('/api/generate-questions', async (req, res) => {
+app.post('/api/generate-questions', createTimingMiddleware('generateQuestions'), async (req, res) => {
   try {
-    const { topic, model } = req.body;
+    const { topic, model, preferences } = req.body;
 
     if (!topic || topic.trim().length === 0) {
       return res.status(400).json({ error: 'Topic is required' });
     }
 
     const selectedModel = getModelForOperation('generateQuestions', model);
-    console.log(`❓ Generating questions for topic: "${topic}" using ${selectedModel}`);
-    const questions = await openRouterClient.generateQuestions(topic, selectedModel);
+    const prefInfo = preferences ? ' with custom preferences' : ' (AI decides)';
+    console.log(`❓ Generating questions for topic: "${topic}"${prefInfo} using ${selectedModel}`);
+    const questions = await openRouterClient.generateQuestions(topic, preferences, selectedModel);
     console.log(`✅ Generated ${questions.length} questions`);
 
     res.json({ questions });
@@ -463,7 +570,7 @@ app.post('/api/generate-questions', async (req, res) => {
   }
 });
 
-app.post('/api/generate-slide-options', async (req, res) => {
+app.post('/api/generate-slide-options', createTimingMiddleware('generateSlideOptions'), async (req, res) => {
   try {
     const { topic, answers, numSlides, model } = req.body;
 
@@ -487,6 +594,26 @@ app.post('/api/generate-slide-options', async (req, res) => {
     res.json({ slides });
   } catch (error) {
     console.error('Error generating slide options:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/generate-speaker-notes', createTimingMiddleware('generateSpeakerNotes'), async (req, res) => {
+  try {
+    const { slides, model } = req.body;
+
+    if (!slides || !Array.isArray(slides) || slides.length === 0) {
+      return res.status(400).json({ error: 'Slides array is required' });
+    }
+
+    const selectedModel = getModelForOperation('generateSpeakerNotes', model);
+    console.log(`📝 Generating speaker notes for ${slides.length} slides using ${selectedModel}`);
+    const speakerNotes = await openRouterClient.generateSpeakerNotes(slides, selectedModel);
+    console.log(`✅ Generated ${speakerNotes.length} speaker notes`);
+
+    res.json({ speakerNotes });
+  } catch (error) {
+    console.error('Error generating speaker notes:', error);
     res.status(500).json({ error: error.message });
   }
 });
