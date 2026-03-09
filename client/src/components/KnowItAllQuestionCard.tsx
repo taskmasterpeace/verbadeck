@@ -5,10 +5,10 @@
 
 import { QuestionCard } from '../lib/know-it-all-types';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { Loader2, CheckCircle2, Circle, AlertCircle, Lock, Unlock } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, AlertCircle, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { HighlightedText } from './HighlightedText';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface KnowItAllQuestionCardProps {
   /** Question card data */

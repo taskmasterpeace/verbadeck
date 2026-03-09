@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
-import { isAPIError } from '@/lib/api-client';
 
 interface PowerPointUploadProps {
   onSlidesExtracted: (slides: Section[]) => void;

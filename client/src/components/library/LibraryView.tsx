@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { getLibrary, deleteFromLibrary, renameInLibrary, type LibraryEntry } from '@/lib/presentation-library';
 import { PresentationCard } from './PresentationCard';
-import { Search, SortAsc, SortDesc, Grid, List, Upload, Plus } from 'lucide-react';
+import { Search, Grid, List, Upload, Plus } from 'lucide-react';
 
 interface LibraryViewProps {
   onLoad: (id: string) => void;

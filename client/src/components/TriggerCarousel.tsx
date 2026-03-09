@@ -10,16 +10,14 @@ interface TriggerCarouselProps {
 
 export function TriggerCarousel({
   currentSection,
-  previousSection,
+  previousSection: _previousSection,
   nextSection,
   sectionIndex,
 }: TriggerCarouselProps) {
   if (!currentSection) return null;
 
   const currentTriggers = currentSection.selectedTriggers || [currentSection.advanceToken];
-  const primaryTrigger = currentTriggers[0];
   const nextTrigger = nextSection?.selectedTriggers?.[0] || nextSection?.advanceToken;
-  const prevTrigger = previousSection?.selectedTriggers?.[0] || previousSection?.advanceToken;
 
   return (
     <div className="fixed bottom-16 left-0 right-0 pointer-events-none z-40">

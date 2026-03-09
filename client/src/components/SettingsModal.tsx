@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { X, BookOpen } from 'lucide-react';
-import { ModelSelector } from './ModelSelector';
 import { AdvancedSettings } from './AdvancedSettings';
 import { PromptEditor } from './PromptEditor';
-import { UserGuideViewer } from './UserGuideViewer';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -28,8 +26,8 @@ export function SettingsModal({
   isOpen,
   onClose,
   streamStatus,
-  selectedModel,
-  onModelChange,
+  selectedModel: _selectedModel,
+  onModelChange: _onModelChange,
   onShowAdvancedHelp,
   cancelWord = 'cancel',
   onCancelWordChange,

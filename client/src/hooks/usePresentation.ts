@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { type Section } from '../lib/script-parser';
 import { VoiceController } from '../lib/voice-controller';
 import { useTransitions } from './useTransitions';

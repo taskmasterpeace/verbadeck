@@ -15,7 +15,7 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-export function RichTextEditor({ content, onChange, placeholder, className = '' }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, placeholder: _placeholder, className = '' }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({

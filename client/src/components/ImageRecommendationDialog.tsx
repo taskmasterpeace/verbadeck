@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Image as ImageIcon, Loader2, Upload, Star } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface ImageRecommendation {
   id: string;

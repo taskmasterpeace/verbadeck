@@ -1,4 +1,5 @@
-import { Section, createTokenPattern } from './script-parser';
+import { createTokenPattern } from './script-parser';
+import type { Section } from './script-parser';
 
 /**
  * VoiceController - Centralized voice control logic for VerbaDeck
@@ -12,11 +13,6 @@ import { Section, createTokenPattern } from './script-parser';
 export class VoiceController {
   private lastNavTime: number = 0;
   private readonly NAV_DEBOUNCE_MS = 2000;
-
-  /**
-   * Back command words that trigger previous section navigation
-   */
-  private readonly BACK_WORDS = ['back', 'previous', 'go back'];
 
   /**
    * Detect if transcript contains a back command

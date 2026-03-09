@@ -33,7 +33,7 @@ export function SessionStats({ questions, elapsedTime }: SessionStatsProps) {
   const errorQuestions = questions.filter(q => q.status === 'error');
 
   // Calculate average response time (time from question detection to answer)
-  const responseTimes = answeredQuestions.map(q => {
+  const responseTimes = answeredQuestions.map(_q => {
     // Find time difference between question timestamp and now (approximation)
     // In a real implementation, we'd track exact answer timestamps
     return 30; // Placeholder: 30 seconds average

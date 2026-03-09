@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, X } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';

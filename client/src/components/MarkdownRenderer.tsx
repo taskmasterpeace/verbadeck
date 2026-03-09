@@ -9,7 +9,7 @@ interface MarkdownRendererProps {
   style?: React.CSSProperties;
 }
 
-export function MarkdownRenderer({ content, highlightTrigger, className = '', style }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, highlightTrigger: _highlightTrigger, className = '', style }: MarkdownRendererProps) {
   // Process alignment tags before rendering
   const processedContent = content
     .replace(/\[left\]([\s\S]*?)\[\/left\]/g, '<div style="text-align: left">$1</div>')

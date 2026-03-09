@@ -8,7 +8,7 @@ import { QuestionCard, extractLockWord } from '../lib/know-it-all-types';
 import { KnowItAllQuestionCard } from './KnowItAllQuestionCard';
 import { useKeywordDetection } from '../hooks/useKeywordDetection';
 import { extractTriggerWord } from '../lib/extract-trigger-word';
-import { apiPost, isAPIError } from '@/lib/api-client';
+import { apiPost } from '@/lib/api-client';
 import { SessionStats } from './know-it-all/SessionStats';
 import { ExportSession } from './know-it-all/ExportSession';
 

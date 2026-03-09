@@ -10,7 +10,7 @@ interface LibraryBrowserProps {
 
 export function LibraryBrowser({ isOpen, onClose, onLoad }: LibraryBrowserProps) {
   const [library, setLibrary] = useState<LibraryEntry[]>(getLibrary());
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [_refreshKey, setRefreshKey] = useState(0);
 
   const handleDelete = (id: string, name: string) => {
     if (confirm(`Delete "${name}" from library?`)) {

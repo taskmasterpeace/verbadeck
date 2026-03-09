@@ -1,12 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { useEffect, useRef } from 'react';
 
 interface TranscriptTickerProps {
   transcript: string[];
   lastTranscript: string;
 }
 
-export function TranscriptTicker({ transcript, lastTranscript }: TranscriptTickerProps) {
+export function TranscriptTicker({ transcript: _transcript, lastTranscript }: TranscriptTickerProps) {
   const isListening = !lastTranscript;
 
   return (

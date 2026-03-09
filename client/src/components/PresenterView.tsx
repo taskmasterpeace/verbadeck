@@ -6,7 +6,6 @@ import { CurrentSlidePreview } from './CurrentSlidePreview';
 import { PresentationTimer } from './PresentationTimer';
 import { CountdownProgressBar } from './CountdownProgressBar';
 import { usePresentationStore } from '@/stores/usePresentationStore';
-import { useVoiceStore } from '@/stores/voice';
 import { usePresenterCountdown } from '@/hooks/usePresenterCountdown';
 import { Database, Eye, CheckCircle, ImageIcon } from 'lucide-react';
 
@@ -25,10 +24,7 @@ export function PresenterView({
 }: PresenterViewProps) {
   // Get data from stores
   const sections = usePresentationStore((state) => state.sections);
-  const currentSectionIndex = usePresentationStore((state) => state.currentSectionIndex); // What audience sees
   const presenterDisplayIndex = usePresentationStore((state) => state.presenterDisplayIndex); // What presenter sees
-  const setPresenterDisplayIndex = usePresentationStore((state) => state.setPresenterDisplayIndex);
-  const isStreaming = useVoiceStore((state) => state.isStreaming);
 
   // Countdown timer hook (delays note changes after trigger word)
   const { isCountingDown, countdownDuration } = usePresenterCountdown();

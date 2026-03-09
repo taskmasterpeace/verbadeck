@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { BookOpen, Plus, X, Sparkles, Loader2, Edit2, Check, Brain } from 'lucide-react';
+import { Plus, X, Sparkles, Loader2, Edit2, Check, Brain } from 'lucide-react';
 import { QAAnticipationPanel } from './QAAnticipationPanel';
 import { usePresentationStore } from '@/stores/usePresentationStore';
 import type { Section } from '@/lib/script-parser';

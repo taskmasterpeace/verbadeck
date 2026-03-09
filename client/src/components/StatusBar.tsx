@@ -1,5 +1,4 @@
-import { Badge } from './ui/badge';
-import { Play, Square, Info, MessageCircle, Wand2, Sparkles, Edit, FileText, Save, FolderOpen, Settings, Brain, BookMarked } from 'lucide-react';
+import { Play, Square, MessageCircle, Sparkles, Edit, FileText, Save, FolderOpen, Settings, BookMarked } from 'lucide-react';
 import { useState } from 'react';
 import { UserGuideViewer } from './UserGuideViewer';
 import { SettingsModal } from './SettingsModal';
@@ -43,7 +42,6 @@ export function StatusBar({
   const [showSettings, setShowSettings] = useState(false);
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
 
-  const statusColor = streamStatus === 'connected' ? 'default' : streamStatus === 'connecting' ? 'secondary' : 'outline';
 
   return (
     <>

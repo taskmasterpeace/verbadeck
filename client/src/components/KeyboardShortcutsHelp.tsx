@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { X, Search, Keyboard } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { KeyboardShortcut, formatShortcutKey, isMac } from '../hooks/useKeyboardShortcuts';
 
 interface KeyboardShortcutsHelpProps {

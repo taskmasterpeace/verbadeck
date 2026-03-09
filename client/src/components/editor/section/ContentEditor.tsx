@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { MarkdownToolbar } from '@/components/MarkdownToolbar';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 

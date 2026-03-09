@@ -1,5 +1,4 @@
 import { type Section } from '@/lib/script-parser';
-import { Card, CardContent } from './ui/card';
 import { Progress } from './ui/progress';
 import { TransitionEffects } from './TransitionEffects';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -47,7 +46,7 @@ export function AudienceView({
   const layout = currentSection.layout || 'balanced';
 
   // Dynamic text sizing hook
-  const { fontSize, isOverflowing, containerRef, measurementRef } = useDynamicTextSize(
+  const { fontSize, isOverflowing: _isOverflowing, containerRef, measurementRef } = useDynamicTextSize(
     currentSection.content,
     hasImage
   );
@@ -176,7 +175,7 @@ export function AudienceView({
             alt={`Slide ${sectionIndex + 1}`}
             className="max-w-full max-h-full object-contain"
             style={{ transform: `scale(${zoomMultiplier})` }}
-            onError={(e) => {
+            onError={(_e) => {
               console.error('Failed to load image:', currentSection.imageUrl);
             }}
           />
@@ -195,7 +194,7 @@ export function AudienceView({
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                   style={{ transform: `scale(${zoomMultiplier})` }}
-                  onError={(e) => {
+                  onError={(_e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
                 />
@@ -226,7 +225,7 @@ export function AudienceView({
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                   style={{ transform: `scale(${zoomMultiplier})` }}
-                  onError={(e) => {
+                  onError={(_e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
                 />
@@ -269,7 +268,7 @@ export function AudienceView({
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                   style={{ transform: `scale(${zoomMultiplier})` }}
-                  onError={(e) => {
+                  onError={(_e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
                 />
@@ -291,7 +290,7 @@ export function AudienceView({
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-[60vh] object-contain"
                   style={{ transform: `scale(${zoomMultiplier})` }}
-                  onError={(e) => {
+                  onError={(_e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
                 />
@@ -321,7 +320,7 @@ export function AudienceView({
                     alt={`Slide ${sectionIndex + 1}`}
                     className="max-w-md max-h-48 object-contain rounded-lg shadow-lg"
                     style={{ transform: `scale(${zoomMultiplier})` }}
-                    onError={(e) => {
+                    onError={(_e) => {
                       console.error('Failed to load image:', currentSection.imageUrl);
                     }}
                   />

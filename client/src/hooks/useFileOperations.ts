@@ -1,6 +1,5 @@
 import { savePresentation, loadPresentation } from '@/lib/file-storage';
 import { usePresentationStore } from '@/stores/usePresentationStore';
-import type { Section } from '@/lib/script-parser';
 
 interface UseFileOperationsReturn {
   handleSavePresentation: () => Promise<void>;

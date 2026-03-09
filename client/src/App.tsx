@@ -32,7 +32,6 @@ import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
 import { Footer } from './components/Footer';
-import { PresentationStyleManager, type PresentationStyle } from './components/PresentationStyleManager';
 import { KnowItAllMode } from './components/KnowItAllMode';
 import { MainLayout } from './layouts/MainLayout';
 import { TopBar } from './components/layout/TopBar';
@@ -92,10 +91,10 @@ export default function App() {
     setSections,
     currentSectionIndex,
     setCurrentSectionIndex,
-    draggedIndex,
-    dragOverIndex,
+    draggedIndex: _draggedIndex,
+    dragOverIndex: _dragOverIndex,
     shouldFlash,
-    progress,
+    progress: _progress,
     currentSection,
     previousSection,
     nextSection,
@@ -105,9 +104,9 @@ export default function App() {
     updateSection: handleUpdateSection,
     deleteSection: handleDeleteSection,
     addSection: handleAddSection,
-    handleDragStart,
-    handleDragEnter,
-    handleDragEnd,
+    handleDragStart: _handleDragStart,
+    handleDragEnter: _handleDragEnter,
+    handleDragEnd: _handleDragEnd,
     reorderSections: handleReorderSections,
   } = presentation;
 
@@ -152,7 +151,7 @@ export default function App() {
   } = qaSession;
 
   // Auto-save hook - always enabled for now (streaming check removed due to hook ordering)
-  const { status: autoSaveStatus, loadAutoSave, clearAutoSave } = useAutoSave({
+  const { status: _autoSaveStatus, loadAutoSave, clearAutoSave } = useAutoSave({
     sections,
     knowledgeBase,
     settings: {
@@ -218,7 +217,7 @@ export default function App() {
     clearAutoSave,
   });
   const {
-    handleSaveToLibrary,
+    handleSaveToLibrary: _handleSaveToLibrary,
     handleLoadFromLibrary: handleLoadFromLibraryId,
   } = libraryOps;
 
@@ -236,9 +235,9 @@ export default function App() {
   });
   const {
     transcript,
-    setTranscript,
+    setTranscript: _setTranscript,
     lastTranscript,
-    setLastTranscript,
+    setLastTranscript: _setLastTranscript,
     handleTranscript,
   } = voiceNav;
 
@@ -254,10 +253,10 @@ export default function App() {
   // Presentation style and bulk image generation
   const {
     presentationStyle,
-    handleStyleSelect,
-    handleApplyStyleToAll,
-    bulkStatus,
-    setBulkStatus,
+    handleStyleSelect: _handleStyleSelect,
+    handleApplyStyleToAll: _handleApplyStyleToAll,
+    bulkStatus: _bulkStatus,
+    setBulkStatus: _setBulkStatus,
   } = usePresentationStyle({
     sections,
     setSections,
@@ -267,7 +266,7 @@ export default function App() {
   });
 
   // Bulk image generation (legacy hook, wraps presentation style logic)
-  const { isBulkGenerating, bulkProgress, handleBulkGenerateImages } = useBulkImageGeneration({
+  const { isBulkGenerating: _isBulkGenerating, bulkProgress: _bulkProgress, handleBulkGenerateImages: _handleBulkGenerateImages } = useBulkImageGeneration({
     sections,
     setSections,
     selectedModel,

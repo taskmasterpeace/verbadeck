@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { apiPost, APIError, isAPIError } from '@/lib/api-client';
+import { apiPost, isAPIError } from '@/lib/api-client';
 
 interface ProcessScriptResponse {
   sections: {

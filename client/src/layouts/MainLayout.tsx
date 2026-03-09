@@ -17,14 +17,11 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
-  SidebarSeparator,
   useSidebar,
 } from '../components/ui/sidebar';
 import {
   Home,
   Sparkles,
-  FileText,
-  Wand2,
   Edit,
   Presentation,
   MessageCircle,
@@ -240,7 +237,7 @@ function SidebarNav() {
 
 export function MainLayout({ children, topBar, transcriptBar }: MainLayoutProps) {
   // Read initial sidebar state from localStorage
-  const [defaultOpen, setDefaultOpen] = useState(() => {
+  const [defaultOpen, _setDefaultOpen] = useState(() => {
     const saved = localStorage.getItem('verbadeck-sidebar-open');
     return saved ? saved === 'true' : true;
   });

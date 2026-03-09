@@ -6,7 +6,6 @@
 import { QuestionCard } from '../../lib/know-it-all-types';
 import { Download, FileJson, FileText } from 'lucide-react';
 import { useState } from 'react';
-import { cn } from '../../lib/utils';
 
 interface ExportSessionProps {
   /** All questions in the current session */

@@ -93,7 +93,7 @@ export function KnowItAllMode({
   // Setup wizard hook
   const {
     setupPhase,
-    startSetup,
+    startSetup: _startSetup,
   } = useKnowItAllSetup({
     knowledgeBase,
     getOperationModel,

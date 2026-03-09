@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, RotateCcw, Save, AlertTriangle } from 'lucide-react';
-import { apiGet, isAPIError } from '@/lib/api-client';
+import { apiGet } from '@/lib/api-client';
 
 interface PromptData {
   operation: string;

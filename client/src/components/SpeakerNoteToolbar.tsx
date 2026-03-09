@@ -45,7 +45,7 @@ export function SpeakerNoteToolbar({
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [transformationResult, setTransformationResult] = useState<TransformationResult | null>(null);
-  const [previousNotes, setPreviousNotes] = useState('');
+  const [_previousNotes, setPreviousNotes] = useState('');
 
   const handleTransform = async (type: TransformationType) => {
     setLoading(true);

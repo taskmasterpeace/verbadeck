@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Loader2, X, Copy, Check, Clock } from 'lucide-react';
+import { MessageCircle, Loader2, X, Copy, Check } from 'lucide-react';
 import { getModelById } from '@/lib/openrouter-models';
 
 interface Answer {

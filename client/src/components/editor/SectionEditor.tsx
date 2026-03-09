@@ -21,9 +21,9 @@ export function SectionEditor({
   sectionIndex,
   totalSections,
   onUpdate,
-  selectedModel,
-  allSections,
-  presentationStyle,
+  selectedModel: _selectedModel,
+  allSections: _allSections,
+  presentationStyle: _presentationStyle,
 }: SectionEditorProps) {
   const [heading, setHeading] = useState(section.heading || '');
   const [content, setContent] = useState(section.content);

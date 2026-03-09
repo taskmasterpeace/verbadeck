@@ -1,8 +1,6 @@
 import { type Section } from '../lib/script-parser';
-import { Card, CardContent } from '../components/ui/card';
 import { PresenterView } from '../components/PresenterView';
 import { TransitionEffects } from '../components/TransitionEffects';
-import { TriggerCarousel } from '../components/TriggerCarousel';
 
 interface PresenterPageProps {
   sections: Section[];
@@ -21,11 +19,11 @@ interface PresenterPageProps {
 }
 
 export function PresenterPage({
-  sections,
-  currentSectionIndex,
-  currentSection,
-  previousSection,
-  nextSection,
+  sections: _sections,
+  currentSectionIndex: _currentSectionIndex,
+  currentSection: _currentSection,
+  previousSection: _previousSection,
+  nextSection: _nextSection,
   shouldFlash,
   openAudienceView,
   goToSection,
@@ -33,7 +31,7 @@ export function PresenterPage({
   goBackSection,
   stopStreaming,
   isStreaming,
-  viewMode,
+  viewMode: _viewMode,
 }: PresenterPageProps) {
   return (
     <>

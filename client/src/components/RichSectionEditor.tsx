@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from './ui/card';
-import type { Section } from '@/lib/script-parser';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
 import { useSectionForm } from '@/hooks/useSectionForm';
 import { SlidePreview } from './SlidePreview';
@@ -23,11 +22,11 @@ interface RichSectionEditorProps {
 
 export function RichSectionEditor({
   sectionIndex,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
-  isDragging = false,
-  isDragOver = false,
+  onDragStart: _onDragStart,
+  onDragEnter: _onDragEnter,
+  onDragEnd: _onDragEnd,
+  isDragging: _isDragging = false,
+  isDragOver: _isDragOver = false,
 }: RichSectionEditorProps) {
   // Get data from store
   const sections = usePresentationStore((state) => state.sections);
@@ -53,7 +52,7 @@ export function RichSectionEditor({
     isEditing,
     setIsEditing,
     updateField,
-    updateFields,
+    updateFields: _updateFields,
     saveChanges,
     cancelChanges,
     toggleTrigger,

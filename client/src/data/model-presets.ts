@@ -1,4 +1,3 @@
-import { Zap, Scale, Gem, DollarSign } from 'lucide-react';
 import type { ModelConfig } from './server-defaults';
 
 export interface Preset {
