@@ -1157,18 +1157,17 @@ app.get('/api/prompts/:operation', (req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`\n🎤 VerbaDeck Server running on http://localhost:${PORT}`);
   console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws`);
+  console.log(`Control WebSocket: ws://localhost:${PORT}/ws/control`);
   console.log(`API endpoints: http://localhost:${PORT}/api/*`);
   console.log(`🤖 OpenRouter AI enabled\n`);
 });
 
 const wss = new WebSocketServer({ noServer: true });
+const controlWss = new WebSocketServer({ noServer: true });
+const { createRoom, joinRoom, leaveRoom, getRoom, broadcastToControllers, sendToPresenter } = require('./room-manager');
 
 server.on('upgrade', async (req, socket, head) => {
-  if (req.url !== '/ws') {
-    socket.destroy();
-    return;
-  }
-
+  if (req.url === '/ws') {
   wss.handleUpgrade(req, socket, head, (clientWs) => {
     console.log('✅ Client connected');
 
@@ -1265,6 +1264,96 @@ server.on('upgrade', async (req, socket, head) => {
       cleanup();
     });
   });
+  } else if (req.url === '/ws/control') {
+    controlWss.handleUpgrade(req, socket, head, (ws) => {
+      console.log('🎮 Control WebSocket connected');
+      let roomCode = null;
+      let role = null;
+
+      ws.on('message', (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+
+          if (msg.type === 'create-room') {
+            const room = createRoom(ws);
+            roomCode = room.code;
+            role = 'presenter';
+            ws.send(JSON.stringify({ type: 'room-created', roomCode: room.code }));
+          }
+
+          else if (msg.type === 'join-room') {
+            const room = joinRoom(msg.roomCode, ws);
+            if (room) {
+              roomCode = msg.roomCode;
+              role = 'controller';
+              ws.send(JSON.stringify({ type: 'room-joined', state: room.state }));
+            } else {
+              ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
+            }
+          }
+
+          else if (msg.type === 'state-update' && roomCode) {
+            const room = getRoom(roomCode);
+            if (room) {
+              room.state = { ...room.state, ...msg.state };
+              broadcastToControllers(room, { type: 'state-update', state: room.state });
+            }
+          }
+
+          else if (msg.type === 'navigate' && roomCode) {
+            const room = getRoom(roomCode);
+            if (room && role === 'controller') {
+              sendToPresenter(room, { type: 'navigate', direction: msg.direction });
+            }
+          }
+
+          else if (msg.type === 'toggle-qa' && roomCode) {
+            const room = getRoom(roomCode);
+            if (room) {
+              if (role === 'controller') {
+                sendToPresenter(room, { type: 'toggle-qa', enabled: msg.enabled });
+              }
+            }
+          }
+
+          else if (msg.type === 'qa-update' && roomCode) {
+            const room = getRoom(roomCode);
+            if (room && role === 'presenter') {
+              room.state.qaState = msg.qaState;
+              broadcastToControllers(room, { type: 'qa-update', qaState: msg.qaState });
+            }
+          }
+
+          else if (msg.type === 'dismiss-qa' && roomCode) {
+            const room = getRoom(roomCode);
+            if (room) {
+              room.state.qaState = null;
+              if (role === 'controller') {
+                sendToPresenter(room, { type: 'dismiss-qa' });
+              } else {
+                broadcastToControllers(room, { type: 'dismiss-qa' });
+              }
+            }
+          }
+
+        } catch (err) {
+          console.error('Control message error:', err);
+        }
+      });
+
+      ws.on('close', () => {
+        console.log(`🎮 Control WebSocket disconnected (${role}, room ${roomCode})`);
+        if (roomCode) leaveRoom(roomCode, ws);
+      });
+
+      ws.on('error', (err) => {
+        console.error('Control WebSocket error:', err.message);
+        if (roomCode) leaveRoom(roomCode, ws);
+      });
+    });
+  } else {
+    socket.destroy();
+  }
 });
 
 // Graceful shutdown

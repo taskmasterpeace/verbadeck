@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom'
 import App from './App.tsx'
 import { AudiencePage } from './pages/AudiencePage.tsx'
+import { ControllerPage } from './pages/ControllerPage.tsx'
 import { LayoutDemoPage } from './pages/LayoutDemoPage.tsx'
 import { LibraryPage } from './pages/LibraryPage.tsx'
 import { runMigration, getMigrationStatus } from './lib/storage-migration'
@@ -80,6 +81,11 @@ const router = createBrowserRouter([
     // Audience view (separate window/screen) - no MainLayout
     path: '/audience',
     element: <AudiencePage />,
+  },
+  {
+    // Phone controller (no MainLayout) - dark theme remote control
+    path: '/controller',
+    element: <ControllerPage />,
   },
   {
     // Layout demo page (for testing V2.0 layout)
