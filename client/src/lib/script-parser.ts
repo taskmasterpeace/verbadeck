@@ -11,6 +11,22 @@ export interface Section {
   speakerNotes?: string; // Optional speaker notes - what to say vs what audience sees
   imageOnly?: boolean; // If true, only display image (no text) to audience
   layout?: SlideLayout; // Layout style for the slide (auto-detected or user-selected)
+
+  // TalkAdvantage Pro Format - Enhanced presentation structure
+  subtext?: string;               // Optional expansion of heading
+  visualElements?: string[];      // Bullet points shown on slide
+  recommendedImage?: string;      // Image description for generation
+
+  // TalkAdvantage Pro - Structured Speaker Notes
+  structuredSpeakerNotes?: {
+    profoundStatement: string;
+    talkingPoints: {
+      data: string;
+      vision: string;
+      proof: string;
+    };
+    highImpactParagraph: string;
+  };
 }
 
 /**
@@ -25,10 +41,18 @@ export function normalizeToken(word: string): string {
 
 /**
  * Create a regex pattern that matches the token with simple suffix tolerance
- * Handles plural forms: moment/moments, opportunity/opportunities
+ * Handles plural forms: moment/moments, opportunity/opportunities, box/boxes
  */
 export function createTokenPattern(token: string): RegExp {
   const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Special handling for words ending in 'y' (e.g., opportunity -> opportunities)
+  if (token.toLowerCase().endsWith('y')) {
+    const baseWithoutY = escaped.slice(0, -1); // Remove the 'y'
+    // Match: opportunity, opportunities (y->ies), or opportunitys (rare but possible)
+    return new RegExp(`\\b${baseWithoutY}(y|ies)\\b`, 'i');
+  }
+
   // Match exact token with optional s/es/ies suffix, with word boundaries
   return new RegExp(`\\b${escaped}(s|es|ies)?\\b`, 'i');
 }

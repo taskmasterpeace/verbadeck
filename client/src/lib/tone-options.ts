@@ -56,6 +56,12 @@ export const TONE_OPTIONS: ToneOption[] = [
     label: 'Sarcastic & Sharp',
     description: 'Dry wit and subtle jabs. Ironic observations that make memorable points.',
     icon: '😏'
+  },
+  {
+    value: 'interviewee',
+    label: 'Interviewee',
+    description: 'Answering as a candidate in an interview. Highlights relevant experience, technical depth, and problem-solving approach.',
+    icon: '🎯'
   }
 ];
 

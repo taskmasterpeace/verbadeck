@@ -12,6 +12,8 @@ export interface PresentationData {
     selectedModel?: string;
     currentSectionIndex?: number;
     viewMode?: string;
+    cancelWord?: string;
+    presentationStyle?: any; // PresentationStyle type
   };
   metadata?: {
     model?: string;
@@ -31,6 +33,8 @@ export async function savePresentation(
     selectedModel?: string;
     currentSectionIndex?: number;
     viewMode?: string;
+    cancelWord?: string;
+    presentationStyle?: any;
   }
 ): Promise<void> {
   const data: PresentationData = {
@@ -110,6 +114,8 @@ export function exportPresentationJSON(
     selectedModel?: string;
     currentSectionIndex?: number;
     viewMode?: string;
+    cancelWord?: string;
+    presentationStyle?: any;
   }
 ): string {
   const data: PresentationData = {
