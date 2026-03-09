@@ -1,0 +1,141 @@
+VERBADECK DATA PERSISTENCE - FINDINGS SUMMARY
+
+KEY FINDINGS:
+
+1. SAVE PRESENTATIONS: YES
+   - Users can save presentations as .verbadeck files (JSON format)
+   - Located in StatusBar.tsx lines 207-217
+   - Handled by useFileOperations hook
+   - File includes: sections, knowledge base, settings, metadata
+   - Downloads to browser default location (user-managed)
+
+2. EXPORT PRESENTATIONS: LIMITED
+   - Only .verbadeck (JSON) and .json formats supported
+   - NO PowerPoint (.pptx), PDF, Word (.docx), or CSV export
+   - Images stored as base64 data URLs within JSON
+   - All content stored in single file
+
+3. BACKEND STORAGE: NO
+   - Server is stateless (Node.js/Express)
+   - No database connection exists
+   - All persistence is client-side (browser localStorage + files)
+   - Server only routes API calls to OpenRouter, Replicate, AssemblyAI
+
+4. PAGE REFRESH BEHAVIOR: LOSES ALL WORK
+   - React state resets to defaults
+   - localStorage settings restored (model, tone, etc.)
+   - Sections and current index NOT persisted
+   - User returns to home screen
+   - Must manually reload from file
+   - Risk: Users lose all work on accidental refresh
+
+5. COLLABORATION/SHARING: NOT IMPLEMENTED
+   - No user accounts or authentication
+   - No cloud sync
+   - No team collaboration features
+   - No version history
+   - No sharing links
+   - Only exception: BroadcastChannel API for same-browser-tab sync
+
+PERSISTENCE LAYERS:
+
+Layer 1 - localStorage (5-10MB limit):
+  - verbadeck-selected-model
+  - verbadeck-operation-models
+  - verbadeck-cancel-word
+  - verbadeck-presentation-style
+  - verbadeck-shared-knowledge-base
+  - verbadeck-presentation-zoom
+  - verbadeck-presentations (library)
+
+Layer 2 - File Downloads (.verbadeck JSON):
+  - Portable across devices/browsers
+  - Cloud-syncable (OneDrive, Google Drive, Dropbox)
+  - Contains full presentation state
+  - Manually triggered (not automatic)
+
+Layer 3 - Session Memory:
+  - Sections array
+  - Current section index
+  - Transcript history
+  - Streaming status
+  - Q&A answers
+  - ALL LOST ON PAGE REFRESH
+
+CRITICAL MISSING FEATURES:
+
+1. Auto-Save (Data Loss Risk)
+   - No background persistence
+   - Manual save only
+   - No recovery from crashes
+   
+2. Session Recovery (Poor UX)
+   - No "Continue where you left off"
+   - No unsaved changes indicator
+   - Page refresh clears all work
+
+3. Cloud Sync (Single Device)
+   - No cross-device sync
+   - No automatic backup
+   - No versioning
+
+4. Export Formats
+   - No PowerPoint export
+   - No PDF export
+   - No Word export
+   - Limits interoperability
+
+5. Collaboration
+   - No multi-user support
+   - Not suitable for teams
+
+CODE LOCATIONS:
+
+- localStorage Hook: client/src/hooks/useLocalStorage.ts
+- File Operations: client/src/hooks/useFileOperations.ts
+- Save/Load Logic: client/src/lib/file-storage.ts
+- Library Storage: client/src/lib/presentation-storage.ts
+- UI Buttons: client/src/components/StatusBar.tsx (lines 207-241)
+- App State: client/src/App.tsx (lines 31-96)
+- Library UI: client/src/components/PresentationLibrary.tsx
+- Tests: tests/save-load.spec.ts
+
+TEST COVERAGE:
+
+Tests verify:
+- Complete state save (sections, KB, settings, metadata)
+- Load presentation and state restoration
+- Backward compatibility with v1.0 format
+- File validation and error handling
+
+Run: npm test -- save-load.spec.ts
+
+RECOMMENDATIONS FOR IMPROVEMENT:
+
+Priority 1 (Critical):
+1. Implement auto-save to localStorage (every 30 seconds)
+2. Add session recovery on page load
+3. Add "Save to Library" UI button
+
+Priority 2 (High):
+1. Export to PowerPoint/PDF using libraries
+2. Cloud sync option (Firebase/Supabase)
+3. Undo/Redo functionality
+
+Priority 3 (Medium):
+1. Version history (5-10 versions)
+2. Multi-user collaboration
+3. Encryption for sensitive content
+
+SUITABLE FOR:
+- Solo presentations
+- Local development
+- Personal workflow
+- File-based version control
+
+NOT SUITABLE FOR:
+- Team collaboration
+- Cloud workflows
+- Enterprise deployments
+- Sensitive content
+- Mission-critical presentations
