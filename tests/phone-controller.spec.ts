@@ -55,6 +55,7 @@ test.describe('Phone Controller', () => {
     });
 
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     await page.evaluate((d) => localStorage.setItem('verbadeck-autosave', d), fakeAutoSave);
     await page.reload();
     await page.waitForLoadState('networkidle');

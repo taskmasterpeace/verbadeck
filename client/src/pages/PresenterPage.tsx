@@ -1,8 +1,10 @@
+import { useState, useMemo } from 'react';
 import { type Section } from '../lib/script-parser';
 import { PresenterView } from '../components/PresenterView';
 import { TransitionEffects } from '../components/TransitionEffects';
 import { usePresenterRoom } from '../hooks/usePresenterRoom';
 import { Smartphone, Wifi } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface PresenterPageProps {
   sections: Section[];
@@ -36,6 +38,15 @@ export function PresenterPage({
   viewMode: _viewMode,
 }: PresenterPageProps) {
   const presenterRoom = usePresenterRoom();
+  const [showQR, setShowQR] = useState(true);
+
+  // Build the controller URL using the current hostname (LAN IP or localhost)
+  const controllerUrl = useMemo(() => {
+    if (!presenterRoom.roomCode) return '';
+    const proto = window.location.protocol;
+    const host = window.location.host;
+    return `${proto}//${host}/controller?room=${presenterRoom.roomCode}`;
+  }, [presenterRoom.roomCode]);
 
   return (
     <>
@@ -71,17 +82,39 @@ export function PresenterPage({
             {presenterRoom.isHosting && presenterRoom.roomCode ? (
               <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-lg p-1 shadow-xl">
                 <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 rounded-md px-6 py-4 min-w-[200px]">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <Wifi className="w-4 h-4 text-green-200" />
                       <span className="text-green-100 text-xs font-medium">Remote Active</span>
                     </div>
+
+                    {/* QR Code */}
+                    {showQR && controllerUrl && (
+                      <div className="bg-white p-2 rounded-lg">
+                        <QRCodeSVG
+                          value={controllerUrl}
+                          size={140}
+                          level="M"
+                          bgColor="#ffffff"
+                          fgColor="#000000"
+                        />
+                      </div>
+                    )}
+
                     <div className="font-mono text-3xl font-bold text-white tracking-[0.3em]">
                       {presenterRoom.roomCode}
                     </div>
-                    <div className="text-green-200 text-xs mt-2">
-                      Enter this code on your phone at /controller
+
+                    <div className="text-green-200 text-xs text-center leading-relaxed">
+                      Scan QR code or enter code at /controller
                     </div>
+
+                    <button
+                      onClick={() => setShowQR(!showQR)}
+                      className="text-green-300/60 text-xs hover:text-green-200 transition-colors"
+                    >
+                      {showQR ? 'Hide QR' : 'Show QR'}
+                    </button>
                   </div>
                 </div>
               </div>
