@@ -7,7 +7,7 @@ import { PresentationTimer } from './PresentationTimer';
 import { CountdownProgressBar } from './CountdownProgressBar';
 import { usePresentationStore } from '@/stores/usePresentationStore';
 import { usePresenterCountdown } from '@/hooks/usePresenterCountdown';
-import { Database, Eye, CheckCircle, ImageIcon } from 'lucide-react';
+import { Database, Eye, CheckCircle, ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface PresenterViewProps {
   onSectionClick?: (index: number) => void;
@@ -39,6 +39,9 @@ export function PresenterView({
 
   // Tab state for talking points
   const [activeTab, setActiveTab] = useState<'data' | 'vision' | 'proof'>('data');
+
+  // Mobile: toggle slide preview pane
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   // Calculate content density for adaptive layout
   const calculateWordCount = (section: Section): number => {
@@ -187,9 +190,9 @@ export function PresenterView({
   };
 
   return (
-    <div className="h-screen w-full flex overflow-hidden bg-background">
-      {/* LEFT SIDE: Presenter Notes (70%) - What YOU read */}
-      <div className="flex-[7] flex flex-col min-w-0 border-r">
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-background">
+      {/* LEFT SIDE: Presenter Notes (70% on desktop, full width on mobile) - What YOU read */}
+      <div className="flex-1 md:flex-[7] flex flex-col min-w-0 md:border-r">
         {/* Top Bar */}
         <div className="flex-shrink-0 border-b">
           <PresentationTimer
@@ -200,13 +203,13 @@ export function PresenterView({
           />
           {onSectionClick && totalSections > 1 && (
             <div className="px-4 py-2 border-t bg-muted/30">
-              <div className="flex items-center gap-2 overflow-x-auto">
+              <div className="flex items-center gap-1.5 md:gap-2 overflow-x-auto">
                 <span className="text-xs text-muted-foreground whitespace-nowrap">Jump:</span>
                 {Array.from({ length: totalSections }, (_, i) => (
                   <button
                     key={i}
                     onClick={() => onSectionClick(i)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    className={`min-w-[2rem] min-h-[2rem] md:min-w-0 md:min-h-0 px-2 py-1 rounded text-xs font-medium transition-colors ${
                       i === sectionIndex ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted'
                     }`}
                   >
@@ -230,7 +233,7 @@ export function PresenterView({
 
         {/* Presenter Notes Content */}
         <div className={`flex-1 min-h-0 ${layoutClasses.mainPadding} overflow-auto`}>
-          <div className="max-w-4xl">
+          <div className="max-w-full md:max-w-4xl">
             {/* Section Info with Density Indicator - Hide for ultra-dense */}
             {!useUltraDense && (
               <div className={`flex items-center justify-between ${useTwoColumnLayout ? 'mb-1' : 'mb-4'}`}>
@@ -249,7 +252,7 @@ export function PresenterView({
                     </span>
                   )}
                 </div>
-                <span className={`${useTwoColumnLayout ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'} bg-amber-100 text-amber-900 rounded-full font-mono font-semibold`}>
+                <span className={`${useTwoColumnLayout ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'} bg-amber-100 text-amber-900 rounded-full font-mono font-semibold truncate max-w-[50vw] md:max-w-none`}>
                   Say: "{currentSection.advanceToken}"
                 </span>
               </div>
@@ -428,12 +431,26 @@ export function PresenterView({
         </div>
       </div>
 
-      {/* RIGHT SIDE: Slide Preview & Next (30%) */}
-      <div className="flex-[3] flex flex-col bg-muted/20">
+      {/* RIGHT SIDE: Slide Preview & Next (30% on desktop, collapsible on mobile) */}
+      <div className={`
+        md:flex-[3] flex flex-col bg-muted/20 border-t md:border-t-0
+        ${showMobilePreview ? 'max-h-[60vh]' : 'max-h-12'}
+        md:max-h-none transition-[max-height] duration-300 ease-in-out
+        flex-shrink-0
+      `}>
+        {/* Mobile toggle button - only visible on small screens */}
+        <button
+          onClick={() => setShowMobilePreview(!showMobilePreview)}
+          className="md:hidden flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b text-xs font-bold text-muted-foreground uppercase tracking-wide min-h-[3rem]"
+        >
+          <span>Slide Preview</span>
+          {showMobilePreview ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+        </button>
+
         {/* What Audience Sees - Top Half */}
-        <div className="flex-1 min-h-0 p-4 border-b flex flex-col">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3 flex-shrink-0">
-            📺 Audience Sees
+        <div className={`flex-1 min-h-0 p-3 md:p-4 border-b flex flex-col ${showMobilePreview ? '' : 'hidden md:flex'}`}>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2 md:mb-3 flex-shrink-0 hidden md:block">
+            Audience Sees
           </h3>
           <div className="flex-1 min-h-0 bg-white rounded-lg border-2 border-primary/30 shadow-lg overflow-hidden">
             <CurrentSlidePreview section={currentSection} />
@@ -441,11 +458,11 @@ export function PresenterView({
         </div>
 
         {/* Next Section - Bottom Half */}
-        <div className="flex-1 min-h-0 p-4 flex flex-col">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3 flex-shrink-0">
-            ⏭️ Next Up
+        <div className={`flex-1 min-h-0 p-3 md:p-4 flex flex-col ${showMobilePreview ? '' : 'hidden md:flex'}`}>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2 md:mb-3 flex-shrink-0">
+            Next Up
           </h3>
-          <div className="flex-1 min-h-0 overflow-auto bg-background rounded-lg border-2 border-muted p-4">
+          <div className="flex-1 min-h-0 overflow-auto bg-background rounded-lg border-2 border-muted p-3 md:p-4">
             {nextSection ? (
               <div className="space-y-2">
                 {nextSection.heading && (
@@ -459,7 +476,7 @@ export function PresenterView({
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center text-muted-foreground text-sm">
-                🎉 This is the final section
+                This is the final section
               </div>
             )}
           </div>
