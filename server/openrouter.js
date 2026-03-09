@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getPrompt } from './prompts.js';
 import { parseAIResponse } from './utils/json-parser.js';
 import { TONE_PERSONAS } from './constants.js';
-import { getProviderRouting, getModelForOperation } from './model-config.js';
+import { getProviderRouting, getModelForOperation, getFallbackModel } from './model-config.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
 
@@ -13,6 +13,42 @@ export class OpenRouterClient {
   constructor(apiKey) {
     this.apiKey = apiKey;
     this.baseURL = OPENROUTER_API_URL;
+  }
+
+  /**
+   * Simple chat completion - sends a prompt and returns the response text
+   * @param {string} prompt - The prompt to send
+   * @param {string} model - Model ID (e.g., 'openai/gpt-4o-mini')
+   * @returns {Promise<string>} The response text content
+   */
+  async chat(prompt, model = 'openai/gpt-4o-mini') {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/chat/completions`,
+        {
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://verbadeck.app',
+            'X-Title': 'VerbaDeck',
+          },
+        }
+      );
+
+      return response.data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error in chat:', error.response?.data || error.message);
+      throw new Error('Failed to get chat response');
+    }
   }
 
   /**
@@ -609,47 +645,31 @@ STRICT Requirements:
    * @param {string} model - Model ID
    * @returns {Promise<Array>} Array of slide positions, each with 4 options
    */
-  async generateSlideOptions(topic, answers, numSlides, model = 'anthropic/claude-3.5-sonnet') {
-    const answersContext = answers.map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n');
+  /**
+   * Generate slide in TalkAdvantage Pro format
+   * @param {string} topic - Topic of the presentation
+   * @param {Object} answers - User's answers to setup questions (converted to object)
+   * @param {number} sectionNumber - Current section number (1-indexed)
+   * @param {number} totalSections - Total number of sections
+   * @param {string} model - Model ID to use
+   * @returns {Promise<Object>} Single slide in TalkAdvantage Pro format
+   */
+  async generateSlideOptions(topic, answers, sectionNumber, totalSections, model = 'openai/gpt-4o-mini') {
+    // Use model config system for operation-specific defaults
+    const selectedModel = getModelForOperation('generateSlideOptions', model);
 
-    const prompt = `Create ${numSlides} slides about: "${topic}"
+    // Convert answers array to object if needed
+    const answersObj = Array.isArray(answers)
+      ? answers.reduce((acc, a) => ({ ...acc, [a.id]: a.answer }), {})
+      : answers;
 
-${answersContext}
-
-For EACH slide, generate 4 different options. Each option must have:
-- content: 2-4 sentences with smart markdown (what audience sees on slide)
-- primaryTrigger: one impactful word from the content
-- alternativeTriggers: 1-2 alternative trigger words
-- style: direct/storytelling/data-driven/provocative
-
-MARKDOWN RULES:
-- Use **bold** for key terms, stats, critical words
-- Use bullets (- item) for 3+ related points
-- Use numbered lists for steps/sequences
-- NO HTML tags, NO BBCode like [center], NO headings in content
-- Example: "We achieved **97% accuracy**.\n\n- **Fast** processing\n- **Easy** integration"
-
-Return ${numSlides} slides, 4 options each. ONLY JSON, no extra text:
-{
-  "slides": [
-    {
-      "position": 1,
-      "title": "First slide title",
-      "options": [
-        {"content": "Option 1 with **markdown**", "primaryTrigger": "word", "alternativeTriggers": ["alt1", "alt2"], "style": "direct"},
-        {"content": "Option 2 with bullets", "primaryTrigger": "word2", "alternativeTriggers": ["alt3"], "style": "storytelling"},
-        {"content": "Option 3 with stats", "primaryTrigger": "word3", "alternativeTriggers": ["alt4"], "style": "data-driven"},
-        {"content": "Option 4 bold approach", "primaryTrigger": "word4", "alternativeTriggers": ["alt5"], "style": "provocative"}
-      ]
-    }
-  ]
-}`;
+    const prompt = getPrompt('generateSlideOptions', topic, answersObj, sectionNumber, totalSections);
 
     try {
       const response = await axios.post(
         `${this.baseURL}/chat/completions`,
         {
-          model: model,
+          model: selectedModel,
           messages: [
             {
               role: 'user',
@@ -668,19 +688,21 @@ Return ${numSlides} slides, 4 options each. ONLY JSON, no extra text:
       );
 
       const content = response.data.choices[0].message.content;
-
       const parsed = parseAIResponse(content);
-      if (!parsed || !parsed.slides) {
-        console.error('❌ AI returned invalid response. First 500 chars:', content.substring(0, 500));
-        throw new Error('AI did not return valid slide data');
+
+      // Validate TalkAdvantage Pro format
+      if (!parsed || !parsed.heading) {
+        console.error('❌ AI returned invalid slide format. First 500 chars:', content.substring(0, 500));
+        throw new Error('AI did not return valid slide data in TalkAdvantage Pro format');
       }
-      return parsed.slides || [];
+
+      return parsed;
     } catch (error) {
-      if (error.message === 'AI did not return valid slide data') {
+      if (error.message?.includes('TalkAdvantage Pro format')) {
         throw error;
       }
-      console.error('Error generating slide options:', error.response?.data || error.message);
-      throw new Error('Failed to generate slide options');
+      console.error('Error generating slide:', error.response?.data || error.message);
+      throw new Error('Failed to generate slide');
     }
   }
 
@@ -782,28 +804,21 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
   async answerQuestionWithKeywords(question, knowledgeBase, model = 'meta-llama/llama-3.1-8b-instruct', tone = 'professional') {
     // Use model config system for operation-specific defaults
     const selectedModel = getModelForOperation('answerQuestion', model);
+    const fallbackModel = getFallbackModel(selectedModel);
 
-    // Map tone descriptions
-    const toneDescriptions = {
-      professional: 'professional, clear, and business-appropriate',
-      friendly: 'warm, conversational, and approachable',
-      enthusiastic: 'energetic, positive, and motivating',
-      confident: 'assertive, authoritative, and self-assured',
-      technical: 'precise, detailed, and expert-focused'
-    };
-
-    const toneDesc = toneDescriptions[tone] || toneDescriptions.professional;
+    // Use TONE_PERSONAS from constants (has all 9 tones matching the client)
+    const tonePersona = TONE_PERSONAS[tone] || TONE_PERSONAS.professional;
 
     const prompt = `You are an AI assistant answering questions based on the provided knowledge base.
+
+${tonePersona}
 
 **Question:** ${question}
 
 **Knowledge Base:**
 ${knowledgeBase}
 
-**Tone:** ${toneDesc}
-
-**Task:** Generate 2 different answer approaches to this question based on the knowledge base. Use a ${toneDesc} tone throughout all answers.
+**Task:** Generate 2 different answer approaches to this question based on the knowledge base. Stay in character throughout all answers.
 
 Each answer should have:
 1. **heading**: A short 3-7 word heading describing the approach (e.g., "Technical Deep Dive", "Business Value Focus", "User-Centric Perspective")
@@ -842,18 +857,25 @@ Return ONLY valid JSON in this exact format:
 }`;
 
     // Retry logic with rate limit detection
-    const MAX_RETRIES = 1;
-    const RETRY_DELAY_MS = 2000;
+    const MAX_RETRIES = 3;  // Increased retries for rate limit handling
+    const RETRY_DELAY_MS = 3000;  // Longer delay to avoid repeated rate limits
     const RATE_LIMIT_THRESHOLD_MS = 500; // Failures <500ms are likely rate limits
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       const startTime = Date.now();
 
+      // Use fallback model after first rate limit (attempt > 0)
+      const currentModel = (attempt > 0 && fallbackModel) ? fallbackModel : selectedModel;
+
+      if (attempt > 0 && fallbackModel) {
+        console.log(`🔄 Switching to fallback model: ${fallbackModel}`);
+      }
+
       try {
-        const providerRouting = getProviderRouting(selectedModel);
+        const providerRouting = getProviderRouting(currentModel);
 
         const requestBody = {
-          model: selectedModel,
+          model: currentModel,
           messages: [
             {
               role: 'user',
@@ -909,11 +931,17 @@ Return ONLY valid JSON in this exact format:
         console.error(`Error answering question with keywords (attempt ${attempt + 1}/${MAX_RETRIES + 1}, ${duration}ms):`,
           error.response?.data || error.message);
 
-        // If rate limited and we have retries left, wait and retry
+        // If rate limited and we have retries left, switch to fallback or wait
         if (isRateLimit && !isLastAttempt) {
-          console.log(`⏱️  Rate limit detected (${duration}ms response) - retrying in ${RETRY_DELAY_MS}ms...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-          continue; // Retry
+          if (fallbackModel && attempt === 0) {
+            console.log(`⏱️  Rate limit detected (${duration}ms) - switching to fallback model ${fallbackModel}...`);
+            // No delay needed when switching models
+            continue; // Retry with fallback
+          } else {
+            console.log(`⏱️  Rate limit detected (${duration}ms response) - retrying in ${RETRY_DELAY_MS}ms...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+            continue; // Retry
+          }
         }
 
         // No more retries or different error type
@@ -1233,50 +1261,24 @@ Return ONLY valid JSON in this exact format:
   }
 
   /**
-   * Generate speaker notes (full speaking scripts) for slides
-   * @param {Array} slides - Array of objects with {content: string, title: string}
+   * Generate speaker notes in TalkAdvantage Pro format
+   * @param {Array} slides - Array of slide objects with TalkAdvantage Pro format
+   * @param {string} topic - Presentation topic
+   * @param {Object} answers - User's answers to setup questions
    * @param {string} model - Model ID
-   * @returns {Promise<Array>} Array of speaker notes strings
+   * @returns {Promise<Array>} Array of speaker notes objects with profoundStatement, talkingPoints (data/vision/proof), highImpactParagraph
    */
-  async generateSpeakerNotes(slides, model = 'openai/gpt-4o-mini') {
-    // Build slides context
-    const slidesContext = slides.map((slide, index) =>
-      `Slide ${index + 1}: "${slide.title}"\n${slide.content}`
-    ).join('\n\n');
+  async generateSpeakerNotes(slides, topic, answers, model = 'openai/gpt-4o-mini') {
+    // Use model config system for operation-specific defaults
+    const selectedModel = getModelForOperation('generateSpeakerNotes', model);
 
-    const prompt = `Generate speaker notes (full speaking scripts) for these ${slides.length} slides.
-
-For EACH slide, write what the presenter will SAY word-for-word. This is their complete speaking script.
-
-REQUIREMENTS:
-- Include stories, personal anecdotes, specific examples with names/numbers
-- Add statistics, data, or research NOT mentioned on the slide
-- Make it natural and conversational, like talking to a friend
-- 4-8 sentences that significantly expand on the slide content
-- DO NOT write meta-instructions - write actual spoken words
-
-Example:
-Slide: "AI boosts productivity"
-BAD: "Explain how AI improves productivity."
-GOOD: "Here's what blew my mind - teams using AI saw 73% faster completion. Real work, not demos. Sarah's team finished a 3-week project in 5 days. How? AI handled grunt work. I tested this last month - cut report writing from 4 hours to 45 minutes."
-
-SLIDES:
-${slidesContext}
-
-Return ONLY JSON (no markdown):
-{
-  "speakerNotes": [
-    "Full script for slide 1...",
-    "Full script for slide 2...",
-    ...
-  ]
-}`;
+    const prompt = getPrompt('generateSpeakerNotes', slides, topic, answers);
 
     try {
       const response = await axios.post(
         `${this.baseURL}/chat/completions`,
         {
-          model: model,
+          model: selectedModel,
           messages: [
             {
               role: 'user',
@@ -1297,9 +1299,17 @@ Return ONLY JSON (no markdown):
       const content = response.data.choices[0].message.content;
       const parsed = parseAIResponse(content);
 
-      // Return the speaker notes array
-      return parsed.speakerNotes || [];
+      // Validate TalkAdvantage Pro speaker notes format
+      if (!parsed || !parsed.speakerNotes || !Array.isArray(parsed.speakerNotes)) {
+        console.error('❌ AI returned invalid speaker notes format. First 500 chars:', content.substring(0, 500));
+        throw new Error('AI did not return valid speaker notes in TalkAdvantage Pro format');
+      }
+
+      return parsed.speakerNotes;
     } catch (error) {
+      if (error.message?.includes('TalkAdvantage Pro format')) {
+        throw error;
+      }
       console.error('Error generating speaker notes:', error.response?.data || error.message);
       throw new Error('Failed to generate speaker notes');
     }

@@ -8,7 +8,7 @@ import { TONE_PERSONAS } from './constants.js';
 export const PROMPTS = {
   processScript: {
     name: 'Process Script',
-    description: 'Convert raw text into presentation sections with trigger words',
+    description: 'Upload Tab: Convert raw text/PowerPoint into presentation sections with trigger words',
     getPrompt: (text, preserveWording = true) => {
       return preserveWording
         ? `You are a presentation script formatter for voice-driven presentations. You specialize in analyzing speech patterns and creating optimal voice navigation points. You understand phonetics, speech-to-text accuracy, and how people naturally speak presentations.
@@ -16,15 +16,16 @@ export const PROMPTS = {
 CRITICAL: PRESERVE EXACT WORDING. Do NOT edit, rewrite, or change any words from the original text.
 
 **SECTION MARKER HANDLING:**
-If the text contains explicit section markers like "SECTION 1: OPENING HOOK (15 seconds)", you MUST:
+If the text contains explicit section markers like "SECTION 1: OPENING HOOK", you MUST:
 1. **Extract the heading** from the marker (e.g., "Opening Hook")
-2. **Remove the entire marker line** from the content (including "SECTION X:", the title, and timing)
-3. The content should start with the actual presentation text AFTER the marker line
+2. **Remove the entire marker line** from the content (including "SECTION X:" and the title)
+3. **Remove any timing information** such as "(15 seconds)", "(30 secs)", time estimates, duration notes, etc.
+4. The content should start with the actual presentation text AFTER the marker line
 
 Example:
-Input: "SECTION 1: OPENING HOOK (15 seconds)\nAI can write your emails..."
+Input: "SECTION 1: OPENING HOOK\nAI can write your emails..."
 Output heading: "Opening Hook"
-Output content: "AI can write your emails..." (marker line completely removed)
+Output content: "AI can write your emails..." (marker line completely removed, no timing info)
 
 Your tasks:
 1. Check if text has SECTION markers - if yes, extract headings and strip markers from content
@@ -128,6 +129,13 @@ HEADING GUIDELINES:
 - Make it descriptive but concise
 - Examples: "Climate Change Impact", "AI in Healthcare", "Future of Transportation"
 
+FORMATTING RULES:
+- Use plain markdown ONLY (headers ##, **bold**, *italic*, lists, etc.)
+- DO NOT use HTML tags like <div>, <span>, <center>, or any HTML formatting
+- DO NOT use inline styles or style attributes
+- Keep content as clean plain text with simple markdown formatting
+- For alignment, the user will handle this separately in the editor
+
 Raw text to process (PRESERVE EXACTLY):
 ${text}`
         : `You are a presentation script formatter for voice-driven presentations. You specialize in improving clarity and flow while creating optimal voice navigation points. You understand phonetics, speech-to-text accuracy, and how people naturally speak presentations.
@@ -202,7 +210,7 @@ ${text}`;
 
   generateQuestions: {
     name: 'Generate Questions',
-    description: 'Create strategic questions for the Create from Scratch workflow',
+    description: 'Create from Scratch: Generate strategic questions about presentation topic to gather user preferences',
     getPrompt: (topic) => `You are a presentation planning consultant who helps speakers create compelling, audience-focused presentations. You ask insightful questions to uncover the speaker's goals, audience needs, and desired outcomes.
 
 A user wants to create a presentation about: "${topic}"
@@ -269,89 +277,82 @@ Requirements:
   },
 
   generateSlideOptions: {
-    name: 'Generate Slide Options',
-    description: 'Generate multiple slide variations for each section',
-    getPrompt: (topic, answers, sectionNumber, totalSections) => `You are a professional presentation designer who creates compelling slide content for diverse audiences. You understand how to adapt content based on audience needs, presentation goals, and speaking context.
+    name: 'Generate Slide - TalkAdvantage Pro Format',
+    description: 'Create from Scratch: Generate comprehensive slide in TalkAdvantage Pro format',
+    getPrompt: (topic, answers, sectionNumber, totalSections) => `You are a professional presentation designer creating slides in the TalkAdvantage Pro format. You create compelling, high-impact slides that balance visual simplicity with rich speaker notes.
 
-Generate 3 different slide content options for section ${sectionNumber} of ${totalSections}.
+Generate ONE comprehensive slide for section ${sectionNumber} of ${totalSections}.
 
 Topic: ${topic}
 User Preferences: ${JSON.stringify(answers, null, 2)}
 
-Create 3 DISTINCT variations with these SPECIFIC characteristics:
-
-1. CONCISE & IMPACTFUL:
-   - 1-2 short, punchy sentences (max 25 words total)
-   - Start with strong verb or striking statement
-   - Focus on ONE key message
-   - Style: Direct, bold, memorable
-
-2. DETAILED & INFORMATIVE:
-   - 3-4 complete sentences (50-80 words total)
-   - Provide context, explanation, supporting details
-   - Include specific examples or data points
-   - Style: Comprehensive, educational, clear
-
-3. STORY-DRIVEN:
-   - 2-3 sentences in narrative form (40-60 words total)
-   - Use relatable scenario, metaphor, or mini-story
-   - Connect emotionally with audience
-   - Style: Engaging, human, memorable
-
 CONTEXT-AWARE GENERATION:
-- Section 1 (Introduction): Hook attention, establish relevance
-- Sections 2-${totalSections - 1} (Body): Develop key points progressively
-- Section ${totalSections} (Conclusion): Emphasize takeaways, call-to-action
+- Section 1 (Introduction): Hook attention, establish relevance, set stakes
+- Sections 2-${totalSections - 1} (Body): Develop key points progressively, build narrative momentum
+- Section ${totalSections} (Conclusion): Emphasize takeaways, call-to-action, memorable close
 
 USE USER PREFERENCES:
-${answers.audience ? `- Audience is "${answers.audience}": Adapt language and examples accordingly` : ''}
-${answers.goal ? `- Goal is "${answers.goal}": Frame content to support this objective` : ''}
-${answers.tone ? `- Tone is "${answers.tone}": Match writing style to this tone` : ''}
+${answers.audience ? `- Audience: "${answers.audience}" - Adapt language, examples, and complexity` : ''}
+${answers.goal ? `- Goal: "${answers.goal}" - Frame content to support this objective` : ''}
+${answers.tone ? `- Tone: "${answers.tone}" - Match writing style and energy level` : ''}
+${answers.duration ? `- Duration: "${answers.duration}" - Adjust depth and pacing` : ''}
 
-Each variation must include appropriate trigger words at natural pause points for voice navigation.
+SLIDE COMPONENTS (TalkAdvantage Pro Format):
 
-ALL slides must have a clear heading (3-7 words max) that captures the main topic.
+**HEADLINE:**
+- Big, bold, memorable (max 10 words)
+- Make it tweet-worthy and slide-worthy
+- Should create curiosity or tension
+
+**SUBTEXT (Optional):**
+- 1-2 sentence expansion of headline
+- Provides essential context
+- Only include if needed for clarity
+
+**VISUAL ELEMENTS:**
+- Bullet points, callouts, stats, or key components
+- Keep visual hierarchy clear
+- Focus on what appears ON the slide (not in speaker notes)
+- Use data/metrics when relevant
+- Max 3-5 visual elements per slide
+
+**RECOMMENDED IMAGE:**
+- Detailed description for image generation
+- Be specific about composition, mood, elements
+- Describe exactly what should be visualized
+- Consider split-screen, before/after, data viz, metaphorical imagery
+- Example: "Split screen - Left: frustrated person typing at computer trapped behind chat interface. Right: confident person in conversation with subtle AR overlay showing conversational cues"
+
+**TRIGGER WORDS:**
+- Primary trigger: Last substantive word in visual content
+- Alternative triggers: 2 backup words from key concepts
+
+TONE GUIDELINES:
+- Confident but not arrogant
+- Visionary but grounded in proof
+- Conversational but professional
+- Every word earns its place
+- Show don't tell whenever possible
+- Use specific examples over generalities
 
 Return ONLY valid JSON in this exact format (no markdown, no extra text):
 {
-  "options": [
-    {
-      "heading": "Brief Slide Title (3-7 words)",
-      "content": "Concise slide text here (1-2 sentences, max 25 words)",
-      "style": "concise",
-      "primaryTrigger": "word",
-      "alternativeTriggers": ["word1", "word2"]
-    },
-    {
-      "heading": "Brief Slide Title (3-7 words)",
-      "content": "Detailed slide text here (3-4 sentences, 50-80 words)",
-      "style": "detailed",
-      "primaryTrigger": "word",
-      "alternativeTriggers": ["word1", "word2"]
-    },
-    {
-      "heading": "Brief Slide Title (3-7 words)",
-      "content": "Story-driven slide text here (2-3 sentences, 40-60 words)",
-      "style": "story",
-      "primaryTrigger": "word",
-      "alternativeTriggers": ["word1", "word2"]
-    }
-  ]
-}
-
-HEADING GUIDELINES:
-- Create the SAME heading for all 3 variations (heading stays consistent, only content varies)
-- Heading should be 3-7 words max
-- Use title case (capitalize major words)
-- Make it descriptive and relevant to the section topic
-- Examples: "AI's Growing Impact", "Future Technology Trends", "Building Team Culture"
-- For section 1: Often "Introduction", "Welcome", or the main topic title
-- For final section: Often "Conclusion", "Next Steps", or "Call to Action"`
+  "heading": "Big Bold Headline Here (max 10 words)",
+  "subtext": "Optional 1-2 sentence expansion for context and clarity",
+  "visualElements": [
+    "First key point or data callout",
+    "Second bullet or stat",
+    "Third element (keep to 3-5 max)"
+  ],
+  "recommendedImage": "Detailed image description: composition, mood, specific visual elements, style (e.g., modern illustration, split screen, data visualization, metaphorical concept art)",
+  "primaryTrigger": "word",
+  "alternativeTriggers": ["word1", "word2"]
+}`
   },
 
   suggestTriggers: {
     name: 'Suggest Triggers',
-    description: 'Suggest alternative trigger words for a section',
+    description: 'Editor: Suggest alternative trigger words for sections',
     getPrompt: (text) => `You are a voice interface design expert specializing in speech-to-text systems. You understand phonetics, speech recognition accuracy, and natural speaking patterns. Your job is to identify words that work reliably for voice navigation in presentations.
 
 Analyze this presentation section and suggest 3-5 trigger words ranked from best to good.
@@ -396,7 +397,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   answerQuestion: {
     name: 'Answer Question',
-    description: 'Generate Q&A answers with different tones',
+    description: 'Q&A Mode (during presentations): Generate AI answer options with different tones',
     getPrompt: (question, presentationContent, knowledgeBase, tone = 'professional') => {
       const kbContext = knowledgeBase.length > 0
         ? `\n\nKnowledge Base (FAQs):\n${knowledgeBase.map(kb => `Q: ${kb.question}\nA: ${kb.answer}`).join('\n\n')}`
@@ -460,7 +461,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   generateFAQs: {
     name: 'Generate FAQs',
-    description: 'Auto-generate frequently asked questions from presentation content',
+    description: 'Q&A Mode: Auto-generate FAQ pairs from presentation content for live question answering',
     getPrompt: (presentationContent) => `You are an experienced moderator who has facilitated hundreds of Q&A sessions. You have an intuitive sense of what questions audiences ask, what concerns they have, and what additional information they seek. You anticipate both obvious and thoughtful questions.
 
 Based on this presentation content, generate EXACTLY 6-8 FAQs (aim for 7) that an audience would likely ask.
@@ -505,7 +506,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   generateVariations: {
     name: 'Generate Variations',
-    description: 'Create slide content variations',
+    description: 'Editor: Create alternative slide content variations for user to choose from',
     getPrompt: (originalContent) => `You are an expert copywriter specializing in presentation content. You excel at rewriting content in different styles while preserving core meaning. You understand that variations should feel meaningfully different to give presenters real choices.
 
 Create 2 alternative versions of this slide content. Each must keep the core message intact but differ significantly in ONE of these ways:
@@ -570,7 +571,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 
   suggestImagePrompt: {
     name: 'Suggest Image Prompt',
-    description: 'Generate detailed image prompts for AI image generation',
+    description: 'Editor: Generate detailed image generation prompts for slide visuals',
     getPrompt: (content, presentationContext = '') => {
       const contextLine = presentationContext && presentationContext.trim().length > 0
         ? `This is part of a presentation about: ${presentationContext}\n\nThis specific slide contains: "${content}"`
@@ -654,9 +655,86 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
     }
   },
 
+  generateSpeakerNotes: {
+    name: 'Generate Speaker Notes - TalkAdvantage Pro Format',
+    description: 'Create from Scratch: Generate comprehensive speaker notes with 3 talking point options (Data, Vision, Proof)',
+    getPrompt: (slides, topic, answers) => {
+      const slidesContext = slides.map((s, i) => `Slide ${i + 1}: ${s.heading}\n${s.subtext || ''}\nVisual Elements: ${s.visualElements?.join(', ') || 'N/A'}`).join('\n\n');
+
+      return `You are an expert presentation coach creating TalkAdvantage Pro speaker notes. You provide speakers with multiple rhetorical approaches to choose from during their presentation.
+
+Generate speaker notes for ALL ${slides.length} slides in this presentation.
+
+Topic: ${topic}
+User Preferences: ${JSON.stringify(answers, null, 2)}
+
+Slides Overview:
+${slidesContext}
+
+For EACH slide, generate:
+
+**PROFOUND STATEMENT:**
+- One killer sentence (max 20 words)
+- Tweet-worthy and memorable
+- Captures the essence of the slide
+- Should create "aha" moment or reframe thinking
+
+**TALKING POINTS - 3 OPTIONS:**
+
+**Option A (Data):**
+- 2-3 sentences with numbers, facts, metrics
+- The analytical, evidence-based angle
+- Use specific data points when relevant
+- Ground claims in measurable reality
+
+**Option B (Vision):**
+- 2-3 sentences painting future state or big picture
+- The inspirational, aspirational angle
+- Help audience see possibilities
+- Connect to larger meaning or impact
+
+**Option C (Proof):**
+- 2-3 sentences with examples, demos, testimonials
+- The credibility, real-world angle
+- Show it working in practice
+- Use case studies, stories, demonstrations
+
+**HIGH IMPACT PARAGRAPH:**
+- 4-6 sentences that tell the complete story
+- Balance emotion with data
+- High word-to-impact ratio
+- Set up natural transition to next slide
+- Should be delivery-ready (easy to speak aloud)
+
+TONE GUIDELINES:
+- Match the user's selected tone: ${answers.tone || 'professional'}
+- Confident but not arrogant
+- Visionary but grounded in proof
+- Conversational but professional
+- Every word earns its place
+- Use specific examples over generalities
+
+Return ONLY valid JSON in this exact format (no markdown, no extra text):
+{
+  "speakerNotes": [
+    {
+      "slideNumber": 1,
+      "profoundStatement": "One killer sentence that reframes thinking (max 20 words)",
+      "talkingPoints": {
+        "data": "2-3 sentences with numbers, facts, and metrics grounding the claim in measurable reality.",
+        "vision": "2-3 sentences painting the future state and inspiring the audience to see new possibilities.",
+        "proof": "2-3 sentences with examples, case studies, or demonstrations showing this working in practice."
+      },
+      "highImpactParagraph": "4-6 sentences telling the complete story, balancing emotion with data, using high word-to-impact ratio, and setting up natural transition to the next slide."
+    }
+  ]
+}`;
+    }
+  },
+
   generateTitles: {
     name: 'Generate Slide Titles',
-    description: 'Extract or generate concise titles for presentation slides',
+    description: 'Editor: Extract or generate concise titles for presentation slides',
     getPrompt: (sections) => {
       const sectionsText = sections.map((s, i) => `Section ${i + 1}:\n${s.content}`).join('\n\n');
 
