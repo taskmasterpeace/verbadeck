@@ -42,6 +42,7 @@ import { PresenterPage } from './pages/PresenterPage';
 
 function getRelativeTime(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
+  if (isNaN(diff)) return 'recently';
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return 'just now';
   if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
@@ -175,7 +176,7 @@ export default function App() {
     if (saved && saved.sections && saved.sections.length > 0) {
       setRecoveryData({
         sectionCount: saved.sections.length,
-        savedAt: saved.modified || saved.created,
+        savedAt: saved.modified || saved.created || new Date().toISOString(),
       });
     }
   }, [viewMode]);

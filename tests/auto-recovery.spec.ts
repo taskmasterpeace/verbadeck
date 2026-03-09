@@ -71,7 +71,7 @@ test.describe('Auto-Recovery Banner', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL(/\/editor/);
-    await expect(page.getByText('Slide one content')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Slide one content').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('banner shows relative time since last save', async ({ page }) => {
