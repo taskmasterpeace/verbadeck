@@ -1,366 +1,277 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
-import { useTransitions } from './hooks/useTransitions';
 import { useOpenRouter } from './hooks/useOpenRouter';
 import { useFileOperations } from './hooks/useFileOperations';
 import { useBulkImageGeneration } from './hooks/useBulkImageGeneration';
-import { createTokenPattern, type Section } from './lib/script-parser';
-import { PresenterView } from './components/PresenterView';
-import { StatusBar } from './components/StatusBar';
+import { useAutoSave } from './hooks/useAutoSave';
+import { useKeyboardShortcuts, type KeyboardShortcut } from './hooks/useKeyboardShortcuts';
+import { usePresentation } from './hooks/usePresentation';
+import { useQASession } from './hooks/useQASession';
+import { useLibraryOperations } from './hooks/useLibraryOperations';
+import { useVoiceNavigation } from './hooks/useVoiceNavigation';
+import { useRouteSync } from './hooks/useRouteSync';
+import { useModelManagement } from './hooks/useModelManagement';
+import { useBroadcastChannel } from './hooks/useBroadcastChannel';
+import { useKnowledgeBase } from './hooks/useKnowledgeBase';
+import { usePresentationStyle } from './hooks/usePresentationStyle';
+import { useModalState } from './hooks/useModalState';
+import { usePresentationStore } from './stores';
+import { type Section } from './lib/script-parser';
+import { VoiceController } from './lib/voice-controller';
 import { TranscriptTicker } from './components/TranscriptTicker';
 import { AIScriptProcessor } from './components/AIScriptProcessor';
-import { RichSectionEditor } from './components/RichSectionEditor';
-import { KnowledgeBaseEditor } from './components/KnowledgeBaseEditor';
-import { TransitionEffects } from './components/TransitionEffects';
 import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { QAPanel } from './components/QAPanel';
+import { LibraryBrowser } from './components/LibraryBrowser';
+import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { FileText, Sparkles, Edit, Save, FolderOpen, Info, Wand2, MessageCircle, ImagePlus } from 'lucide-react';
+import { MessageCircle, RotateCcw, X } from 'lucide-react';
 import { CreateFromScratch } from './components/CreateFromScratch';
 import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
 import { Footer } from './components/Footer';
 import { PresentationStyleManager, type PresentationStyle } from './components/PresentationStyleManager';
+import { KnowItAllMode } from './components/KnowItAllMode';
+import { MainLayout } from './layouts/MainLayout';
+import { TopBar } from './components/layout/TopBar';
+import { TranscriptBar } from './components/layout/TranscriptBar';
+import { EditorPage } from './pages/EditorPage';
+import { PresenterPage } from './pages/PresenterPage';
 
-type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch';
+function getRelativeTime(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days !== 1 ? 's' : ''} ago`;
+}
 
 export default function App() {
-  const [sections, setSections] = useState<Section[]>([]);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<ViewMode>('create');
-  const [editorTab, setEditorTab] = useState<'sections' | 'knowledge'>('sections');
-  const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem('verbadeck-selected-model') || 'openai/gpt-4o-mini';
-  });
+  // Zustand store - ALL state now managed centrally
+  const editorTab = usePresentationStore(state => state.editorTab);
+  const setEditorTab = usePresentationStore(state => state.setEditorTab);
+  const selectedTone = usePresentationStore(state => state.selectedTone);
+  const setSelectedTone = usePresentationStore(state => state.setSelectedTone);
+  const cancelWord = usePresentationStore(state => state.cancelWord);
+  const setCancelWord = usePresentationStore(state => state.setCancelWord);
 
-  const handleModelChange = (modelId: string) => {
-    setSelectedModel(modelId);
-    localStorage.setItem('verbadeck-selected-model', modelId);
-  };
+  // Route management
+  const { viewMode, setViewMode: setViewModeWithRoute } = useRouteSync();
 
-  // Broadcast channel for audience view sync
-  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+  // Model management
+  const { selectedModel, setSelectedModel, getOperationModel } = useModelManagement();
 
-  // No mode/wake/stop word states needed - always listening when streaming
+  // Modal state
+  const {
+    showLibraryBrowser,
+    setShowLibraryBrowser,
+    showKeyboardHelp,
+    setShowKeyboardHelp,
+    shortcutFeedback,
+    setShortcutFeedback,
+  } = useModalState();
 
-  // Live transcript
-  const [transcript, setTranscript] = useState<string[]>([]);
-  const [lastTranscript, setLastTranscript] = useState('');
-
-  // Q&A Feature
-  const [isListeningForQuestions, setIsListeningForQuestions] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
-  const [questionAnswers, setQuestionAnswers] = useState<{ answer1: string; answer2: string } | null>(null);
-  const [isLoadingQA, setIsLoadingQA] = useState(false);
-  const [knowledgeBase, setKnowledgeBase] = useState<{ question: string; answer: string }[]>([]);
-  const [isGeneratingFAQs, setIsGeneratingFAQs] = useState(false);
-  const [qaDialogOpen, setQaDialogOpen] = useState(false);
-  const [manualQuestion, setManualQuestion] = useState('');
-  const [selectedTone, setSelectedTone] = useState('professional');
-
-  // Presentation style state
-  const [presentationStyle, setPresentationStyle] = useState<PresentationStyle | null>(() => {
-    const saved = localStorage.getItem('verbadeck-presentation-style');
-    return saved ? JSON.parse(saved) : null;
-  });
-
-  const { answerQuestion, generateFAQs, generateTitles } = useOpenRouter();
+  // API hooks
+  const { generateTitles } = useOpenRouter();
   const { generateImage, suggestPrompt } = useImageGeneration();
-  const { handleSavePresentation, handleLoadPresentation } = useFileOperations({
+
+  // Initialize voice controller (needed for presentation hook)
+  const voiceControllerRef = useRef(new VoiceController());
+  const voiceController = voiceControllerRef.current;
+
+  // Initialize presentation management hook
+  const presentation = usePresentation({ voiceController });
+  const {
     sections,
     setSections,
-    knowledgeBase,
-    setKnowledgeBase,
-    selectedTone,
-    setSelectedTone,
-    selectedModel,
-    setSelectedModel,
     currentSectionIndex,
     setCurrentSectionIndex,
-    viewMode,
-    setViewMode,
-  });
-  const { isBulkGenerating, bulkProgress, bulkStatus, setBulkStatus, handleBulkGenerateImages } = useBulkImageGeneration({
+    draggedIndex,
+    dragOverIndex,
+    shouldFlash,
+    progress,
+    currentSection,
+    previousSection,
+    nextSection,
+    advanceSection,
+    goBackSection,
+    goToSection,
+    updateSection: handleUpdateSection,
+    deleteSection: handleDeleteSection,
+    addSection: handleAddSection,
+    handleDragStart,
+    handleDragEnter,
+    handleDragEnd,
+    reorderSections: handleReorderSections,
+  } = presentation;
+
+  // Knowledge base management
+  const {
+    knowledgeBase,
+    setKnowledgeBase,
+    sharedKnowledgeBase,
+    setSharedKnowledgeBase,
+    isGeneratingFAQs,
+    handleGenerateFAQs,
+  } = useKnowledgeBase({
     sections,
-    setSections,
-    selectedModel,
-    presentationStyle,
-    generateImage,
-    suggestPrompt,
+    getOperationModel,
+    onTabChange: (tab) => setEditorTab(tab),
   });
 
-  // Debounce to prevent double-advance/back on echo
-  const lastNavTimeRef = useRef<number>(0);
-  const NAV_DEBOUNCE_MS = 2000;
+  // Initialize Q&A session hook
+  const qaSession = useQASession({
+    sections,
+    knowledgeBase,
+    sharedKnowledgeBase,
+    selectedTone,
+    getOperationModel,
+    mode: viewMode === 'know-it-all' ? 'know-it-all' : 'presenter'
+  });
+  const {
+    isListeningForQuestions,
+    setIsListeningForQuestions,
+    currentQuestion,
+    questionAnswers,
+    isLoadingQA,
+    qaDialogOpen,
+    setQaDialogOpen,
+    manualQuestion,
+    setManualQuestion,
+    handleQuestionDetected,
+    handleCancelQuestion,
+    handleDismissQuestion,
+    handleManualQuestion,
+  } = qaSession;
 
-  // Transitions
-  const { shouldFlash, triggerTransition } = useTransitions();
+  // Auto-save hook - always enabled for now (streaming check removed due to hook ordering)
+  const { status: autoSaveStatus, loadAutoSave, clearAutoSave } = useAutoSave({
+    sections,
+    knowledgeBase,
+    settings: {
+      selectedTone,
+      selectedModel,
+      currentSectionIndex,
+      viewMode,
+    },
+    enabled: true, // Always enabled (TODO: Disable during streaming once hook order resolved)
+  });
 
-  // Q&A Handlers
-  const handleQuestionDetected = async (question: string) => {
-    setCurrentQuestion(question);
-    setIsLoadingQA(true);
-    setQuestionAnswers(null);
+  // Auto-recovery state
+  const [recoveryData, setRecoveryData] = useState<{
+    sectionCount: number;
+    savedAt: string;
+  } | null>(null);
 
-    try {
-      // Get full presentation content
-      const presentationContent = sections.map(s => s.content).join('\n\n');
-
-      // Use the proper answerQuestion API with tone support
-      const answers = await answerQuestion(
-        question,
-        presentationContent,
-        knowledgeBase,
-        selectedModel,
-        selectedTone
-      );
-      setQuestionAnswers(answers);
-    } catch (error) {
-      console.error('Failed to generate answer:', error);
-      setQuestionAnswers({
-        answer1: 'Unable to generate answer. Please respond manually.',
-        answer2: 'Error occurred while processing the question.'
+  // Check for auto-save data on mount (Dashboard recovery)
+  useEffect(() => {
+    if (viewMode !== 'create') return;
+    const saved = loadAutoSave();
+    if (saved && saved.sections && saved.sections.length > 0) {
+      setRecoveryData({
+        sectionCount: saved.sections.length,
+        savedAt: saved.modified || saved.created,
       });
-    } finally {
-      setIsLoadingQA(false);
     }
+  }, [viewMode]);
+
+  const handleResumeRecovery = () => {
+    const saved = loadAutoSave();
+    if (!saved) return;
+    setSections(saved.sections);
+    if (saved.knowledgeBase) setKnowledgeBase(saved.knowledgeBase);
+    setCurrentSectionIndex(0);
+    setRecoveryData(null);
+    clearAutoSave();
+    setViewModeWithRoute('editor');
   };
 
-  const handleDismissQuestion = () => {
-    setCurrentQuestion(null);
-    setQuestionAnswers(null);
-    setIsLoadingQA(false);
-    setQaDialogOpen(false);
+  const handleDismissRecovery = () => {
+    setRecoveryData(null);
+    clearAutoSave();
   };
 
-  const handleManualQuestion = async () => {
-    if (!manualQuestion.trim()) {
-      alert('Please enter a question');
-      return;
-    }
-    // Close the dialog immediately
-    setQaDialogOpen(false);
-    // Process the question
-    await handleQuestionDetected(manualQuestion);
-    // Clear the question
-    setManualQuestion('');
-  };
+  // File operations - now uses Zustand store directly
+  const { handleSavePresentation, handleLoadPresentation } = useFileOperations();
 
-  const handleGenerateFAQs = async () => {
-    if (sections.length === 0) {
-      alert('Please create sections first');
-      return;
-    }
+  // Initialize library operations hook
+  const libraryOps = useLibraryOperations({
+    sections,
+    knowledgeBase,
+    selectedTone,
+    selectedModel,
+    currentSectionIndex,
+    viewMode,
+    setSections,
+    setKnowledgeBase,
+    setSelectedTone,
+    setSelectedModel,
+    setCurrentSectionIndex,
+    setViewMode: setViewModeWithRoute,
+    clearAutoSave,
+  });
+  const {
+    handleSaveToLibrary,
+    handleLoadFromLibrary: handleLoadFromLibraryId,
+  } = libraryOps;
 
-    setIsGeneratingFAQs(true);
-    try {
-      const presentationContent = sections.map(s => s.content).join('\n\n');
-      const faqs = await generateFAQs(presentationContent, selectedModel);
+  // Initialize voice navigation hook
+  const voiceNav = useVoiceNavigation({
+    sections,
+    currentSectionIndex,
+    advanceSection,
+    goBackSection,
+    isListeningForQuestions,
+    handleQuestionDetected,
+    isLoadingQA,
+    handleCancelQuestion,
+    cancelWord,
+  });
+  const {
+    transcript,
+    setTranscript,
+    lastTranscript,
+    setLastTranscript,
+    handleTranscript,
+  } = voiceNav;
 
-      // Replace existing FAQs with newly generated ones
-      setKnowledgeBase(faqs);
-
-      // Switch to knowledge base tab to show results
-      setEditorTab('knowledge');
-
-      console.log(`✅ Generated ${faqs.length} FAQs`);
-    } catch (error) {
-      console.error('Failed to generate FAQs:', error);
-      alert('Failed to generate FAQs. Please try again.');
-    } finally {
-      setIsGeneratingFAQs(false);
-    }
-  };
-
-  // Handle presentation style selection
-  const handleStyleSelect = (style: PresentationStyle) => {
-    setPresentationStyle(style);
-    localStorage.setItem('verbadeck-presentation-style', JSON.stringify(style));
-    console.log(`🎨 Presentation style set to: ${style.name}`);
-  };
-
-  // Apply current style to all slides (regenerate all images with consistent style)
-  const handleApplyStyleToAll = async () => {
-    if (!presentationStyle) {
-      alert('Please select a presentation style first');
-      return;
-    }
-
-    if (sections.length === 0) {
-      setBulkStatus({ type: 'error', message: 'Please create sections first' });
-      return;
-    }
-
-    const confirmed = confirm(
-      `This will regenerate images for ALL ${sections.length} slides using the "${presentationStyle.name}" style. This may take a few minutes and will replace existing images. Continue?`
-    );
-
-    if (!confirmed) return;
-
-    setBulkStatus({ type: 'info', message: `Applying "${presentationStyle.name}" style to all slides...` });
-    setIsBulkGenerating(true);
-    setBulkProgress({ current: 0, total: sections.length });
-
-    const presentationContext = sections.map(s => s.content).join('\n\n');
-
-    try {
-      for (let i = 0; i < sections.length; i++) {
-        const section = sections[i];
-        setBulkProgress({ current: i + 1, total: sections.length });
-
-        console.log(`🎨 Generating styled image ${i + 1}/${sections.length} for section ${i + 1}`);
-
-        // Generate AI prompt with full context AND presentation style
-        const prompt = await suggestPrompt(section.content, presentationContext, selectedModel, presentationStyle);
-        console.log(`📝 Generated styled prompt for section ${i + 1}:`, prompt.substring(0, 100) + '...');
-
-        // Generate image
-        const imageUrl = await generateImage(prompt, {
-          aspectRatio: '16:9',
-          outputFormat: 'jpg',
-        });
-
-        if (!imageUrl || imageUrl.trim() === '') {
-          throw new Error(`Image generation returned empty URL for section ${i + 1}`);
-        }
-
-        // Update section with new image
-        setSections(prevSections => {
-          const newSections = [...prevSections];
-          newSections[i] = {
-            ...newSections[i],
-            imageUrl,
-          };
-          return newSections;
-        });
-
-        // Small delay between generations
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      setBulkStatus({
-        type: 'success',
-        message: `Successfully applied "${presentationStyle.name}" style to all ${sections.length} slides!`
-      });
-
-      setTimeout(() => setBulkStatus(null), 5000);
-    } catch (error) {
-      console.error('Style application error:', error);
-      setBulkStatus({
-        type: 'error',
-        message: `Failed to apply style. Completed ${bulkProgress.current} of ${bulkProgress.total}. Error: ${error instanceof Error ? error.message : 'Unknown error'}`
-      });
-    } finally {
-      setIsBulkGenerating(false);
-      setBulkProgress({ current: 0, total: 0 });
-    }
-  };
-
-  // Advance to next section
-  const advanceSection = useCallback(() => {
-    const now = Date.now();
-    if (now - lastNavTimeRef.current < NAV_DEBOUNCE_MS) {
-      console.log('⏱️ Debounced advance (too soon)');
-      return;
-    }
-
-    setCurrentSectionIndex((prev) => {
-      if (prev < sections.length - 1) {
-        const next = prev + 1;
-        console.log(`➡️ Advancing to section ${next + 1}/${sections.length}`);
-        lastNavTimeRef.current = now;
-        triggerTransition(); // Visual feedback
-        return next;
-      }
-      console.log('🏁 Already at last section');
-      return prev;
-    });
-  }, [sections.length, triggerTransition]);
-
-  // Go back to previous section
-  const goBackSection = useCallback(() => {
-    const now = Date.now();
-    if (now - lastNavTimeRef.current < NAV_DEBOUNCE_MS) {
-      console.log('⏱️ Debounced back (too soon)');
-      return;
-    }
-
-    setCurrentSectionIndex((prev) => {
-      if (prev > 0) {
-        const prevIdx = prev - 1;
-        console.log(`⬅️ Going back to section ${prevIdx + 1}/${sections.length}`);
-        lastNavTimeRef.current = now;
-        triggerTransition(); // Visual feedback
-        return prevIdx;
-      }
-      console.log('🏁 Already at first section');
-      return prev;
-    });
-  }, [sections.length, triggerTransition]);
-
-  // Check for trigger words (no wake/stop words - always advancing)
-  const handleTranscript = useCallback((text: string, isFinal: boolean) => {
-    console.log('📝 handleTranscript called:', text, 'isFinal:', isFinal);
-
-    setLastTranscript(text);
-
-    // Add to transcript ticker (only final)
-    if (isFinal) {
-      setTranscript((prev) => [...prev.slice(-20), text]);
-    }
-
-    const lowerText = text.toLowerCase();
-
-    // Check for questions when Q&A mode is enabled (only on final transcripts)
-    if (isListeningForQuestions && isFinal && text.includes('?')) {
-      console.log('❓ Question detected:', text);
-      handleQuestionDetected(text);
-      return; // Don't process other triggers when question detected
-    }
-
-    // Check for BACK command first (works on any section except first)
-    if (currentSectionIndex > 0) {
-      const backWords = ['back', 'previous', 'go back'];
-      for (const backWord of backWords) {
-        if (lowerText.includes(backWord)) {
-          console.log(`⬅️ Back command detected: "${backWord}"`);
-          goBackSection();
-          return; // Don't check for other triggers
-        }
-      }
-    }
-
-    // Check for section-specific trigger words
-    if (sections.length > 0 && currentSectionIndex < sections.length) {
-      const currentSection = sections[currentSectionIndex];
-      const triggers = currentSection.selectedTriggers || [currentSection.advanceToken];
-
-      console.log(`🔍 Section ${currentSectionIndex + 1} - Looking for triggers:`, triggers);
-      console.log(`   Transcript: "${lowerText}"`);
-
-      // Check all selected triggers
-      for (const trigger of triggers) {
-        const pattern = createTokenPattern(trigger);
-        console.log(`   Testing "${trigger}" with pattern ${pattern} against "${lowerText}"`);
-        if (pattern.test(lowerText)) {
-          console.log(`✅ Trigger word matched: "${trigger}"`);
-          advanceSection();
-          break;
-        } else {
-          console.log(`   ❌ No match`);
-        }
-      }
-    }
-  }, [sections, currentSectionIndex, advanceSection, goBackSection, isListeningForQuestions]);
-
+  // Audio streaming hook (comes after voiceNav so handleTranscript is available)
   const { isStreaming, status, startStreaming, stopStreaming } = useAudioStreaming({
     onTranscript: handleTranscript,
     onError: (error) => {
       console.error('Streaming error:', error);
       alert(`Error: ${error}`);
     },
+  });
+
+  // Presentation style and bulk image generation
+  const {
+    presentationStyle,
+    handleStyleSelect,
+    handleApplyStyleToAll,
+    bulkStatus,
+    setBulkStatus,
+  } = usePresentationStyle({
+    sections,
+    setSections,
+    selectedModel,
+    generateImage,
+    suggestPrompt,
+  });
+
+  // Bulk image generation (legacy hook, wraps presentation style logic)
+  const { isBulkGenerating, bulkProgress, handleBulkGenerateImages } = useBulkImageGeneration({
+    sections,
+    setSections,
+    selectedModel,
+    presentationStyle,
+    generateImage,
+    suggestPrompt,
   });
 
   // Auto-fix old sections that don't have selectedTriggers populated
@@ -381,14 +292,194 @@ export default function App() {
     );
   }, []); // Run once on mount
 
-  // No keyboard controls needed - always armed
+  // Warn user before leaving if they have unsaved work
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (sections.length > 0) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires returnValue to be set
+        return ''; // Some browsers use return value
+      }
+    };
 
-  // Manual section navigation (for testing)
-  const goToSection = (index: number) => {
-    if (index >= 0 && index < sections.length) {
-      setCurrentSectionIndex(index);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sections.length]);
+
+  // Keyboard shortcuts configuration
+  const keyboardShortcuts: KeyboardShortcut[] = [
+    // File operations
+    {
+      key: 's',
+      ctrl: true,
+      description: 'Save presentation',
+      category: 'File',
+      action: () => {
+        if (sections.length > 0) {
+          handleSavePresentation();
+        }
+      },
+      enabled: sections.length > 0,
+    },
+    {
+      key: 'o',
+      ctrl: true,
+      description: 'Open/Load presentation',
+      category: 'File',
+      action: () => {
+        const input = document.getElementById('load-presentation-statusbar') as HTMLInputElement;
+        input?.click();
+      },
+    },
+    {
+      key: 'n',
+      ctrl: true,
+      description: 'New presentation',
+      category: 'File',
+      action: () => {
+        if (confirm('Create a new presentation? Unsaved changes will be lost.')) {
+          setSections([]);
+          setCurrentSectionIndex(0);
+          setViewModeWithRoute('create');
+        }
+      },
+    },
+    {
+      key: 'l',
+      ctrl: true,
+      description: 'Open library',
+      category: 'File',
+      action: () => {
+        setShowLibraryBrowser(true);
+      },
+    },
+
+    // Navigation
+    {
+      key: 'e',
+      ctrl: true,
+      description: 'Focus editor',
+      category: 'Navigation',
+      action: () => {
+        if (sections.length > 0) {
+          setViewModeWithRoute('editor');
+          setEditorTab('sections');
+        }
+      },
+      enabled: sections.length > 0,
+    },
+    {
+      key: 'p',
+      ctrl: true,
+      description: 'Start presenter mode',
+      category: 'Navigation',
+      action: () => {
+        if (sections.length > 0) {
+          handleStartPresenting();
+        }
+      },
+      enabled: sections.length > 0,
+    },
+    {
+      key: 'k',
+      ctrl: true,
+      description: 'Open Know It All',
+      category: 'Navigation',
+      action: () => {
+        setViewModeWithRoute('know-it-all');
+      },
+    },
+    {
+      key: 'h',
+      ctrl: true,
+      description: 'Go to home/create',
+      category: 'Navigation',
+      action: () => {
+        setViewModeWithRoute('create');
+      },
+    },
+
+    // Editor operations
+    {
+      key: 't',
+      ctrl: true,
+      description: 'Test triggers',
+      category: 'Editor',
+      action: () => {
+        if (sections.length > 0 && viewMode === 'editor') {
+          setEditorTab('testing');
+        }
+      },
+      enabled: sections.length > 0 && viewMode === 'editor',
+    },
+    {
+      key: 'q',
+      ctrl: true,
+      description: 'Knowledge base',
+      category: 'Editor',
+      action: () => {
+        if (sections.length > 0 && viewMode === 'editor') {
+          setEditorTab('knowledge');
+        }
+      },
+      enabled: sections.length > 0 && viewMode === 'editor',
+    },
+
+    // Voice control
+    {
+      key: ' ',
+      ctrl: true,
+      description: 'Toggle voice control',
+      category: 'Voice',
+      action: () => {
+        if (isStreaming) {
+          stopStreaming();
+        } else {
+          startStreaming();
+        }
+      },
+    },
+    {
+      key: 'm',
+      ctrl: true,
+      description: 'Toggle Q&A mode',
+      category: 'Voice',
+      action: () => {
+        if (viewMode === 'presenter') {
+          setIsListeningForQuestions(!isListeningForQuestions);
+        }
+      },
+      enabled: viewMode === 'presenter',
+    },
+
+    // Help
+    {
+      key: '/',
+      ctrl: true,
+      description: 'Show keyboard shortcuts',
+      category: 'Help',
+      action: () => {
+        setShowKeyboardHelp(!showKeyboardHelp);
+      },
+    },
+  ];
+
+  // Show shortcut feedback briefly
+  useEffect(() => {
+    if (shortcutFeedback) {
+      const timer = setTimeout(() => setShortcutFeedback(null), 2000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [shortcutFeedback]);
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: keyboardShortcuts,
+    enabled: true,
+    preventInInputs: true,
+    showFeedback: (message) => setShortcutFeedback(message),
+  });
+
 
   // Handle AI-generated sections
   const handleSectionsGenerated = async (newSections: Section[]) => {
@@ -420,29 +511,14 @@ export default function App() {
       // Continue without titles on error - not critical
     }
 
+    // Update Zustand store (single source of truth)
+    console.log('🔄 Syncing new presentation to Zustand store and localStorage');
     setSections(fixedSections);
     setCurrentSectionIndex(0);
-    setViewMode('editor'); // Show editor to allow customization
+
+    setViewModeWithRoute('editor'); // Show editor to allow customization
   };
 
-  // Update a section
-  const handleUpdateSection = (index: number, updatedSection: Section) => {
-    setSections((prev) =>
-      prev.map((sec, i) => (i === index ? updatedSection : sec))
-    );
-  };
-
-  // Delete a section
-  const handleDeleteSection = (index: number) => {
-    if (sections.length <= 1) {
-      alert('Cannot delete the last section');
-      return;
-    }
-    setSections((prev) => prev.filter((_, i) => i !== index));
-    if (currentSectionIndex >= sections.length - 1) {
-      setCurrentSectionIndex(Math.max(0, sections.length - 2));
-    }
-  };
 
   // Start presenting
   const handleStartPresenting = () => {
@@ -450,132 +526,107 @@ export default function App() {
       alert('Please create sections first');
       return;
     }
-    setViewMode('presenter');
+    setViewModeWithRoute('presenter');
     setCurrentSectionIndex(0);
   };
 
-  // Keep a ref to current state for BroadcastChannel
-  const currentStateRef = useRef({ currentSectionIndex, sections });
-  currentStateRef.current = { currentSectionIndex, sections };
-
-  // Set up broadcast channel for audience view
-  useEffect(() => {
-    const channel = new BroadcastChannel('verbadeck-presentation');
-    broadcastChannelRef.current = channel;
-
-    // Listen for state requests from audience window
-    channel.onmessage = (event) => {
-      if (event.data.type === 'request-state') {
-        // Use ref to get current values instead of closure
-        channel.postMessage({
-          type: 'presentation-update',
-          state: currentStateRef.current,
-        });
-      }
-    };
-
-    return () => {
-      channel.close();
-    };
-  }, []);
-
-  // Broadcast state changes to audience view
-  useEffect(() => {
-    if (broadcastChannelRef.current) {
-      broadcastChannelRef.current.postMessage({
-        type: 'presentation-update',
-        state: {
-          currentSectionIndex,
-          sections,
-        },
-      });
-    }
-  }, [currentSectionIndex, sections]);
-
-  // Open audience view in new window with Window Management API support
-  const openAudienceView = async () => {
-    try {
-      // Try to use Window Management API for multi-screen support
-      if ('getScreenDetails' in window) {
-        const screenDetails = await (window as any).getScreenDetails();
-        console.log('📺 Screens detected:', screenDetails.screens.length);
-
-        // If multiple screens, open on the second screen
-        if (screenDetails.screens.length > 1) {
-          const externalScreen = screenDetails.screens[1];
-          const audienceWindow = window.open(
-            '/audience',
-            'VerbaDeck Audience View',
-            `left=${externalScreen.left},top=${externalScreen.top},width=${externalScreen.availWidth},height=${externalScreen.availHeight},menubar=no,toolbar=no,location=no,status=no`
-          );
-
-          if (audienceWindow) {
-            // Try to make it fullscreen on the external display
-            try {
-              await (audienceWindow.document.documentElement as any).requestFullscreen({
-                screen: externalScreen
-              });
-              console.log('✅ Fullscreen on external display');
-            } catch (err) {
-              console.log('ℹ️ Fullscreen not supported or denied');
-            }
-          } else {
-            alert('Please allow popups to open the audience view');
-          }
-          return;
-        }
-      }
-    } catch (err) {
-      console.log('ℹ️ Window Management API not available, using fallback');
-    }
-
-    // Fallback: Standard window.open
-    const audienceWindow = window.open(
-      '/audience',
-      'VerbaDeck Audience View',
-      'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no'
-    );
-
-    if (!audienceWindow) {
-      alert('Please allow popups to open the audience view');
-    }
-  };
+  // Broadcast channel for audience view sync
+  const { openAudienceView } = useBroadcastChannel(currentSectionIndex, sections);
 
 
-  const currentSection = sections[currentSectionIndex];
-  const previousSection = sections[currentSectionIndex - 1];
-  const nextSection = sections[currentSectionIndex + 1];
-  const progress = sections.length > 0 ? ((currentSectionIndex + 1) / sections.length) * 100 : 0;
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <StatusBar
-        streamStatus={status}
-        isStreaming={isStreaming}
-        onToggleStream={isStreaming ? stopStreaming : startStreaming}
-        isListeningForQuestions={isListeningForQuestions}
-        onToggleQuestions={() => setIsListeningForQuestions(!isListeningForQuestions)}
-        onManualQuestion={() => setQaDialogOpen(true)}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        sectionsCount={sections.length}
-        onSavePresentation={handleSavePresentation}
-        onLoadPresentation={handleLoadPresentation}
-        selectedModel={selectedModel}
-        onModelChange={handleModelChange}
-      />
+  // Determine if we should use MainLayout (not for presenter in fullscreen mode)
+  const useMainLayout = viewMode !== 'presenter' || !isStreaming;
 
-      {/* Floating status indicator */}
-      <StatusIndicator isStreaming={isStreaming} />
+  // TopBar configuration
+  const topBarElement = (
+    <TopBar
+      isStreaming={isStreaming}
+      streamStatus={status}
+      onToggleStream={isStreaming ? stopStreaming : startStreaming}
+      isListeningForQuestions={isListeningForQuestions}
+      onToggleQuestions={() => setIsListeningForQuestions(!isListeningForQuestions)}
+      onManualQuestion={() => setQaDialogOpen(true)}
+      showQAControls={viewMode === 'presenter' || viewMode === 'know-it-all'}
+      onSavePresentation={handleSavePresentation}
+      onLoadPresentation={handleLoadPresentation}
+      showFileControls={viewMode === 'editor' || viewMode === 'create'}
+      selectedModel={selectedModel}
+      onModelChange={setSelectedModel}
+      cancelWord={cancelWord}
+      onCancelWordChange={setCancelWord}
+    />
+  );
 
-      <div className="container mx-auto p-4 space-y-4 pb-20 sm:pb-4">
+  // TranscriptBar configuration
+  const transcriptBarElement = (
+    <TranscriptBar
+      transcript={transcript}
+      lastTranscript={lastTranscript}
+      isVisible={isStreaming && viewMode !== 'know-it-all'}
+    />
+  );
 
-        {/* Create Presentation View - Choice between From Scratch or Process Content */}
+  // Floating status indicator
+  const statusIndicator = <StatusIndicator isStreaming={isStreaming} />;
+
+  // Main content area
+  const mainContent = (
+    <>
+      {statusIndicator}
+
+      <div className={
+        viewMode === 'presenter' || (isStreaming && sections.length > 0) ? 'h-screen overflow-hidden' :
+        viewMode === 'know-it-all' ? 'p-4 space-y-4 pb-20 sm:pb-4' :
+        'container mx-auto p-4 space-y-4 pb-20 sm:pb-4'
+      }>
+
+        {/* Create Presentation View - Choice between From Scratch, Process Content, or Know It All */}
         {viewMode === 'create' && !isStreaming && (
-          <CreatePresentation
-            onSelectFromScratch={() => setViewMode('create-from-scratch')}
-            onSelectProcessContent={() => setViewMode('ai-processor')}
-          />
+          <>
+            {recoveryData && (
+              <div
+                data-testid="auto-recovery-banner"
+                className="container mx-auto max-w-7xl px-8 pt-8 pb-0"
+              >
+                <div className="flex items-center justify-between gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <RotateCcw className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Resume your last presentation?
+                      </p>
+                      <p className="text-xs text-blue-700">
+                        {recoveryData.sectionCount} slide{recoveryData.sectionCount !== 1 ? 's' : ''} • saved {getRelativeTime(recoveryData.savedAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      data-testid="resume-recovery"
+                      onClick={handleResumeRecovery}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Resume
+                    </button>
+                    <button
+                      data-testid="dismiss-recovery"
+                      onClick={handleDismissRecovery}
+                      className="p-2 text-blue-400 hover:text-blue-600 transition-colors"
+                      aria-label="Dismiss recovery"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <CreatePresentation
+              onSelectFromScratch={() => setViewModeWithRoute('create-from-scratch')}
+              onSelectProcessContent={() => setViewModeWithRoute('ai-processor')}
+              onSelectKnowItAll={() => setViewModeWithRoute('know-it-all')}
+            />
+          </>
         )}
 
         {/* Create from Scratch View */}
@@ -583,6 +634,13 @@ export default function App() {
           <CreateFromScratch
             onSectionsGenerated={handleSectionsGenerated}
             selectedModel={selectedModel}
+          />
+        )}
+
+        {/* Know It All Wall - Standalone Q&A Mode */}
+        {viewMode === 'know-it-all' && (
+          <KnowItAllMode
+            startStreaming={startStreaming}
           />
         )}
 
@@ -596,161 +654,47 @@ export default function App() {
 
         {/* Section Editor View */}
         {viewMode === 'editor' && !isStreaming && sections.length > 0 && (
-          <div className="space-y-4">
-            {/* Tab Navigation */}
-            <Card>
-              <CardContent className="p-0">
-                <div className="flex border-b">
-                  <button
-                    onClick={() => setEditorTab('sections')}
-                    className={`flex-1 px-6 py-4 font-medium transition-colors ${
-                      editorTab === 'sections'
-                        ? 'border-b-2 border-primary text-primary bg-primary/5'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }`}
-                  >
-                    📝 Edit Content & Triggers
-                  </button>
-                  <button
-                    onClick={() => setEditorTab('knowledge')}
-                    className={`flex-1 px-6 py-4 font-medium transition-colors ${
-                      editorTab === 'knowledge'
-                        ? 'border-b-2 border-primary text-primary bg-primary/5'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    }`}
-                  >
-                    💡 Knowledge Base
-                    {knowledgeBase.length > 0 && (
-                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
-                        {knowledgeBase.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Sections Tab Content */}
-            {editorTab === 'sections' && (
-              <div className="space-y-4">
-                {/* Presentation Style Manager */}
-                <PresentationStyleManager
-                  currentStyle={presentationStyle}
-                  onStyleSelect={handleStyleSelect}
-                  onApplyToAll={handleApplyStyleToAll}
-                  sectionsCount={sections.length}
-                />
-
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-lg font-semibold">Edit Your Sections</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Click words to select trigger points, or use AI to suggest better options
-                          </p>
-                        </div>
-                        <button
-                          onClick={handleBulkGenerateImages}
-                          disabled={isBulkGenerating || sections.length === 0}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isBulkGenerating ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                              Generating {bulkProgress.current}/{bulkProgress.total}...
-                            </>
-                          ) : (
-                            <>
-                              <ImagePlus className="w-4 h-4" />
-                              Generate All Images with AI
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Status Message */}
-                      {bulkStatus && (
-                        <div
-                          className={`px-4 py-2 rounded-md text-sm font-medium ${
-                            bulkStatus.type === 'success'
-                              ? 'bg-green-100 text-green-800 border border-green-300'
-                              : bulkStatus.type === 'error'
-                              ? 'bg-red-100 text-red-800 border border-red-300'
-                              : 'bg-blue-100 text-blue-800 border border-blue-300'
-                          }`}
-                        >
-                          {bulkStatus.message}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {sections.map((section, index) => (
-                  <RichSectionEditor
-                    key={section.id}
-                    section={section}
-                    sectionIndex={index}
-                    totalSections={sections.length}
-                    onUpdate={(updatedSection) => handleUpdateSection(index, updatedSection)}
-                    onDelete={() => handleDeleteSection(index)}
-                    selectedModel={selectedModel}
-                    allSections={sections}
-                    presentationStyle={presentationStyle}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Knowledge Base Tab Content */}
-            {editorTab === 'knowledge' && (
-              <KnowledgeBaseEditor
-                knowledgeBase={knowledgeBase}
-                sections={sections}
-                onUpdate={setKnowledgeBase}
-                onGenerateFAQs={handleGenerateFAQs}
-                isGenerating={isGeneratingFAQs}
-              />
-            )}
-          </div>
+          <EditorPage
+              sections={sections}
+              editorTab={editorTab}
+              setEditorTab={setEditorTab}
+              knowledgeBase={knowledgeBase}
+              setKnowledgeBase={setKnowledgeBase}
+              isGeneratingFAQs={isGeneratingFAQs}
+              handleGenerateFAQs={handleGenerateFAQs}
+              handleUpdateSection={handleUpdateSection}
+              handleDeleteSection={handleDeleteSection}
+              handleReorderSections={handleReorderSections}
+              handleAddSection={handleAddSection}
+              selectedModel={selectedModel}
+              presentationStyle={presentationStyle}
+              isStreaming={isStreaming}
+              stopStreaming={stopStreaming}
+              startStreaming={startStreaming}
+              status={status}
+              lastTranscript={lastTranscript}
+              setSharedKnowledgeBase={setSharedKnowledgeBase}
+              setViewMode={setViewModeWithRoute}
+            />
         )}
 
         {/* Presenter View */}
         {(viewMode === 'presenter' || isStreaming) && sections.length > 0 && (
-          <>
-            {/* Open Audience View Button */}
-            {!isStreaming && (
-              <Card>
-                <CardContent className="p-4">
-                  <button
-                    onClick={openAudienceView}
-                    className="w-full px-4 py-3 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 font-medium transition-colors"
-                  >
-                    🖥️ Open Audience View (Dual Monitor)
-                  </button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Opens a clean view on your second monitor for your audience
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            <TransitionEffects
-              transitionKey={currentSectionIndex}
-              shouldFlash={shouldFlash}
-            >
-              <PresenterView
-                currentSection={currentSection}
-                nextSection={nextSection}
-                sectionIndex={currentSectionIndex}
-                totalSections={sections.length}
-                progress={progress}
-                onSectionClick={goToSection}
-              />
-            </TransitionEffects>
-          </>
+          <PresenterPage
+            sections={sections}
+            currentSectionIndex={currentSectionIndex}
+            currentSection={currentSection}
+            previousSection={previousSection}
+            nextSection={nextSection}
+            shouldFlash={shouldFlash}
+            openAudienceView={openAudienceView}
+            goToSection={goToSection}
+            advanceSection={advanceSection}
+            goBackSection={goBackSection}
+            stopStreaming={stopStreaming}
+            isStreaming={isStreaming}
+            viewMode={viewMode}
+          />
         )}
 
         {/* Trigger Word Carousel - Fixed to bottom when streaming */}
@@ -764,7 +708,8 @@ export default function App() {
         )}
 
         {/* Transcript Ticker - Fixed at very bottom when streaming */}
-        {isStreaming && (
+        {/* Hide in Know It All mode since questions are displayed in the wall */}
+        {isStreaming && viewMode !== 'know-it-all' && (
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t shadow-lg">
             <div className="container mx-auto px-4 py-2">
               <TranscriptTicker
@@ -795,6 +740,9 @@ export default function App() {
           answers={questionAnswers}
           isLoading={isLoadingQA}
           onDismiss={handleDismissQuestion}
+          onCancel={handleCancelQuestion}
+          cancelWord={cancelWord}
+          selectedModel={getOperationModel('answerQuestion')}
         />
       )}
 
@@ -857,8 +805,48 @@ export default function App() {
         </div>
       )}
 
+      {/* Library Browser Modal */}
+      <LibraryBrowser
+        isOpen={showLibraryBrowser}
+        onClose={() => setShowLibraryBrowser(false)}
+        onLoad={handleLoadFromLibraryId}
+      />
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsHelp
+        isOpen={showKeyboardHelp}
+        onClose={() => setShowKeyboardHelp(false)}
+        shortcuts={keyboardShortcuts}
+      />
+
+      {/* Shortcut Feedback Toast */}
+      {shortcutFeedback && (
+        <div className="fixed top-20 right-4 z-[250] animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="bg-gray-900 text-white px-4 py-3 rounded-lg shadow-2xl border border-gray-700 flex items-center gap-2">
+            <span className="text-sm font-medium">{shortcutFeedback}</span>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       <Footer />
+    </>
+  );
+
+  // Render with or without MainLayout
+  if (useMainLayout) {
+    return (
+      <MainLayout topBar={topBarElement} transcriptBar={transcriptBarElement}>
+        {mainContent}
+      </MainLayout>
+    );
+  }
+
+  // Full-screen presenter mode without MainLayout
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {statusIndicator}
+      {mainContent}
     </div>
   );
 }
