@@ -299,3 +299,131 @@ test.describe('VerbaDeck - Create from Scratch Feature', () => {
     });
   });
 });
+
+// Tests for Question Type Functionality
+test.describe('VerbaDeck - Create from Scratch Question Types', () => {
+  test.beforeEach(async ({ page }) => {
+    // Mock the generate-questions API to return mixed question types
+    await page.route('**/api/generate-questions', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          questions: [
+            {
+              id: 'q1',
+              type: 'multiple_choice',
+              question: 'What is the primary goal of your presentation?',
+              options: ['Educate', 'Persuade', 'Inspire', 'Inform']
+            },
+            {
+              id: 'q2',
+              type: 'true_false',
+              question: 'Will this presentation include technical demonstrations?'
+            },
+            {
+              id: 'q3',
+              type: 'fill_in_blank',
+              question: 'Who is your target audience?',
+              placeholder: 'e.g., executives, students, general public'
+            },
+            {
+              id: 'q4',
+              type: 'multiple_choice',
+              question: 'What format works best?',
+              options: ['Slides', 'Video', 'Live Demo']
+            }
+          ]
+        })
+      });
+    });
+
+    await page.goto('http://localhost:5173');
+    await page.getByRole('button', { name: /Create from Scratch/i }).click();
+  });
+
+  test('should display mixed question types correctly', async ({ page }) => {
+    // Enter topic and generate questions
+    const textarea = page.getByPlaceholder(/Describe your topic/i);
+    await textarea.fill('AI Ethics in Modern Business');
+
+    await page.getByRole('button', { name: /Generate Questions/i }).click();
+
+    // Wait for questions to load
+    await page.waitForTimeout(1000);
+
+    // Check for multiple choice question (should have clickable options)
+    await expect(page.getByText('What is the primary goal of your presentation?')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Educate' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Persuade' })).toBeVisible();
+
+    // Check for true/false question (should have True/False buttons)
+    await expect(page.getByText('Will this presentation include technical demonstrations?')).toBeVisible();
+    await expect(page.getByRole('button', { name: /✓ True/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /× False/i })).toBeVisible();
+
+    // Check for fill-in-blank question (should have text input)
+    await expect(page.getByText('Who is your target audience?')).toBeVisible();
+    await expect(page.getByPlaceholder(/e.g., executives, students, general public/i)).toBeVisible();
+  });
+
+  test('should allow answering different question types', async ({ page }) => {
+    // Enter topic and generate questions
+    const textarea = page.getByPlaceholder(/Describe your topic/i);
+    await textarea.fill('Machine Learning Basics');
+
+    await page.getByRole('button', { name: /Generate Questions/i }).click();
+    await page.waitForTimeout(1000);
+
+    // Answer multiple choice by clicking option
+    await page.getByRole('button', { name: 'Educate' }).click();
+
+    // Answer true/false by clicking True
+    await page.getByRole('button', { name: /✓ True/i }).click();
+
+    // Answer fill-in-blank by typing
+    const fillInInput = page.getByPlaceholder(/e.g., executives, students, general public/i);
+    await fillInInput.fill('Data scientists and ML engineers');
+
+    // Answer second multiple choice
+    await page.getByRole('button', { name: 'Slides' }).click();
+
+    // Continue button should be enabled after all questions answered
+    await expect(page.getByRole('button', { name: /Continue/i })).toBeEnabled();
+  });
+
+  test('should show AI Decides toggle for question type preferences', async ({ page }) => {
+    // Check for AI Decides toggle button
+    await expect(page.getByRole('button', { name: /🤖 AI Decides/i })).toBeVisible();
+
+    // Click to switch to manual mode
+    await page.getByRole('button', { name: /🤖 AI Decides/i }).click();
+
+    // Should show manual percentage sliders
+    await expect(page.getByText('Multiple Choice')).toBeVisible();
+    await expect(page.getByText('True/False')).toBeVisible();
+    await expect(page.getByText('Fill in the Blank')).toBeVisible();
+
+    // Should show percentage displays
+    await expect(page.getByText('40%')).toBeVisible(); // default multiple choice
+    await expect(page.getByText('30%')).toBeVisible(); // default true/false and fill-in-blank
+  });
+
+  test('should adjust question type percentages with sliders', async ({ page }) => {
+    // Switch to manual mode
+    await page.getByRole('button', { name: /🤖 AI Decides/i }).click();
+
+    // Find the multiple choice slider
+    const sliders = await page.locator('input[type="range"]').all();
+    const mcSlider = sliders[1]; // First slider is numSlides, second is multiple choice
+
+    // Change multiple choice to 60%
+    await mcSlider.fill('60');
+    await expect(page.getByText('60%').first()).toBeVisible();
+
+    // Change true/false slider
+    const tfSlider = sliders[2];
+    await tfSlider.fill('20');
+    await expect(page.getByText('20%').first()).toBeVisible();
+  });
+});

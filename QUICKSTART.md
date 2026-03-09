@@ -10,6 +10,7 @@ A complete voice-driven presentation system with:
 - ✅ AudioWorklet for mic capture
 - ✅ Wake-word arming ("majin twin" / "majin pause")
 - ✅ Auto-advance on trigger words (last word of each section)
+- ✅ **Know It All Wall** - AI-powered Q&A mode with inline keyword highlighting
 - ✅ Keyboard controls (P key to pause/resume)
 - ✅ Live transcript ticker
 - ✅ Playwright visual tests
@@ -68,6 +69,40 @@ npm run dev
 7. **Pause/Resume**: Press **P** key or say "majin pause"
 
 8. **Stop**: Click "Stop Listening" when done
+
+## Know It All Wall Mode 🎤❓
+
+**NEW in v1.3**: Voice-driven Q&A system for live questioning!
+
+### Quick Start
+
+1. **Click "Know It All Wall"** button (top right)
+2. **Paste your knowledge base** (product docs, resume, etc.)
+3. **Start Session** - AI analyzes and generates questions
+4. **Ask questions** - Just speak naturally, end with "?"
+5. **Select answer** - Say 2 keywords to choose which answer to give
+
+### Example Flow
+
+```
+You: "When will this be available?" [question detected]
+AI: Generates 2 answer options with keywords highlighted
+Option 1: Keywords: [launch, quarter]
+Option 2: Keywords: [beta, testing]
+
+You: "launch" [first keyword - answer 1 highlights]
+You: "quarter" [second keyword - answer 1 locks in]
+```
+
+### Features
+
+- **AI Context Analysis** - Detects document types (resume, job description, etc.)
+- **Inline Keyword Highlighting** - Keywords light up as you speak them
+- **Dual Answer Options** - Two different approaches for every question
+- **"Back" Command** - Say "back" to reset and choose different answer
+- **Smart Follow-ups** - AI generates relevant follow-up questions
+
+**Full Documentation:** See [KNOW_IT_ALL_WALL.md](./KNOW_IT_ALL_WALL.md)
 
 ## What Makes This Special
 
