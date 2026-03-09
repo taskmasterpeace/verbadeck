@@ -1,12 +1,18 @@
 import { type Section } from '@/lib/script-parser';
 import { Card, CardContent } from './ui/card';
 import { Progress } from './ui/progress';
+import { TransitionEffects } from './TransitionEffects';
+import { MarkdownRenderer } from './MarkdownRenderer';
+import { useDynamicTextSize, TextSizeMeasurement } from '@/hooks/useDynamicTextSize';
+import { Maximize, Minimize, ZoomIn, ZoomOut, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface AudienceViewProps {
   currentSection?: Section;
   sectionIndex: number;
   totalSections: number;
   progress: number;
+  shouldFlash?: boolean;
 }
 
 export function AudienceView({
@@ -14,6 +20,7 @@ export function AudienceView({
   sectionIndex,
   totalSections,
   progress,
+  shouldFlash = false,
 }: AudienceViewProps) {
   if (!currentSection) {
     return (
@@ -23,10 +30,98 @@ export function AudienceView({
     );
   }
 
+  // Calculate content density for adaptive layout
+  const calculateWordCount = (): number => {
+    let count = 0;
+    if (currentSection.content) count += currentSection.content.split(/\s+/).length;
+    if (currentSection.imageUrl) count += 50; // Image penalty
+    return count;
+  };
+
+  const wordCount = calculateWordCount();
+  const useTwoColumnLayout = wordCount > 100; // Threshold: 100+ words triggers two-column for audience view
+
   // Check if we have an image
   const hasImage = !!currentSection.imageUrl;
   const isImageOnly = currentSection.imageOnly && hasImage;
   const layout = currentSection.layout || 'balanced';
+
+  // Dynamic text sizing hook
+  const { fontSize, isOverflowing, containerRef, measurementRef } = useDynamicTextSize(
+    currentSection.content,
+    hasImage
+  );
+
+  // Zoom level state - persisted in localStorage
+  const [zoomLevel, setZoomLevel] = useState(() => {
+    const saved = localStorage.getItem('verbadeck-presentation-zoom');
+    return saved ? parseFloat(saved) : 100;
+  });
+
+  // Save zoom level to localStorage
+  useEffect(() => {
+    localStorage.setItem('verbadeck-presentation-zoom', zoomLevel.toString());
+  }, [zoomLevel]);
+
+  // Calculate scaled font sizes based on zoom level
+  const zoomMultiplier = zoomLevel / 100;
+  const scaledFontSize = fontSize * zoomMultiplier;
+
+  // Fullscreen state management
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isControlsHovered, setIsControlsHovered] = useState(false);
+
+  // Detect fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Toggle fullscreen
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen toggle failed:', err);
+    }
+  };
+
+  // Zoom controls
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 10, 300));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 10, 50));
+  const handleZoomReset = () => setZoomLevel(100);
+
+  // Keyboard shortcuts for zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Plus/Equals key
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        handleZoomIn();
+      }
+      // Ctrl/Cmd + Minus key
+      else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        handleZoomOut();
+      }
+      // Ctrl/Cmd + 0 to reset
+      else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        handleZoomReset();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Render progress bar component (reused across layouts)
   const ProgressBar = () => (
@@ -40,28 +135,47 @@ export function AudienceView({
 
   // Render heading component (reused across layouts)
   const Heading = ({ size = 'large' }: { size?: 'small' | 'medium' | 'large' | 'xlarge' }) => {
-    const sizeClasses = {
-      small: 'text-3xl mb-2 pb-2',
-      medium: 'text-4xl mb-3 pb-3',
-      large: 'text-5xl mb-4 pb-4',
-      xlarge: 'text-6xl mb-6 pb-6',
+    const sizeMap = {
+      small: 3,   // text-3xl = 1.875rem * zoom
+      medium: 4,  // text-4xl = 2.25rem * zoom
+      large: 5,   // text-5xl = 3rem * zoom
+      xlarge: 6,  // text-6xl = 3.75rem * zoom
     };
+    const baseFontSize = sizeMap[size];
+    const scaledHeadingSize = baseFontSize * zoomMultiplier;
+
     return (
-      <h2 className={`${sizeClasses[size]} font-bold text-primary text-center border-b-2 border-primary/20`}>
+      <h2
+        className={`font-bold text-primary text-center border-b-2 border-primary/20 mb-4 pb-4`}
+        style={{ fontSize: `${scaledHeadingSize}rem` }}
+      >
         {currentSection.heading || `Section ${sectionIndex + 1}`}
       </h2>
     );
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Image only mode - fullscreen image */}
-      {isImageOnly ? (
+    <TransitionEffects
+      transitionKey={sectionIndex}
+      shouldFlash={shouldFlash}
+      className="min-h-screen"
+    >
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Hidden measurement div for dynamic text sizing */}
+        <TextSizeMeasurement
+          content={<MarkdownRenderer content={currentSection.content} />}
+          measurementRef={measurementRef}
+          className="leading-relaxed font-light text-center"
+        />
+
+        {/* Image only mode - fullscreen image */}
+        {isImageOnly ? (
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-muted">
           <img
             src={currentSection.imageUrl}
             alt={`Slide ${sectionIndex + 1}`}
             className="max-w-full max-h-full object-contain"
+            style={{ transform: `scale(${zoomMultiplier})` }}
             onError={(e) => {
               console.error('Failed to load image:', currentSection.imageUrl);
             }}
@@ -80,6 +194,7 @@ export function AudienceView({
                   src={currentSection.imageUrl}
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
+                  style={{ transform: `scale(${zoomMultiplier})` }}
                   onError={(e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
@@ -88,11 +203,13 @@ export function AudienceView({
 
               {/* Text side */}
               <div className="flex flex-col items-center justify-center p-12">
-                <div className="space-y-6 max-w-2xl">
+                <div ref={containerRef} className="space-y-6 w-full px-8">
                   <Heading size="large" />
-                  <div className="text-4xl leading-relaxed font-light text-center">
-                    {currentSection.content}
-                  </div>
+                  <MarkdownRenderer
+                    content={currentSection.content}
+                    className="leading-relaxed font-light text-center"
+                    style={{ fontSize: `${scaledFontSize}rem` }}
+                  />
                 </div>
                 <ProgressBar />
               </div>
@@ -108,6 +225,7 @@ export function AudienceView({
                   src={currentSection.imageUrl}
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
+                  style={{ transform: `scale(${zoomMultiplier})` }}
                   onError={(e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
@@ -116,11 +234,13 @@ export function AudienceView({
 
               {/* Text section */}
               <div className="flex-1 flex flex-col items-center justify-center p-12">
-                <div className="space-y-6 max-w-3xl">
+                <div ref={containerRef} className="space-y-6 w-full px-8">
                   <Heading size="medium" />
-                  <div className="text-3xl leading-relaxed font-light text-center">
-                    {currentSection.content}
-                  </div>
+                  <MarkdownRenderer
+                    content={currentSection.content}
+                    className="leading-relaxed font-light text-center"
+                    style={{ fontSize: `${scaledFontSize}rem` }}
+                  />
                 </div>
                 <ProgressBar />
               </div>
@@ -132,11 +252,13 @@ export function AudienceView({
             <div className="flex-1 flex flex-col">
               {/* Text section */}
               <div className="flex-1 flex flex-col items-center justify-center p-12">
-                <div className="space-y-6 max-w-3xl">
+                <div ref={containerRef} className="space-y-6 w-full px-8">
                   <Heading size="medium" />
-                  <div className="text-3xl leading-relaxed font-light text-center">
-                    {currentSection.content}
-                  </div>
+                  <MarkdownRenderer
+                    content={currentSection.content}
+                    className="leading-relaxed font-light text-center"
+                    style={{ fontSize: `${scaledFontSize}rem` }}
+                  />
                 </div>
               </div>
 
@@ -146,6 +268,7 @@ export function AudienceView({
                   src={currentSection.imageUrl}
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
+                  style={{ transform: `scale(${zoomMultiplier})` }}
                   onError={(e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
@@ -161,19 +284,22 @@ export function AudienceView({
           {layout === 'image-focus' && (
             /* Image Focus: Large image with small text caption */
             <div className="flex-1 flex flex-col items-center justify-center p-8 bg-muted">
-              <div className="space-y-6 max-w-5xl flex flex-col items-center">
+              <div ref={containerRef} className="space-y-6 w-full px-8 flex flex-col items-center">
                 <Heading size="medium" />
                 <img
                   src={currentSection.imageUrl}
                   alt={`Slide ${sectionIndex + 1}`}
                   className="max-w-full max-h-[60vh] object-contain"
+                  style={{ transform: `scale(${zoomMultiplier})` }}
                   onError={(e) => {
                     console.error('Failed to load image:', currentSection.imageUrl);
                   }}
                 />
-                <div className="text-2xl leading-relaxed font-light text-center max-w-2xl">
-                  {currentSection.content}
-                </div>
+                <MarkdownRenderer
+                  content={currentSection.content}
+                  className="leading-relaxed font-light text-center w-full"
+                  style={{ fontSize: `${scaledFontSize}rem` }}
+                />
                 <ProgressBar />
               </div>
             </div>
@@ -182,16 +308,19 @@ export function AudienceView({
           {layout === 'text-focus' && (
             /* Text Focus: Large text with small image thumbnail */
             <div className="flex-1 flex flex-col items-center justify-center p-16">
-              <div className="space-y-8 max-w-4xl">
+              <div ref={containerRef} className="space-y-8 w-full px-8">
                 <Heading size="xlarge" />
-                <div className="text-5xl leading-relaxed font-light text-center">
-                  {currentSection.content}
-                </div>
+                <MarkdownRenderer
+                  content={currentSection.content}
+                  className="leading-relaxed font-light text-center"
+                  style={{ fontSize: `${scaledFontSize}rem` }}
+                />
                 <div className="flex justify-center mt-8">
                   <img
                     src={currentSection.imageUrl}
                     alt={`Slide ${sectionIndex + 1}`}
                     className="max-w-md max-h-48 object-contain rounded-lg shadow-lg"
+                    style={{ transform: `scale(${zoomMultiplier})` }}
                     onError={(e) => {
                       console.error('Failed to load image:', currentSection.imageUrl);
                     }}
@@ -202,18 +331,129 @@ export function AudienceView({
             </div>
           )}
         </>
+      ) : useTwoColumnLayout ? (
+        /* No image BUT dense content - use two-column layout */
+        <div className="flex flex-col items-center justify-start p-4 min-h-screen">
+          <div ref={containerRef} className="w-full max-w-7xl mt-8">
+            <Heading size="small" />
+
+            {/* Split content into two columns - Split paragraphs evenly */}
+            {(() => {
+              const paragraphs = currentSection.content.split('\n\n').filter(p => p.trim());
+              const midpoint = Math.ceil(paragraphs.length / 2);
+              const leftContent = paragraphs.slice(0, midpoint).join('\n\n');
+              const rightContent = paragraphs.slice(midpoint).join('\n\n');
+
+              return (
+                <div className="grid grid-cols-2 gap-6 mt-4">
+                  <div className="space-y-2">
+                    <MarkdownRenderer
+                      content={leftContent}
+                      className="leading-tight font-light text-left"
+                      style={{ fontSize: `${Math.max(scaledFontSize * 0.55, 1.0)}rem` }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <MarkdownRenderer
+                      content={rightContent}
+                      className="leading-tight font-light text-left"
+                      style={{ fontSize: `${Math.max(scaledFontSize * 0.55, 1.0)}rem` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+          <ProgressBar />
+        </div>
       ) : (
         /* No image - fullscreen text */
         <div className="flex-1 flex flex-col items-center justify-center p-16">
-          <div className="space-y-8 max-w-4xl">
+          <div ref={containerRef} className="space-y-8 w-full px-8">
             <Heading size="xlarge" />
-            <div className="text-5xl leading-relaxed font-light text-center">
-              {currentSection.content}
-            </div>
+            <MarkdownRenderer
+              content={currentSection.content}
+              className="leading-relaxed font-light text-center"
+              style={{ fontSize: `${scaledFontSize}rem` }}
+            />
           </div>
           <ProgressBar />
         </div>
       )}
-    </div>
+
+        {/* Presentation Controls - Hover to expand */}
+        <div
+          className="fixed bottom-4 right-4 z-50"
+          onMouseEnter={() => setIsControlsHovered(true)}
+          onMouseLeave={() => setIsControlsHovered(false)}
+        >
+          {/* Collapsed: Show only settings icon */}
+          {!isControlsHovered && (
+            <button
+              className="bg-gray-700 hover:bg-gray-800 text-white p-3 rounded-full shadow-lg transition-all"
+              title="Presentation Controls"
+            >
+              <Settings className="w-6 h-6 animate-pulse" />
+            </button>
+          )}
+
+          {/* Expanded: Show all controls */}
+          {isControlsHovered && (
+            <div className="flex flex-col gap-2 items-end animate-in slide-in-from-bottom duration-200">
+              {/* Zoom Controls Panel */}
+              <div className="bg-white border-2 border-blue-300 rounded-lg shadow-lg p-3 flex items-center gap-3">
+                <button
+                  onClick={handleZoomOut}
+                  className="p-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                  title="Zoom Out (Ctrl + -)"
+                >
+                  <ZoomOut className="w-5 h-5" />
+                </button>
+
+                <div className="flex flex-col items-center min-w-[80px]">
+                  <span className="text-xs font-semibold text-gray-600">Text Size</span>
+                  <span className="text-lg font-bold text-blue-600">{zoomLevel}%</span>
+                </div>
+
+                <button
+                  onClick={handleZoomIn}
+                  className="p-2 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                  title="Zoom In (Ctrl + +)"
+                >
+                  <ZoomIn className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={handleZoomReset}
+                  className="px-3 py-2 rounded bg-blue-100 hover:bg-blue-200 transition-colors text-xs font-semibold text-blue-700"
+                  title="Reset to 100% (Ctrl + 0)"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {/* Fullscreen Toggle Button */}
+              <button
+                onClick={toggleFullscreen}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg shadow-lg transition-all flex items-center gap-2 font-medium"
+                title={isFullscreen ? 'Exit Fullscreen (F11)' : 'Enter Fullscreen (F11)'}
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize className="w-5 h-5" />
+                    <span className="text-sm">Exit Fullscreen</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize className="w-5 h-5" />
+                    <span className="text-sm">Fullscreen</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </TransitionEffects>
   );
 }

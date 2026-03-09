@@ -201,8 +201,8 @@ export function KnowItAllWall({
         isActive: !hasActiveQuestion, // Only active if no other active question
       };
 
-      // Add to questions list
-      onQuestionsChange([...questions, newCard]);
+      // Add to questions list (use updater to avoid stale closure)
+      onQuestionsChange((prev: QuestionCard[]) => [...prev, newCard]);
       setDetectedQuestion(null);
 
       try {
@@ -272,7 +272,7 @@ export function KnowItAllWall({
     };
 
     generateAnswers();
-  }, [detectedQuestion, knowledgeBase, selectedModel, onQuestionsChange]);
+  }, [detectedQuestion, knowledgeBase, selectedModel, selectedTone, onQuestionsChange]);
 
   // Intersection Observer to track visible cards
   useEffect(() => {
@@ -436,10 +436,41 @@ export function KnowItAllWall({
           </div>
         </div>
 
-        <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-gray-300 rounded-lg">
+        {/* Manual Question Input - Available from session start */}
+        <div className="border-2 border-gray-300 rounded-lg p-3 bg-gray-50">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={manualQuestion}
+              onChange={(e) => setManualQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleManualQuestionSubmit();
+                }
+              }}
+              placeholder="Type a question manually (press Enter to submit)"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="manual-question-input"
+            />
+            <button
+              onClick={handleManualQuestionSubmit}
+              disabled={!manualQuestion.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+              data-testid="submit-manual-question"
+            >
+              Ask
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            💡 Type a question and press Enter, or use voice by speaking your question ending with "?"
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-gray-300 rounded-lg">
           <div className="text-center text-muted-foreground">
             <p className="text-lg font-medium mb-2">🎤 Listening for your first question...</p>
-            <p className="text-sm">Speak clearly and end with "?"</p>
+            <p className="text-sm">Speak clearly and end with "?" or type above</p>
           </div>
         </div>
       </div>
@@ -666,7 +697,7 @@ export function KnowItAllWall({
         <details>
           <summary className="cursor-pointer bg-blue-50 px-3 py-2 hover:bg-blue-100 transition-colors">
             <span className="text-xs font-semibold text-blue-700">
-              🎯 Question Trigger Words (68 phrases)
+              🎯 Question Trigger Words (69 phrases)
             </span>
           </summary>
           <div className="p-3 bg-white">
@@ -689,7 +720,7 @@ export function KnowItAllWall({
 
               {/* Verb Starters */}
               <div className="space-y-1">
-                <div className="font-bold text-gray-700">Verb Starters (18)</div>
+                <div className="font-bold text-gray-700">Verb Starters (16)</div>
                 <div className="text-gray-600 leading-relaxed">
                   do you, does, did you, have you, has, is, are, was, were, am, been, had, will, would, could, should
                 </div>
@@ -697,7 +728,7 @@ export function KnowItAllWall({
 
               {/* Command Starters */}
               <div className="space-y-1">
-                <div className="font-bold text-gray-700">Command Starters (16)</div>
+                <div className="font-bold text-gray-700">Command Starters (17)</div>
                 <div className="text-gray-600 leading-relaxed">
                   tell me, explain, describe, give me, show me, help me, talk about, discuss, share, elaborate, clarify, define, compare, contrast, demonstrate, illustrate, outline
                 </div>
@@ -705,7 +736,7 @@ export function KnowItAllWall({
 
               {/* Conversational Starters */}
               <div className="col-span-1 md:col-span-2 space-y-1">
-                <div className="font-bold text-gray-700">Conversational Starters (14)</div>
+                <div className="font-bold text-gray-700">Conversational Starters (16)</div>
                 <div className="text-gray-600 leading-relaxed">
                   i wonder, i'm wondering, i'd like to know, wondering about, curious about, question about, ask about, thinking about, let me know, let's talk about, let's discuss, can we talk about, wanna know, want to know, need to know, trying to understand
                 </div>

@@ -1,0 +1,79 @@
+{
+  "title": "TalkAdvantage Pro - VC Pitch Deck",
+  "sections": [
+    {
+      "id": "slide-1",
+      "heading": "The Future Is Here",
+      "content": "2027. High School Party. No Date. One Secret Weapon.\n\nImagine a high school kid at a party, earbuds in, AI coaching him in real-time on what to say to the girl he likes. This seems like science fiction.\n\n**It's 18 months away.**",
+      "advanceToken": "away",
+      "alternativeTriggers": ["months", "weapon"],
+      "selectedTriggers": ["away"],
+      "subtext": "Imagine a high school kid at a party, earbuds in, AI coaching him in real-time on what to say to the girl he likes. This seems like science fiction.",
+      "visualElements": [
+        "2027. High School Party. No Date. One Secret Weapon.",
+        "Imagine a high school kid at a party, earbuds in, AI coaching him in real-time",
+        "**It's 18 months away.**"
+      ],
+      "recommendedImage": "Split screen - Left: awkward teenager at party (2025 style). Right: same kid, confident, subtle earbuds, slight AR overlay showing conversational cues (futuristic but realistic)",
+      "speakerNotes": {
+        "profoundStatement": "The future of human communication isn't about AI replacing conversations—it's about AI happening inside them.",
+        "talkingPoints": {
+          "data": "Right now, 2.5 hours per day are wasted in meetings because people don't have the right information at the right moment. We check our phones. We say \"let me get back to you.\" We miss opportunities in real-time because AI only works before or after conversations, never during. That's about to change forever.",
+          "vision": "Imagine never being at a loss for words. Never forgetting someone's name mid-conversation. Never missing a buying signal in a sales call. This isn't about making humans obsolete—it's about making humans superhuman. And whoever captures this market first will define how 8 billion people interact with AI.",
+          "proof": "We're not speculating about the future. We built it. It's running right now. And I'm going to show you exactly how it works. But first, you need to understand why everything you're using today is fundamentally broken."
+        },
+        "highImpactParagraph": "In 2027, a high school kid will walk into a party wearing earbuds with real-time AI coaching him through conversations. His parents will use the same technology for job interviews, sales calls, and negotiations. This isn't science fiction—the technology exists today. But right now, AI makes you stop your conversation, type a prompt, wait, and return. You are a prisoner of the chat prompt. TalkAdvantage Pro is the first platform that puts AI inside the conversation, real-time, voice-activated, hands-free. We're not building a feature. We're building the platform that defines the next era of human-AI interaction. And the market window is open right now."
+      }
+    },
+    {
+      "id": "slide-2",
+      "heading": "You Are A Prisoner",
+      "content": "**You Are A Prisoner Of The Chat Prompt**\n\nCurrent AI forces you to choose: stay in the conversation or get intelligent—you can't have both.\n\n- Sales call: \"Hold on, let me check something...\" [Loses momentum]\n- Job interview: \"Can I get back to you on that?\" [Loses authority]\n- Presentation: Frantically typing between slides [Loses presence]",
+      "advanceToken": "presence",
+      "alternativeTriggers": ["prisoner", "prompt"],
+      "selectedTriggers": ["presence"],
+      "subtext": "Current AI forces you to choose: stay in the conversation or get intelligent—you can't have both.",
+      "visualElements": [
+        "**You Are A Prisoner Of The Chat Prompt**",
+        "Sales call: \"Hold on, let me check...\" [Loses momentum]",
+        "Job interview: \"Can I get back to you?\" [Loses authority]",
+        "Presentation: Typing between slides [Loses presence]"
+      ],
+      "recommendedImage": "Stylized illustration showing a professional literally trapped behind/inside a chat interface, with real conversations happening just beyond their reach",
+      "speakerNotes": {
+        "profoundStatement": "Current AI forces you to choose: stay in the conversation or get intelligent—you can't have both.",
+        "talkingPoints": {
+          "data": "Seventy percent of meeting insights are never acted upon. $37 billion is lost annually to poor communication. Why? Because by the time AI gives you the answer, the moment has passed. You're in a sales call, the prospect asks about a competitor, and you say \"let me get back to you.\" That deal is already slipping away.",
+          "vision": "Think about spell-check in 2010. Imagine someone pitching: \"What if we waited until AFTER you sent the email to check for typos?\" That would be insane. But that's exactly what we're doing with AI today. We wait until after the meeting to get insights. We wait until after the call to get coaching. This is the 2025 equivalent of getting up to change the TV channel.",
+          "proof": "I experienced this personally at Deloitte. I watched brilliant consultants struggle in client meetings because they couldn't access the right information fast enough. I built an internal tool to solve it. Corporate bureaucracy killed it. So I took it, rebuilt it, and now we're bringing it to market. Because this problem is massive, and no one else is solving it."
+        },
+        "highImpactParagraph": "Every AI tool today makes the same broken assumption: that you have time to stop, type, and wait. In a sales call, you don't. In a job interview, you don't. In a negotiation, you don't. Current meeting tools give you beautiful summaries after the meeting is over—when it's too late to change anything. Seventy percent of insights never get acted on. Thirty-seven billion dollars is lost annually because humans can't access intelligence during the moments that matter. This isn't a minor inconvenience. This is the fundamental bottleneck of the AI era. And we're about to break it."
+      }
+    },
+    {
+      "id": "slide-3",
+      "heading": "The Explosive Opportunity",
+      "content": "**A $55.7 Billion Market Is Waiting**\n\n- Job Interviews: 60M annually (US alone)\n- Sales Calls: Billions globally\n- Executive Meetings: $37B lost annually\n- Professional Communication: Every conversation\n\n**Key stats:**\n- $37B lost annually to poor communication\n- 70% of meeting insights never acted upon\n- 2.5 hours per day wasted in meetings\n\n**Every conversation where humans want an edge. Every single one.**",
+      "advanceToken": "one",
+      "alternativeTriggers": ["opportunity", "market"],
+      "selectedTriggers": ["one"],
+      "subtext": "We're not targeting a market segment—we're targeting every human conversation where the outcome matters.",
+      "visualElements": [
+        "**A $55.7 Billion Market Is Waiting**",
+        "60M annual job interviews • Billions of sales calls",
+        "$37B lost annually • 70% insights never acted upon",
+        "Every conversation where humans want an edge"
+      ],
+      "recommendedImage": "Expanding concentric circles visualization showing market layers (job interviews at center, then sales, then all professional communication, then ALL human conversations), with dollar figures scaling up dramatically",
+      "speakerNotes": {
+        "profoundStatement": "We're not targeting a market segment—we're targeting every human conversation where the outcome matters.",
+        "talkingPoints": {
+          "data": "Let's start conservative. Sixty million job interviews happen annually in the US alone. If just 1% of job seekers pay $20 per interview for AI coaching, that's $12 million in one vertical alone. Now scale that to sales calls—billions globally. Executive coaching. Negotiation training. Dating advice. Therapy support. Customer service. The TAM is every conversation where humans want better outcomes, which is a $55.7 billion market in conversational AI.",
+          "vision": "Right now, ChatGPT has proven people will pay for AI assistance. But ChatGPT makes you leave the conversation. We keep you IN it. This is the same platform shift as mobile—the technology that was chained to your desk is now in your pocket. We're unchaining AI from the chat box and putting it in your ear. First company to nail this owns the category.",
+          "proof": "We're starting narrow: job interview coaching. Desperate market, high willingness to pay, clear ROI. A candidate who lands a $75K job from a $20 AI coaching session has 3,750x return on investment. Then we expand to sales enablement, where the ROI is even clearer. Then we open the widget marketplace and let developers target every other conversation type. Platform economics at scale."
+        },
+        "highImpactParagraph": "The conversational AI market is $55.7 billion and growing exponentially. But here's what most investors miss: current tools only address the \"after\" market—summaries, transcripts, analytics post-conversation. We're targeting the \"during\" market, which is 10x larger because the stakes are higher. A sales rep who loses a deal can't fix it with a better summary. An interview candidate who freezes can't replay the conversation. The real value is in real-time intelligence that changes outcomes in the moment. We start with 60 million annual job interviews, expand to billions of sales calls, and ultimately become the AI layer for every conversation that matters. The company that captures this becomes the conversational intelligence platform for the next decade."
+      }
+    }
+  ]
+}

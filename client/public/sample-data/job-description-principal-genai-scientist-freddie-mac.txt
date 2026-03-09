@@ -1,0 +1,59 @@
+Job Title: Principal Gen AI Scientist
+Client: Freddie Mac
+Location: McLean, VA - Onsite
+Duration: 3+ Months contract
+
+Interview Information:
+- Rounds: 1 Round
+- Duration: 120 minutes
+- Interview Type: In Person – Onsite – Face-to-Face
+
+Must Have Qualifications:
+- Must have hands-on experience with machine learning transitioned into GenAI
+- RAG (Retrieval-Augmented Generation)
+- Python - Jupyter
+- Other Software knowledge
+- Using agents in workflows
+- Strong understanding of data
+
+Preferred:
+- Built AI agent
+- MCP (Model Context Protocol)
+- A2A (Agent-to-Agent)
+- Graph RAG
+- Deployed Gen AI applications to production
+
+Supplier Vetting Questions:
+• Assessment testing on the must-have list is required for candidates to be considered.
+• What is RAG, and how have you implemented it?
+• What is Semantic Similarity Search and how can this be done?
+• What is the formula for Precision?
+
+Position Summary:
+We are seeking a highly experienced Principal Gen AI Scientist with a strong focus on Generative AI (GenAI) to lead the design and development of cutting-edge AI Agents, Agentic Workflows and Gen AI Applications that solve complex business problems. This role requires advanced proficiency in Prompt Engineering, Large Language Models (LLMs), RAG, Graph RAG, MCP, A2A, multi-modal AI, Gen AI Patterns, Evaluation Frameworks, Guardrails, data curation, and AWS cloud deployments. You will serve as a hands-on Gen AI (data) scientist and critical thought leader, working alongside full stack developers, UX designers, product managers and data engineers to shape and implement enterprise-grade Gen AI solutions.
+
+Key Responsibilities:
+• Architect and implement scalable AI Agents, Agentic Workflows and GenAI applications to address diverse and complex business use cases.
+• Develop, fine-tune, and optimize lightweight LLMs; lead the evaluation and adaptation of models such as Claude (Anthropic), Azure OpenAI, and open-source alternatives.
+• Design and deploy Retrieval-Augmented Generation (RAG) and Graph RAG systems using vector databases and knowledge bases.
+• Curate enterprise data using connectors integrated with AWS Bedrock's Knowledge Base/Elastic
+• Implement solutions leveraging MCP (Model Context Protocol) and A2A (Agent-to-Agent) communication.
+• Build and maintain Jupyter-based notebooks using platforms like SageMaker and MLFlow/Kubeflow on Kubernetes (EKS).
+• Collaborate with cross-functional teams of UI and microservice engineers, designers, and data engineers to build full-stack Gen AI experiences.
+• Integrate GenAI solutions with enterprise platforms via API-based methods and GenAI standardized patterns.
+• Establish and enforce validation procedures with Evaluation Frameworks, bias mitigation, safety protocols, and guardrails for production-ready deployment.
+• Design & build robust ingestion pipelines that extract, chunk, enrich, and anonymize data from PDFs, video, and audio sources for use in LLM-powered workflows—leveraging best practices like semantic chunking and privacy controls
+• Orchestrate multimodal pipelines using scalable frameworks (e.g., Apache Spark, PySpark) for automated ETL/ELT workflows appropriate for unstructured media
+• Implement embeddings drives—map media content to vector representations using embedding models, and integrate with vector stores (AWS KnowledgeBase/Elastic/Mongo Atlas) to support RAG architectures
+
+Technical Stack & Tools:
+- LLMs: Claude (Anthropic), Azure OpenAI, open-source models
+- RAG: Vector databases (AWS Bedrock Knowledge Base, Elastic, Mongo Atlas)
+- MCP: Model Context Protocol for agent communication
+- A2A: Agent-to-Agent communication frameworks
+- Graph RAG: Knowledge graph-enhanced retrieval systems
+- Cloud: AWS (Bedrock, SageMaker, EKS)
+- MLOps: MLFlow, Kubeflow on Kubernetes
+- Data Processing: Apache Spark, PySpark
+- Languages: Python, Jupyter notebooks
+- Evaluation: Custom frameworks, bias detection, guardrails

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
-import { Upload, ImageIcon as ImageIconLucide, Sparkles, X } from 'lucide-react';
+import { Upload, ImageIcon as ImageIconLucide, Sparkles, X, Search } from 'lucide-react';
 import { AIImageGenerator } from './AIImageGenerator';
+import { ImageRecommendationDialog } from './ImageRecommendationDialog';
 import { LayoutPicker } from './LayoutPicker';
 import type { Section, SlideLayout } from '@/lib/script-parser';
 
@@ -41,6 +42,7 @@ export function ImageUploadSection({
   onLayoutChange,
 }: ImageUploadSectionProps) {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,28 +83,47 @@ export function ImageUploadSection({
       )}
 
       {/* Upload or URL input */}
-      <div className="flex gap-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
+      <div className="space-y-2">
+        {/* Primary Options: AI Recommendations (NEW!) */}
         <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          onClick={() => setShowRecommendations(true)}
+          disabled={!content}
+          className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
         >
-          <Upload className="w-4 h-4" />
-          Upload Image
+          <Search className="w-4 h-4" />
+          AI Image Recommendations (Free!)
         </button>
-        <button
-          onClick={() => setShowAIGenerator(true)}
-          className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-        >
-          <Sparkles className="w-4 h-4" />
-          Generate with AI
-        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="flex-1 border-t border-gray-300" />
+          <span className="text-xs text-gray-500">OR</span>
+          <div className="flex-1 border-t border-gray-300" />
+        </div>
+
+        {/* Secondary Options */}
+        <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            Upload
+          </button>
+          <button
+            onClick={() => setShowAIGenerator(true)}
+            className="flex-1 px-3 py-2 rounded-md border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            Generate
+          </button>
+        </div>
       </div>
 
       <input
@@ -150,6 +171,19 @@ export function ImageUploadSection({
             setShowAIGenerator(false);
           }}
           onClose={() => setShowAIGenerator(false)}
+        />
+      )}
+
+      {/* AI Image Recommendations Dialog (NEW!) */}
+      {showRecommendations && (
+        <ImageRecommendationDialog
+          isOpen={showRecommendations}
+          onClose={() => setShowRecommendations(false)}
+          slideContent={content}
+          onImageSelected={(url) => {
+            onImageChange(url);
+            setShowRecommendations(false);
+          }}
         />
       )}
     </div>

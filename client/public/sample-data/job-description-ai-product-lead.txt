@@ -1,0 +1,79 @@
+AI PRODUCT LEAD - CONVERSATIONAL INTELLIGENCE
+Fast-Growing SaaS Startup (Series B)
+San Francisco, CA / Remote | $180,000 - $240,000 + Equity (0.5-1.5%)
+
+ABOUT US
+We're revolutionizing how teams communicate and collaborate through AI-powered conversational intelligence. Our platform analyzes meetings, calls, and conversations in real-time to provide actionable insights, sentiment analysis, and decision support. We've raised $50M in Series B funding and are scaling rapidly with 500+ enterprise customers.
+
+THE ROLE
+We're looking for an AI Product Lead to own our conversational intelligence product line. You'll drive product strategy, work closely with engineering and data science teams, and ensure we're building solutions that deliver measurable value to our customers. This role requires someone who understands both the technical capabilities of AI/ML and the business needs of enterprise customers.
+
+WHAT YOU'LL DO
+• Define product roadmap and strategy for conversational AI features, balancing innovation with customer needs
+• Collaborate with engineering teams to design and launch AI-powered features including sentiment analysis, real-time transcription, and meeting intelligence
+• Conduct user research and analyze customer feedback to identify high-impact product opportunities
+• Work with data science teams to define success metrics and measure product impact
+• Partner with sales and customer success to understand enterprise requirements and close strategic deals
+• Present product vision and roadmap to executives, investors, and key customers
+• Build and prioritize product backlog, managing trade-offs between technical debt, new features, and customer requests
+• Drive adoption of AI governance best practices within product development lifecycle
+
+REQUIRED QUALIFICATIONS
+• 8+ years of product management experience, with 3+ years focused on AI/ML products
+• Deep understanding of NLP, sentiment analysis, and conversational AI technologies
+• Proven track record of launching successful AI-powered SaaS products
+• Experience working with cross-functional teams in fast-paced startup environments
+• Strong analytical skills with ability to make data-driven product decisions
+• Excellent communication and presentation skills
+• Bachelor's degree in Computer Science, Engineering, or related field
+
+IDEAL BACKGROUND
+• Experience building real-time AI systems for enterprise customers
+• Background in cybersecurity or compliance-sensitive industries
+• Previous startup founding or early-stage experience
+• Technical depth to collaborate effectively with ML engineers and data scientists
+• Experience with React, Node.js, or modern web technologies
+• Public speaking or thought leadership in AI/ML domain
+• Patents or published work in conversational AI or NLP
+
+WHAT MAKES THIS ROLE UNIQUE
+• Shape the future of conversational intelligence technology
+• Work with cutting-edge GenAI models and real-time AI systems
+• High-impact role with direct influence on company strategy and direction
+• Opportunity to build a world-class product team as we scale
+• Close collaboration with founders and executive team
+
+COMPENSATION & BENEFITS
+• Base salary: $180K-$240K (depending on experience)
+• Equity: 0.5-1.5% (4-year vesting with 1-year cliff)
+• Comprehensive health, dental, and vision insurance
+• Unlimited PTO with mandatory minimum (we mean it!)
+• Home office stipend and co-working space allowance
+• Annual learning & development budget ($5K)
+• Latest MacBook Pro and equipment of your choice
+• Quarterly team offsites and annual company retreat
+
+OUR TECH STACK
+React, Node.js, Python, PostgreSQL, Redis, AWS, OpenAI GPT-4, Anthropic Claude, Groq, Whisper, WebSockets, AssemblyAI, Langchain
+
+OUR VALUES
+• Customer obsession - we build for impact, not features
+• Move fast and ship - bias toward action and rapid iteration
+• Responsible AI - ethical AI development is non-negotiable
+• Transparency - open communication at all levels
+• Continuous learning - we're always improving
+
+WHY JOIN US NOW?
+• Series B funded with 3+ years of runway
+• 300% YoY growth with clear path to profitability
+• Product-market fit achieved with strong customer retention (>95%)
+• Opportunity to be employee #50 and shape company culture
+• Working on cutting-edge AI problems with real-world impact
+
+TO APPLY
+Please include:
+1. Resume highlighting relevant AI product experience
+2. Brief description of an AI product you've shipped and its impact
+3. Your thoughts on the future of conversational intelligence (2-3 paragraphs)
+
+We're committed to building a diverse team and encourage applications from all backgrounds.

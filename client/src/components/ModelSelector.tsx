@@ -32,13 +32,21 @@ export function ModelSelector({ selectedModel, onModelChange }: ModelSelectorPro
         className="flex items-center gap-2 px-4 py-2 rounded-md border bg-background hover:bg-muted transition-colors min-w-[280px]"
       >
         <div className="flex-1 text-left">
-          <div className="text-sm font-medium">{currentModel.name}</div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium">{currentModel.name}</span>
+            {currentModel.speedRank > 0 && (
+              <span className="text-xs">{'⭐'.repeat(currentModel.speedRank)}</span>
+            )}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              {currentModel.category}
+            </span>
+          </div>
           <div className="text-xs text-muted-foreground truncate">
             {currentModel.description}
           </div>
         </div>
         <ChevronDown className={cn(
-          'w-4 h-4 transition-transform',
+          'w-4 h-4 transition-transform flex-shrink-0',
           isOpen && 'transform rotate-180'
         )} />
       </button>
@@ -66,6 +74,8 @@ export function ModelSelector({ selectedModel, onModelChange }: ModelSelectorPro
 
                     const isSelected = selectedModel === model.id;
 
+                    const speedStars = '⭐'.repeat(model.speedRank);
+
                     return (
                       <button
                         key={model.id}
@@ -78,9 +88,22 @@ export function ModelSelector({ selectedModel, onModelChange }: ModelSelectorPro
                         )}
                       >
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium text-sm">{model.name}</span>
-                            {isSelected && <Check className="w-4 h-4" />}
+                            {speedStars && (
+                              <span className="text-sm" title={`Speed: ${model.speedRank}/3`}>
+                                {speedStars}
+                              </span>
+                            )}
+                            <span className={cn(
+                              'text-xs px-2 py-0.5 rounded-full font-medium',
+                              isSelected
+                                ? 'bg-primary-foreground/20 text-primary-foreground'
+                                : 'bg-muted text-muted-foreground'
+                            )}>
+                              {model.category}
+                            </span>
+                            {isSelected && <Check className="w-4 h-4 ml-auto" />}
                           </div>
                           <div className={cn(
                             'text-xs mt-1',

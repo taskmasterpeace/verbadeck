@@ -1,0 +1,139 @@
+{
+  "title": "Adaptive Layout Showcase",
+  "description": "Demonstrates VerbaDeck's intelligent content-density formatting across 8 different slide types",
+  "sections": [
+    {
+      "id": "slide-1",
+      "heading": "Welcome - Light Content",
+      "content": "This is a normal slide with minimal content. Notice the generous spacing and large fonts. Perfect for opening slides or simple concepts.",
+      "advanceToken": "begin",
+      "imageUrl": "",
+      "speakerNotes": "This slide has about 30 words total. It uses the NORMAL tier with 30px headings, 20px subheadings, and spacious layout. Great for impact.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "First impressions matter - keep it simple.",
+        "talkingPoints": {
+          "data": "Studies show audiences retain 65% more information from slides with minimal text.",
+          "vision": "Imagine a presentation where every slide is perfectly readable, never cramped.",
+          "proof": "This slide demonstrates that less is more. Clean, readable, professional."
+        },
+        "highImpactParagraph": "Welcome to the adaptive layout showcase. Every slide you see automatically adjusts its formatting based on content density. No manual tweaking required."
+      }
+    },
+    {
+      "id": "slide-2",
+      "heading": "Medium Density - No Image",
+      "content": "This slide contains moderate content - around 250 words total when you include the speaker notes and structured content below.\n\nNotice how the layout remains single-column but fonts are starting to compress slightly. The spacing is tighter than slide 1.\n\nThis is the **COMPACT tier** - activated when content exceeds 300 words. Fonts reduce to 24px headings and 18px subheadings while maintaining excellent readability.",
+      "advanceToken": "moderate",
+      "speakerNotes": "The COMPACT tier kicks in automatically when word count exceeds 300. This ensures your content fits without scrolling while keeping fonts large enough to read comfortably. Perfect for slides with detailed talking points.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "Smart formatting adapts to your content - you focus on the message, not the layout.",
+        "talkingPoints": {
+          "data": "The compact tier uses 24px headings instead of 30px. Subheadings drop from 20px to 18px. Content stays at 14px minimum for readability.",
+          "vision": "Presenters should never worry about text overflow. The system handles it intelligently.",
+          "proof": "This slide has 350+ words and fits perfectly on screen without any scrollbars."
+        },
+        "highImpactParagraph": "The beauty of adaptive formatting is that it's completely automatic. You write your content, and VerbaDeck ensures it displays beautifully."
+      }
+    },
+    {
+      "id": "slide-3",
+      "heading": "Medium Density + Image",
+      "content": "This slide demonstrates the COMPACT tier with an image present.\n\nThe word count calculation includes a +50 word penalty for images because they consume vertical space.\n\nEven with an image, the content remains readable with 18px subheadings and comfortable spacing. The image appears in the recommended section below.",
+      "advanceToken": "visual",
+      "recommendedImage": "Abstract geometric shapes representing data flow and intelligent systems - modern, clean design with blue and orange gradients",
+      "speakerNotes": "Images are factored into density calculations automatically. The system adds 50 words to the count when an image is present, ensuring the layout compensates for the vertical space consumed by visuals.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "Images enhance your message - the layout adapts to accommodate them gracefully.",
+        "talkingPoints": {
+          "data": "Adding an image increases the effective word count by 50 words, triggering earlier compression.",
+          "vision": "Every presenter deserves a system that balances text and visuals intelligently.",
+          "proof": "This slide combines 280 words of text plus an image recommendation and fits beautifully."
+        },
+        "highImpactParagraph": "The adaptive system treats images as content consumers. This prevents slides from becoming cluttered when you add visuals."
+      }
+    },
+    {
+      "id": "slide-4",
+      "heading": "Dense Content - Two Column Layout",
+      "content": "This slide crosses the 400-word threshold and triggers the **TWO-COLUMN LAYOUT**.\n\nNotice how the content is split into left and right columns. Headings shrink to 16px, subheadings to 14px (the minimum for readability). The profound statement and talking points appear in the left column, while the high impact closer and recommended image occupy the right column.\n\nThe two-column layout maximizes horizontal space utilization. This is VerbaDeck's most powerful formatting optimization for content-heavy slides. It effectively doubles the vertical capacity by utilizing horizontal real estate.\n\nSpacing becomes dramatically tighter - notice the reduced gaps between sections. The border becomes thinner. Tab buttons shrink. Grid gaps compress from 24px to just 6px. Everything compresses intelligently while maintaining the critical 14px minimum font size for readability.",
+      "advanceToken": "columns",
+      "speakerNotes": "The two-column tier activates at 400+ words. This slide has approximately 450 words total when you include all the structured speaker notes below. The layout automatically switches from vertical stacking to horizontal columns, doubling the available space for content while maintaining readability. Watch how the profound statement, talking points, high impact paragraph, and image recommendation all arrange themselves optimally across two columns.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "When content demands more space, intelligent layouts provide it without sacrificing readability or forcing presenters to compromise on detail.",
+        "talkingPoints": {
+          "data": "Two-column layouts reduce vertical height by approximately 40-50% compared to single-column arrangements. Grid gap shrinks from 24px to 6px. Padding reduces from 24px to just 6px on all sides. Line heights tighten from 1.5x to 1.25x. Section spacing eliminates entirely. Every pixel counts.",
+          "vision": "Presenters should be able to include detailed technical content without worrying about text overflow or cramming information uncomfortably. The system handles density gracefully and automatically, making the right tradeoffs between space and readability.",
+          "proof": "This slide demonstrates 450+ words displayed elegantly across two columns with 14px minimum font size maintained throughout - still perfectly readable on any display size."
+        },
+        "highImpactParagraph": "The two-column layout is where VerbaDeck truly shines and demonstrates its sophisticated understanding of typography and space utilization. Complex topics require detailed explanations with multiple data points, technical specifications, and supporting evidence. The adaptive system ensures those explanations fit elegantly on screen while remaining accessible and professional looking.",
+        "recommendedImage": "Side-by-side comparison diagram showing single-column vs two-column layouts with density metrics, space utilization percentages, and readability scores highlighted"
+      }
+    },
+    {
+      "id": "slide-5",
+      "heading": "Dense + Image",
+      "content": "This slide combines high word count with an image recommendation, creating a genuinely challenging formatting scenario that would break most presentation systems.\n\nThe two-column layout handles it gracefully without breaking a sweat. Notice how the image recommendation appears in the right column while the profound statement and talking points occupy the left column. This creates perfect visual balance.\n\nThe word count here is approximately 500 words including the +50 word image penalty. Everything fits without scrolling despite the complexity. The flowchart image recommendation adds valuable visual context while the text provides the detailed technical explanation.\n\nFont sizes remain at the 14px minimum for main content to ensure readability. Labels can go smaller (7px) since they're just section identifiers and don't need to be as readable. This hierarchy is intentional and research-backed.",
+      "advanceToken": "complex",
+      "recommendedImage": "Flowchart showing adaptive layout decision tree with branches: word count calculation → tier selection → font sizing rules → column layout decision → spacing adjustments → final rendering output",
+      "speakerNotes": "This slide tests the practical limits of the two-column tier. With 500+ words plus an image recommendation, it demonstrates that VerbaDeck can handle genuinely complex slides without requiring manual intervention. The key insight is maintaining the 14px minimum font size for actual content while allowing labels, metadata, and UI chrome to shrink further. This creates a clear visual hierarchy that guides the presenter's eye to the important information while keeping controls accessible.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "Complex information with supporting visuals requires sophisticated formatting intelligence - complete automation makes what seems impossible become effortless and natural.",
+        "talkingPoints": {
+          "data": "This slide contains 500+ words including the 50-word image penalty. Two-column layout provides approximately 1.5-2x more content capacity than single-column arrangements. Minimum 14px content fonts ensure readability across all display sizes and resolutions. Grid gap at 6px maximizes space.",
+          "vision": "Technical presenters and subject matter experts need to convey detailed information with supporting visual aids. The system should never force them to cut important corners, oversimplify complex topics, or artificially split cohesive content across multiple slides unnecessarily.",
+          "proof": "Everything you're reading right now - all 500+ words plus image recommendation - fits perfectly on screen. No scrolling required. No uncomfortably tiny fonts. No cramped layout. Just intelligent, automatic layout optimization working exactly as designed."
+        },
+        "highImpactParagraph": "The sophisticated combination of two-column grid layout, ultra-tight line heights, minimal spacing between sections, compressed padding, and intelligent font scaling allows VerbaDeck to display 400-550 words comfortably on a single slide while keeping all content perfectly readable, professionally formatted, and visually balanced with supporting imagery."
+      }
+    },
+    {
+      "id": "slide-6",
+      "heading": "Maximum Capacity Demo",
+      "content": "This slide pushes the two-column tier to its absolute limit with approximately 560 words total, demonstrating the maximum content density possible while maintaining professional readability standards.\n\nEvery single optimization is active simultaneously: 16px headings, 14px subheadings and main content, ultra-tiny 7px labels, minimal 6px column gap, compressed padding (6px on all sides), zero spacing between sections, super-tight line heights (1.25x), hidden progress bar, and compact tab buttons.\n\nThe progress bar disappears entirely in two-column mode to save precious vertical space. Tab buttons shrink to minimal size. Borders compress to thin single-pixel lines. Margins eliminate completely between sections.\n\nThis represents the maximum content density VerbaDeck can achieve while strictly maintaining the 14px minimum font size requirement for actual content. Going beyond 570 words triggers the ultra-dense tier which makes additional aggressive space-saving adjustments including hiding section headers and using icon-only tabs.",
+      "advanceToken": "maximum",
+      "speakerNotes": "At 560+ words, we're approaching the practical limit of what fits comfortably on screen while maintaining professional presentation standards. This slide demonstrates every optimization technique working in concert: two-column grid layout, compact fonts, ultra-tight spacing, hidden progress bar, minimal padding throughout. The key insight is that even at absolute maximum density, content remains perfectly readable because we strictly respect the 14px minimum font size for actual content while allowing UI chrome and labels to shrink further.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "There's a natural limit to how much content fits elegantly on one slide - intelligent systems help you find and optimize for that limit without manual intervention.",
+        "talkingPoints": {
+          "data": "This slide contains 560 words calculated across all fields. Two-column grid layout with minimal 6px gap between columns. All padding compressed to 6px on every side. Line height squeezed to 1.25x for maximum density. Section spacing completely eliminated. Progress bar hidden entirely. Tab buttons minimized. Still perfectly readable at 14px.",
+          "vision": "Presenters deserve sophisticated tools that maximize content capacity without ever compromising on quality or readability. The adaptive system finds the optimal balance automatically through hundreds of micro-decisions that would be impossible to make manually.",
+          "proof": "You're reading 560+ words on a single slide right now. Everything fits within the viewport. Everything remains readable at 14px minimum. Everything looks professional. That's the power of truly intelligent adaptive formatting done right."
+        },
+        "highImpactParagraph": "The maximum capacity tier demonstrates VerbaDeck's sophisticated understanding of typography hierarchy, intelligent spacing systems, and readability science. By applying dozens of coordinated micro-optimizations automatically - each contributing just a few pixels of saved space - the system achieves what would take manual designers hours to perfect and would be impossible to maintain across an entire presentation.",
+        "recommendedImage": "Heat map visualization showing content density distribution across a multi-slide presentation with color-coded intensity levels from light green (sparse) through yellow (moderate) to red (maximum capacity)"
+      }
+    },
+    {
+      "id": "slide-7",
+      "heading": "Simple Conclusion",
+      "content": "Back to simplicity. This final slide returns to the NORMAL tier with minimal content.\n\nNotice how the fonts expand back to 30px headings and generous spacing returns. The system adapts both ways - compressing when needed, expanding when space allows.",
+      "advanceToken": "conclude",
+      "speakerNotes": "The adaptive system works in both directions. Dense slides compress. Light slides expand. You never need to manually adjust formatting.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "Great presentations balance detail with clarity - adaptive formatting makes that balance automatic.",
+        "talkingPoints": {
+          "data": "This slide returns to NORMAL tier with <300 words total. Fonts expand to maximum size for impact.",
+          "vision": "Closing slides should be memorable. Large fonts and clean layout ensure your final message resonates.",
+          "proof": "Notice the difference from slide 6. Same system, completely different formatting. That's adaptation."
+        },
+        "highImpactParagraph": "VerbaDeck's adaptive layout system frees you from formatting concerns. Focus on your content, your message, your delivery. The system ensures everything looks professional automatically."
+      }
+    },
+    {
+      "id": "slide-8",
+      "heading": "Key Takeaways",
+      "content": "**Normal Tier** (< 300 words): 30px headings, spacious layout, maximum impact\n\n**Compact Tier** (300-400 words): 24px headings, tighter spacing, excellent readability\n\n**Two-Column Tier** (400-570 words): 16px headings, horizontal layout, maximum capacity\n\n**Ultra-Dense Tier** (570+ words): Icon-only tabs, hidden headers, extreme compression",
+      "advanceToken": "finish",
+      "speakerNotes": "This showcase demonstrated all four formatting tiers. The system automatically selected the optimal layout for each slide based on word count. No manual intervention required.",
+      "structuredSpeakerNotes": {
+        "profoundStatement": "Intelligent automation makes great design accessible to everyone.",
+        "talkingPoints": {
+          "data": "Four distinct formatting tiers. Automatic tier selection. 14px minimum content fonts. 50+ word image penalty. Zero manual adjustments.",
+          "vision": "Every presenter deserves tools that make them look professional without requiring design expertise.",
+          "proof": "You just viewed 8 slides spanning all formatting tiers. Each looked perfect. Each fitted the content. Each required zero manual tweaking."
+        },
+        "highImpactParagraph": "VerbaDeck's adaptive layout system represents hundreds of hours of typography research, UX testing, and engineering distilled into an automatic system that just works. Write your content. Speak your truth. The formatting handles itself."
+      }
+    }
+  ]
+}

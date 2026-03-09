@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Upload, FileText, Loader2 } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
-import { API_BASE_URL } from '@/lib/api-config';
+import { isAPIError } from '@/lib/api-client';
 
 interface PowerPointUploadProps {
   onSlidesExtracted: (slides: Section[]) => void;
@@ -30,7 +30,9 @@ export function PowerPointUpload({ onSlidesExtracted }: PowerPointUploadProps) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${API_BASE_URL}/api/upload-pptx`, {
+      // Note: FormData uploads require raw fetch (API client doesn't support FormData yet)
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const response = await fetch(`${API_BASE}/api/upload-pptx`, {
         method: 'POST',
         body: formData,
       });

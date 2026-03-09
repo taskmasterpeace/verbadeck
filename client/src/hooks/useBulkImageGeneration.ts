@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { selectAspectRatioForSection, detectOptimalLayout, type Section } from '@/lib/script-parser';
 import type { PresentationStyle } from '@/components/PresentationStyleManager';
 
+interface ImageGenerationOptions {
+  aspectRatio?: string;
+  outputFormat?: 'png' | 'jpg';
+}
+
 interface UseBulkImageGenerationParams {
   sections: Section[];
   setSections: (sections: Section[] | ((prev: Section[]) => Section[])) => void;
   selectedModel: string;
   presentationStyle: PresentationStyle | null;
-  generateImage: (prompt: string, options: { aspectRatio: string; outputFormat: string }) => Promise<string>;
+  generateImage: (prompt: string, options?: ImageGenerationOptions) => Promise<string>;
   suggestPrompt: (content: string, context: string, model: string, style?: PresentationStyle | null) => Promise<string>;
 }
 

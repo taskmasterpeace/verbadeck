@@ -1,47 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AudienceView } from '@/components/AudienceView';
-import type { Section } from '@/lib/script-parser';
+import { usePresentationStore } from '@/stores';
+import { useBroadcastSync } from '@/hooks/useBroadcastSync';
 
-interface PresentationState {
-  currentSectionIndex: number;
-  sections: Section[];
-}
-
+/**
+ * AudiencePage - Clean presentation view for audience (dual monitor support)
+ *
+ * Features:
+ * - Auto-syncs with presenter view via BroadcastChannel
+ * - Receives updates when presenter navigates
+ * - Requests initial state on mount
+ * - Uses Zustand store for state management
+ */
 export function AudiencePage() {
-  const [state, setState] = useState<PresentationState>({
-    currentSectionIndex: 0,
-    sections: [],
-  });
+  const { sections, currentSectionIndex } = usePresentationStore();
+  const [shouldFlash, setShouldFlash] = useState(false);
+
+  // Initialize BroadcastChannel sync in audience mode
+  useBroadcastSync('audience');
+
+  // Track section changes for flash effect
+  const prevIndexRef = useRef(currentSectionIndex);
 
   useEffect(() => {
-    // Listen for updates from presenter window via BroadcastChannel
-    const channel = new BroadcastChannel('verbadeck-presentation');
+    // Trigger flash effect when section changes
+    if (currentSectionIndex !== prevIndexRef.current) {
+      setShouldFlash(true);
+      setTimeout(() => setShouldFlash(false), 800); // Match flash duration
+      prevIndexRef.current = currentSectionIndex;
+    }
+  }, [currentSectionIndex]);
 
-    channel.onmessage = (event) => {
-      if (event.data.type === 'presentation-update') {
-        setState(event.data.state);
-      }
-    };
-
-    // Request initial state
-    channel.postMessage({ type: 'request-state' });
-
-    return () => {
-      channel.close();
-    };
-  }, []);
-
-  const currentSection = state.sections[state.currentSectionIndex];
-  const progress = state.sections.length > 0
-    ? ((state.currentSectionIndex + 1) / state.sections.length) * 100
+  const currentSection = sections[currentSectionIndex];
+  const progress = sections.length > 0
+    ? ((currentSectionIndex + 1) / sections.length) * 100
     : 0;
 
   return (
     <AudienceView
       currentSection={currentSection}
-      sectionIndex={state.currentSectionIndex}
-      totalSections={state.sections.length}
+      sectionIndex={currentSectionIndex}
+      totalSections={sections.length}
       progress={progress}
+      shouldFlash={shouldFlash}
     />
   );
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { BookOpen, Plus, X, Sparkles, Loader2, Edit2, Check } from 'lucide-react';
+import { BookOpen, Plus, X, Sparkles, Loader2, Edit2, Check, Brain } from 'lucide-react';
+import { QAAnticipationPanel } from './QAAnticipationPanel';
+import { usePresentationStore } from '@/stores/usePresentationStore';
 import type { Section } from '@/lib/script-parser';
 
 interface KnowledgeBaseEntry {
@@ -28,6 +30,27 @@ export function KnowledgeBaseEditor({
   const [editQuestion, setEditQuestion] = useState('');
   const [editAnswer, setEditAnswer] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [showQAAnticipation, setShowQAAnticipation] = useState(false);
+
+  // Get store data for Q&A anticipation
+  const selectedTone = usePresentationStore((state) => state.selectedTone);
+  const updateSection = usePresentationStore((state) => state.updateSection);
+
+  // Handler for adding to knowledge base
+  const handleAddToKnowledgeBase = (question: string, answer: string) => {
+    onUpdate([...knowledgeBase, { question, answer }]);
+  };
+
+  // Handler for adding to speaker notes
+  const handleAddToSpeakerNotes = (slideIndex: number, notesToAdd: string) => {
+    const section = sections[slideIndex];
+    if (section) {
+      const updatedNotes = section.speakerNotes
+        ? `${section.speakerNotes}${notesToAdd}`
+        : notesToAdd;
+      updateSection(slideIndex, { speakerNotes: updatedNotes });
+    }
+  };
 
   const handleAdd = () => {
     setIsAdding(true);
@@ -96,6 +119,14 @@ export function KnowledgeBaseEditor({
             </div>
             <div className="flex gap-2">
               <button
+                onClick={() => setShowQAAnticipation(!showQAAnticipation)}
+                disabled={sections.length === 0}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              >
+                <Brain className="w-4 h-4" />
+                {showQAAnticipation ? 'Hide' : 'Anticipate Questions'}
+              </button>
+              <button
                 onClick={onGenerateFAQs}
                 disabled={isGenerating || sections.length === 0}
                 className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -124,6 +155,17 @@ export function KnowledgeBaseEditor({
           </div>
         </CardContent>
       </Card>
+
+      {/* Smart Q&A Anticipation Panel (NEW!) */}
+      {showQAAnticipation && (
+        <QAAnticipationPanel
+          sections={sections}
+          knowledgeBase={knowledgeBase}
+          selectedTone={selectedTone}
+          onAddToKnowledgeBase={handleAddToKnowledgeBase}
+          onAddToSpeakerNotes={handleAddToSpeakerNotes}
+        />
+      )}
 
       {/* Add/Edit Form */}
       {(isAdding || editingIndex !== null) && (

@@ -1,0 +1,87 @@
+ROBERT SMITH
+AI Architect
+
+PROFESSIONAL SUMMARY
+Experienced AI Architect with 15+ years in IT, specializing in AI transformation and strategic implementation. Proven leader in deploying AI systems within corporate settings, enhancing operational efficiency and promoting ethical AI practices. Extensive experience in collaborating with cross-functional teams to deliver measurable outcomes in line with business goals.
+
+PROFESSIONAL EXPERIENCE
+
+Founder AI Architect
+Machine King Labs, LLC
+2025–Present
+• Founded AI startup delivering cutting-edge GenAI solutions, emphasizing AI strategy and governance to drive business outcomes
+• Architected scalable AI systems using advanced frameworks, aligning with security standards and organizational goals
+• Managed global teams to ensure successful end-to-end AI deployment, promoting consistent practices across functions
+• Implemented sentiment analysis for real-time conversation intelligence, demonstrating measurable business outcomes
+
+Senior Solutions Delivery Manager
+Deloitte Consulting
+2018–2025
+• Led AI integration strategies, focusing on enhancing creativity and intelligence within corporate operations
+• Developed and managed security use cases for Fortune 500 clients, achieving 60% query performance improvement
+• Supported cybersecurity infrastructure implementation for healthcare systems, aligning with enterprise-wide AI governance
+• Collaborated on AI/ML frameworks integration, ensuring successful operation of advanced machine learning applications
+
+Senior Security Analyst
+Clarium Managed Services
+2018–2025
+• Established a malware analysis lab utilizing AI techniques for advanced threat detection, contributing to AI change management
+• Developed incident response playbooks and custom scripts, aligning AI solutions with security and operational standards
+
+Director | Cinematographer | Visual Effects
+Film & Television Production
+2008–2021
+• Directed media projects integrating AI in production workflows, fostering innovation and efficiency through AI tools
+
+PROJECTS
+
+Talk Advantage – Conversational Intelligence Platform
+Developed AI platform with sentiment analysis providing real-time decision support, aligning AI solutions with business needs.
+Technologies: React
+https://www.talkadvantagepro.com/
+
+Hey, You're Hired – AI Career Assistant Platform
+Designed AI-driven career management platform, optimizing job processes through effective AI governance and tooling.
+Technologies: React Node.js Langchain Eleven Labs
+https://www.heyyourehired.com/
+
+Algorithm Institute of Battle Rap – AI Driven Content Engine
+Created AI-powered media project utilizing automated content pipelines, supporting AI innovation and scalability.
+Technologies: N8N Workflows OpenRouter Black Forest Labs Runway ML Midjourney Luma Labs
+https://www.youtube.com/@AlgorithmInstituteofBR
+
+EDUCATION
+University of Central Florida
+Bachelor of Arts, Interpersonal Communication
+May 2001
+
+TECHNICAL SKILLS
+AI Strategy Development, Cross-Functional Team Leadership, AI Governance, Cloud Strategy, Technical Leadership, AI Solution Deployment, Python, AI Orchestration, Cybersecurity, Performance Optimization, AI/ML Technology Landscape, AI Product Management, AI UX Design, Sentiment Analysis, NLP/Sentiment Analysis
+
+CERTIFICATIONS
+• Microsoft Certified: Azure AI Fundamentals (Jan 2024)
+• AWS Certified Cloud Practitioner
+• CompTIA Security+
+• Splunk Certified Power User
+
+ACHIEVEMENTS
+• Provisional Patient Holder (Jan 2025)
+• Achieved 30K+ YouTube subscribers with <50 videos using AI automation
+• 60% query performance improvement across Fortune 500 Splunk implementations
+• Keynote Speaker at WACIF AI and Capital access
+• Managed 10+ international team members across multiple time zones
+• Early AI pioneer - Leveraged OpenAI GPT-3 2+ years before ChatGPT mainstream adoption
+
+PATENTS
+Talk Advantage: Real-Time Meeting Assistant System with Dynamic Conversation Compass and Guided Decision Support
+Provisional Patent Filed | 2025
+
+SPEAKING ENGAGEMENTS
+• Deloitte Presentation 2023: 'Gen AI: The Lowering Cost of Creativity and Intelligence'
+• Participated in Deloitte Gen AI Panel For WACIF Executives
+• WACIF 2024 Conference: AI and Capital Access (two time keynote speaker)
+
+BUSINESS DEVELOPMENT
+• Negotiating white-label partnerships with technical colleges and universities
+• Developed go-to-market strategy for AI career management platform
+• Provided strategic Gen AI consulting for SMB entrepreneurs since 2022

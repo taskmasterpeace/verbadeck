@@ -12,6 +12,8 @@ interface SettingsModalProps {
   selectedModel?: string;
   onModelChange?: (modelId: string) => void;
   onShowAdvancedHelp?: () => void;
+  cancelWord?: string;
+  onCancelWordChange?: (word: string) => void;
 }
 
 /**
@@ -29,8 +31,20 @@ export function SettingsModal({
   selectedModel,
   onModelChange,
   onShowAdvancedHelp,
+  cancelWord = 'cancel',
+  onCancelWordChange,
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'settings' | 'models' | 'prompts' | 'help'>('settings');
+  const [localCancelWord, setLocalCancelWord] = useState(cancelWord);
+  const [newCancelWordInput, setNewCancelWordInput] = useState('');
+
+  const handleCancelWordChange = (word: string) => {
+    setLocalCancelWord(word);
+    if (onCancelWordChange) {
+      onCancelWordChange(word);
+      localStorage.setItem('verbadeck-cancel-word', word);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -99,17 +113,77 @@ export function SettingsModal({
           {activeTab === 'settings' ? (
             /* Settings Tab */
             <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">AI Model Selection</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Choose which AI model to use for processing scripts, generating Q&A answers, and creating presentations.
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold mb-2 text-blue-900">💡 Model Configuration</h3>
+                <p className="text-sm text-blue-800">
+                  All AI model settings are now in the <strong>Models</strong> tab above. Configure different AI models for each operation: Q&A answers, script processing, FAQ generation, trigger suggestions, and more.
                 </p>
-                {selectedModel && onModelChange && (
-                  <ModelSelector
-                    selectedModel={selectedModel}
-                    onModelChange={onModelChange}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Q&A Cancel Words</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Set words to cancel AI answer generation. Say any of these words during Q&A to stop processing a question.
+                </p>
+
+                {/* Visual badges for current cancel words */}
+                <div className="flex flex-wrap gap-2 mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[3rem]">
+                  {localCancelWord.split(',').map((word, index) => {
+                    const trimmed = word.trim();
+                    if (!trimmed) return null;
+
+                    return (
+                      <div
+                        key={index}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-medium border border-red-300"
+                      >
+                        <span>{trimmed}</span>
+                        <button
+                          onClick={() => {
+                            const words = localCancelWord.split(',').map(w => w.trim()).filter(w => w);
+                            const newWords = words.filter((_, i) => i !== index);
+                            handleCancelWordChange(newWords.length > 0 ? newWords.join(', ') : 'cancel');
+                          }}
+                          className="hover:bg-red-200 rounded-full p-0.5 transition-colors"
+                          title={`Remove "${trimmed}"`}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {localCancelWord.split(',').filter(w => w.trim()).length === 0 && (
+                    <span className="text-gray-400 text-sm italic">No cancel words set</span>
+                  )}
+                </div>
+
+                {/* Input for adding new cancel words */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={newCancelWordInput}
+                    onChange={(e) => setNewCancelWordInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const newWord = newCancelWordInput.trim();
+                        if (newWord) {
+                          const words = localCancelWord.split(',').map(w => w.trim()).filter(w => w);
+                          if (!words.includes(newWord)) {
+                            handleCancelWordChange([...words, newWord].join(', '));
+                            setNewCancelWordInput('');
+                          }
+                        }
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Type a word and press Enter to add"
                   />
-                )}
+                  <span className="text-sm text-gray-500 whitespace-nowrap">Default: "cancel"</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  💡 Say any of these words to cancel Q&A answer generation immediately.
+                </p>
               </div>
 
               <div className="border-t pt-6">

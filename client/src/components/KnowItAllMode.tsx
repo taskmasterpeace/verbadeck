@@ -17,7 +17,7 @@ import { SetupWizardContainer } from './know-it-all/SetupWizardContainer';
 import { ToneSelector } from './ToneSelector';
 import { useKnowItAllSetup } from '@/hooks/useKnowItAllSetup';
 import { useVoiceStore } from '@/stores/voice';
-import { usePresentationStore } from '@/stores/presentation';
+import { usePresentationStore } from '@/stores/usePresentationStore';
 
 interface KnowledgeBasePreset {
   id: string;
@@ -172,6 +172,21 @@ export function KnowItAllMode({
         }
       } catch (error) {
         console.error('Failed to load Product Lead job description:', error);
+      }
+
+      try {
+        const freddieMacResponse = await fetch('/sample-data/job-description-principal-genai-scientist-freddie-mac.txt');
+        if (freddieMacResponse.ok) {
+          const freddieMacContent = await freddieMacResponse.text();
+          samplePresets.push({
+            id: 'sample-job-freddie-mac',
+            name: '🎯 Job: Principal GenAI Scientist (Freddie Mac)',
+            content: freddieMacContent,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load Freddie Mac job description:', error);
       }
 
       if (samplePresets.length > 0) {

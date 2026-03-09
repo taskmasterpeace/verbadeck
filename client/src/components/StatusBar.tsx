@@ -3,48 +3,43 @@ import { Play, Square, Info, MessageCircle, Wand2, Sparkles, Edit, FileText, Sav
 import { useState } from 'react';
 import { UserGuideViewer } from './UserGuideViewer';
 import { SettingsModal } from './SettingsModal';
-
-type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all';
+import { useVoiceStore } from '@/stores/voice';
+import { usePresentationStore } from '@/stores/usePresentationStore';
+import { useUIStore } from '@/stores/ui';
 
 interface StatusBarProps {
-  streamStatus: 'connecting' | 'connected' | 'disconnected';
-  isStreaming: boolean;
   onToggleStream: () => void;
   isListeningForQuestions?: boolean;
   onToggleQuestions?: () => void;
   onManualQuestion?: () => void;
-  viewMode?: ViewMode;
-  setViewMode?: (mode: ViewMode) => void;
-  sectionsCount?: number;
   onSavePresentation?: () => void;
   onLoadPresentation?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveToLibrary?: () => void;
   onLoadFromLibrary?: () => void;
-  selectedModel?: string;
-  onModelChange?: (modelId: string) => void;
-  cancelWord?: string;
-  onCancelWordChange?: (word: string) => void;
 }
 
 export function StatusBar({
-  streamStatus,
-  isStreaming,
   onToggleStream,
   isListeningForQuestions = false,
   onToggleQuestions,
   onManualQuestion,
-  viewMode,
-  setViewMode,
-  sectionsCount = 0,
   onSavePresentation,
   onLoadPresentation,
   onSaveToLibrary,
   onLoadFromLibrary,
-  selectedModel,
-  onModelChange,
-  cancelWord,
-  onCancelWordChange,
 }: StatusBarProps) {
+  // Get data from stores
+  const isStreaming = useVoiceStore((state) => state.isStreaming);
+  const streamStatus = useVoiceStore((state) => state.status);
+  const sections = usePresentationStore((state) => state.sections);
+  const selectedModel = usePresentationStore((state) => state.selectedModel);
+  const setSelectedModel = usePresentationStore((state) => state.setSelectedModel);
+  const cancelWord = usePresentationStore((state) => state.cancelWord);
+  const setCancelWord = usePresentationStore((state) => state.setCancelWord);
+  const viewMode = useUIStore((state) => state.viewMode);
+  const setViewMode = useUIStore((state) => state.setViewMode);
+
+  const sectionsCount = sections.length;
   const [showSettings, setShowSettings] = useState(false);
   const [showAdvancedHelp, setShowAdvancedHelp] = useState(false);
 
@@ -318,10 +313,10 @@ export function StatusBar({
         onClose={() => setShowSettings(false)}
         streamStatus={streamStatus}
         selectedModel={selectedModel}
-        onModelChange={onModelChange}
+        onModelChange={setSelectedModel}
         onShowAdvancedHelp={() => setShowAdvancedHelp(true)}
         cancelWord={cancelWord}
-        onCancelWordChange={onCancelWordChange}
+        onCancelWordChange={setCancelWord}
       />
 
       {/* Advanced Help Modal */}

@@ -15,7 +15,7 @@ export function Footer() {
           <span>•</span>
           <span>Internal Tool for Presenting</span>
           <span>•</span>
-          <span>Version 0.9 • 2025</span>
+          <span>Version 2.0 • 2026</span>
         </div>
       </div>
     </footer>

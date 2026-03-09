@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, RotateCcw, Save, AlertTriangle } from 'lucide-react';
+import { apiGet, isAPIError } from '@/lib/api-client';
 
 interface PromptData {
   operation: string;
@@ -32,8 +33,7 @@ export function PromptEditor() {
       setLoading(true);
 
       // Fetch available operations
-      const response = await fetch('http://localhost:3001/api/prompts');
-      const data = await response.json();
+      const data = await apiGet<{ prompts: Record<string, any> }>('/api/prompts');
       const ops = Object.keys(data.prompts || {});
       setOperations(ops);
 
@@ -51,8 +51,7 @@ export function PromptEditor() {
 
   const loadPromptDetails = async (operation: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/prompts/${operation}`);
-      const data = await response.json();
+      const data = await apiGet<PromptData>(`/api/prompts/${operation}`);
       setPromptData(data);
 
       // Use custom prompt if available, otherwise use default

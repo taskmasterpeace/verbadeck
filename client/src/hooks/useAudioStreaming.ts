@@ -68,8 +68,9 @@ export function useAudioStreaming({
       const audioContext = new AudioContext({ sampleRate: 16000 });
       audioContextRef.current = audioContext;
 
-      // 3. Load AudioWorklet processor
-      await audioContext.audioWorklet.addModule('/audio-processor.js');
+      // 3. Load AudioWorklet processor (with cache-busting)
+      const cacheBuster = `?v=${Date.now()}`;
+      await audioContext.audioWorklet.addModule(`/audio-processor.js${cacheBuster}`);
 
       // 4. Create WebSocket connection to our proxy
       const ws = new WebSocket(WS_URL);

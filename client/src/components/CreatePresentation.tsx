@@ -1,24 +1,25 @@
-import { Wand2, FileText } from 'lucide-react';
+import { Wand2, FileText, Brain } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 
 interface CreatePresentationProps {
   onSelectFromScratch: () => void;
   onSelectProcessContent: () => void;
+  onSelectKnowItAll: () => void;
 }
 
-export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent }: CreatePresentationProps) {
+export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent, onSelectKnowItAll }: CreatePresentationProps) {
   return (
-    <div className="container mx-auto max-w-6xl p-8">
+    <div className="container mx-auto max-w-7xl p-8">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Create Your Presentation
+          Welcome to VerbaDeck
         </h1>
         <p className="text-lg text-gray-600">
-          Choose how you'd like to start building your voice-driven presentation
+          Choose your path: Create presentations or practice Q&A sessions
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* From Scratch Option */}
         <Card
           className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-blue-500 group"
@@ -100,10 +101,50 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
             </button>
           </CardContent>
         </Card>
+        {/* Know It All Wall Option */}
+        <Card
+          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-blue-500 group"
+          onClick={onSelectKnowItAll}
+        >
+          <CardContent className="p-8 text-center">
+            <div className="mb-6 flex justify-center">
+              <div className="p-6 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
+                <Brain className="w-16 h-16 text-blue-600" />
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-4 group-hover:text-blue-600 transition-colors">
+              Know It All Wall
+            </h2>
+
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Practice answering questions with voice-activated keyword confirmation. Perfect for interview prep and Q&A sessions.
+            </p>
+
+            <div className="space-y-2 text-sm text-left bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>Upload your knowledge base or resume</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>Practice with voice keyword confirmation</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span>Perfect for interviews & training</span>
+              </div>
+            </div>
+
+            <button className="mt-6 w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-all shadow-md">
+              Start Q&A Practice
+            </button>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="mt-12 text-center text-sm text-gray-500">
-        <p>Both options create fully editable presentations with AI-powered trigger words for voice navigation</p>
+        <p>All modes feature AI-powered voice control and intelligent question generation</p>
       </div>
     </div>
   );
