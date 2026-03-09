@@ -128,6 +128,7 @@ export default function App() {
   // Initialize Q&A session hook
   const qaSession = useQASession({
     sections,
+    currentSectionIndex,
     knowledgeBase,
     sharedKnowledgeBase,
     selectedTone,
@@ -734,7 +735,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Q&A Panel Modal */}
+      {/* Q&A Side Panel */}
       {currentQuestion && (
         <QAPanel
           question={currentQuestion}

@@ -7,6 +7,8 @@ import { dirname, resolve, join } from 'path';
 import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
 import { ReplicateImageGenerator } from './image-generator.js';
+import { UnsplashClient } from './unsplash-client.js';
+import { PexelsClient } from './pexels-client.js';
 import { getModelForOperation } from './model-config.js';
 import { getAllPromptsMetadata, getPromptExample, getPrompt } from './prompts.js';
 import { createTimingMiddleware, timingErrorMiddleware } from './middleware/timing-middleware.js';
@@ -24,6 +26,8 @@ dotenv.config({ path: resolve(__dirname, '../.env') });
 const AAI_API_KEY = process.env.AAI_API_KEY;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY; // INSTANT approval - use this first!
+const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY; // Needs approval - fallback
 const PORT = process.env.PORT || 3002;
 
 if (!AAI_API_KEY) {
@@ -41,14 +45,41 @@ if (!REPLICATE_API_KEY) {
   process.exit(1);
 }
 
+// Image APIs are optional - at least one needed for AI image recommendations
+if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) {
+  console.warn('⚠️  No image API keys found (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)');
+  console.warn('⚠️  AI image recommendations will be disabled');
+  console.warn('💡 Get Pexels key instantly: https://www.pexels.com/api/');
+}
+
 // Initialize OpenRouter client
 const openRouterClient = new OpenRouterClient(OPENROUTER_API_KEY);
 
 // Initialize Replicate Image Generator client
 const replicateClient = new ReplicateImageGenerator(REPLICATE_API_KEY);
 
+// Initialize image API clients (prefer Pexels - instant approval!)
+const pexelsClient = PEXELS_API_KEY ? new PexelsClient(PEXELS_API_KEY) : null;
+const unsplashClient = UNSPLASH_ACCESS_KEY ? new UnsplashClient(UNSPLASH_ACCESS_KEY) : null;
+
+// Log which image API is available
+if (pexelsClient) {
+  console.log('📸 Pexels API ready (200 requests/hour)');
+} else if (unsplashClient) {
+  console.log('📸 Unsplash API ready (50 requests/hour)');
+}
+
 const app = express();
-app.use(cors());
+
+// CORS configuration - restrict to known origins in production
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com']
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Development origins
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: '10mb' })); // Increase limit for large scripts
 
 // Configure multer for file uploads
@@ -258,6 +289,120 @@ app.post('/api/process-images', createTimingMiddleware('processImages'), async (
   }
 });
 
+// AI-powered image recommendations from Pexels (instant!) or Unsplash (needs approval)
+app.post('/api/recommend-images', createTimingMiddleware('recommendImages'), async (req, res) => {
+  try {
+    // Check if any image API is available (prefer Pexels - instant approval!)
+    const imageClient = pexelsClient || unsplashClient;
+    const apiSource = pexelsClient ? 'Pexels' : unsplashClient ? 'Unsplash' : null;
+
+    if (!imageClient) {
+      return res.status(503).json({
+        error: 'Image recommendations unavailable - No image API configured',
+        message: 'Get Pexels key instantly: https://www.pexels.com/api/ (or wait for Unsplash approval)',
+        fallback: 'manual-upload'
+      });
+    }
+
+    const { content, model } = req.body;
+
+    if (!content || typeof content !== 'string') {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    // Step 1: AI analyzes content and generates smart search queries
+    const selectedModel = getModelForOperation('recommendImages', model);
+    console.log(`🎨 Analyzing content for image recommendations using ${selectedModel} (source: ${apiSource})`);
+
+    const analysisPrompt = `Analyze this slide content and generate 4 strategic image search queries:
+
+Content: "${content}"
+
+Generate 4 queries with different approaches:
+1. LITERAL: Direct, concrete representation of the main subject
+2. PROFESSIONAL: Business/corporate context version
+3. ABSTRACT: Conceptual or metaphorical interpretation
+4. EMOTIONAL: Mood/feeling-based representation
+
+Requirements:
+- Each query should be 2-4 words
+- Avoid overly generic terms ("business meeting", "office")
+- Prefer specific, evocative imagery
+- Think about what would visually reinforce the message
+
+Return ONLY valid JSON (no markdown):
+{
+  "queries": ["query1", "query2", "query3", "query4"],
+  "rationale": "brief explanation of the approach"
+}`;
+
+    const analysisResponse = await openRouterClient.chat(analysisPrompt, selectedModel);
+    const { queries, rationale } = JSON.parse(analysisResponse);
+
+    console.log(`🔍 Generated search queries: ${queries.join(', ')}`);
+
+    // Step 2: Search image API for each query (fetch 1 best result per query)
+    const imagePromises = queries.map(query =>
+      imageClient.searchPhotos(query, 1, 'landscape').catch(err => {
+        console.error(`Error searching "${query}":`, err);
+        return []; // Return empty array on error
+      })
+    );
+
+    const imageResults = await Promise.all(imagePromises);
+
+    // Flatten and add context
+    const recommendations = imageResults
+      .flat()
+      .filter(img => img) // Remove any null/undefined
+      .map((img, i) => ({
+        ...img,
+        searchQuery: queries[i],
+        queryRationale: rationale
+      }));
+
+    console.log(`✅ Found ${recommendations.length} image recommendations`);
+
+    res.json({
+      recommendations,
+      queries,
+      rationale
+    });
+  } catch (error) {
+    console.error('Error generating image recommendations:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Download/track image usage (Unsplash requires tracking, Pexels doesn't)
+app.post('/api/download-unsplash-image', async (req, res) => {
+  try {
+    const { downloadUrl, imageUrl, source } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'imageUrl required' });
+    }
+
+    // Only Unsplash requires download tracking
+    if (source === 'unsplash' && unsplashClient && downloadUrl) {
+      await unsplashClient.triggerDownload(downloadUrl);
+      console.log('✅ Unsplash download tracked');
+    } else if (source === 'pexels') {
+      console.log('✅ Pexels image selected (no tracking required)');
+    }
+
+    // Return the image URL for the client to use
+    res.json({
+      success: true,
+      imageUrl,
+      message: 'Image ready to use'
+    });
+  } catch (error) {
+    console.error('Error handling image download:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // PowerPoint upload and parsing endpoint
 app.post('/api/upload-pptx', upload.single('file'), async (req, res) => {
   try {
@@ -395,21 +540,55 @@ app.post('/api/generate-faqs', createTimingMiddleware('generateFAQs'), async (re
 
 app.post('/api/answer-question', createTimingMiddleware('answerQuestion'), async (req, res) => {
   try {
-    const { question, presentationContent, knowledgeBase, model, tone } = req.body;
+    const { question, presentationContent, knowledgeBase, model, tone, sections, currentSlideIndex, presentationGoal } = req.body;
 
     if (!question || question.trim().length === 0) {
       return res.status(400).json({ error: 'Question is required' });
     }
 
-    if (!presentationContent || presentationContent.trim().length === 0) {
-      return res.status(400).json({ error: 'Presentation content is required' });
+    // Support both new (sections + index) and legacy (presentationContent) formats
+    let contextContent;
+    if (sections && Array.isArray(sections) && typeof currentSlideIndex === 'number') {
+      // New contextual format - server builds the context window
+      const total = sections.length;
+      const current = sections[currentSlideIndex];
+      const previous = currentSlideIndex > 0 ? sections[currentSlideIndex - 1] : null;
+      const next = currentSlideIndex < total - 1 ? sections[currentSlideIndex + 1] : null;
+
+      // Build remaining slides summary (exclude current/prev/next)
+      const otherSlides = sections
+        .filter((_, i) => i !== currentSlideIndex && i !== currentSlideIndex - 1 && i !== currentSlideIndex + 1)
+        .map((s, i) => `- ${s.heading || 'Slide'}: ${s.content.substring(0, 80)}...`)
+        .join('\n');
+
+      contextContent = `You are helping a presenter answer a live question. They are on slide ${currentSlideIndex + 1} of ${total}.
+
+CURRENT SLIDE (what presenter is discussing right now):
+Title: ${current.heading || 'Untitled'}
+${current.content}
+
+PREVIOUS SLIDE (what was just covered):
+${previous ? `Title: ${previous.heading || 'Untitled'}\n${previous.content}` : 'This is the first slide.'}
+
+NEXT SLIDE (what is coming up):
+${next ? `Title: ${next.heading || 'Untitled'}\n${next.content}` : 'This is the last slide.'}
+
+OTHER SLIDES IN PRESENTATION:
+${otherSlides || 'None'}
+
+${presentationGoal ? `PRESENTATION GOAL: ${presentationGoal}` : ''}`;
+    } else if (presentationContent && presentationContent.trim().length > 0) {
+      // Legacy flat format
+      contextContent = presentationContent;
+    } else {
+      return res.status(400).json({ error: 'Either sections+currentSlideIndex or presentationContent is required' });
     }
 
     const selectedModel = getModelForOperation('answerQuestion', model);
-    console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'}) using ${selectedModel}`);
+    console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'}, slide: ${currentSlideIndex ?? 'N/A'}) using ${selectedModel}`);
     const answers = await openRouterClient.answerQuestion(
       question,
-      presentationContent,
+      contextContent,
       knowledgeBase || [],
       selectedModel,
       tone || 'professional'
@@ -473,6 +652,328 @@ app.post('/api/analyze-knowledge-base', createTimingMiddleware('analyzeKnowledge
     res.json(analysis);
   } catch (error) {
     console.error('Error analyzing knowledge base:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Speaker Note Transformation: Expand
+app.post('/api/expand-speaker-notes', createTimingMiddleware('expandSpeakerNotes'), async (req, res) => {
+  try {
+    const { briefNotes, slideContent, selectedTone, model } = req.body;
+
+    if (!briefNotes || !slideContent) {
+      return res.status(400).json({ error: 'briefNotes and slideContent are required' });
+    }
+
+    const selectedModel = getModelForOperation('expandSpeakerNotes', model);
+    console.log(`📝 Expanding speaker notes using ${selectedModel} (tone: ${selectedTone})`);
+
+    const prompt = `Expand these brief speaker notes into a full, structured speaking framework:
+
+Slide Content: "${slideContent}"
+Brief Notes: "${briefNotes}"
+Tone: ${selectedTone || 'professional'}
+
+Use this proven speaking structure:
+
+1. HOOK (10 seconds): Attention-grabbing opening statement or question
+2. CONTEXT (30 seconds): Background information and setup
+3. INSIGHT (45 seconds): Main points with supporting details, structured clearly
+4. DATA POINT: One memorable statistic, fact, or example
+5. CALL TO ACTION: What you want the audience to remember or do
+
+Requirements:
+- Conversational language (write how people actually speak)
+- Use specific numbers, names, examples from the slide content when available
+- Natural speaking rhythm with clear transitions
+- Estimated total speaking time: 2-3 minutes
+- Preserve any key phrases from the original brief notes
+
+Return ONLY valid JSON (no markdown):
+{
+  "expandedNotes": "full text with clear structure markers (HOOK:, CONTEXT:, etc.)",
+  "speakingTime": "2:15",
+  "keyTakeaway": "one sentence summary of the main message",
+  "structure": {
+    "hook": "the hook text",
+    "context": "context text",
+    "insight": "insight text",
+    "dataPoint": "data point text",
+    "callToAction": "CTA text"
+  }
+}`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Expanded to ${result.speakingTime} speaking time`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error expanding speaker notes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Speaker Note Transformation: Simplify
+app.post('/api/simplify-speaker-notes', createTimingMiddleware('simplifySpeakerNotes'), async (req, res) => {
+  try {
+    const { notes, model } = req.body;
+
+    if (!notes) {
+      return res.status(400).json({ error: 'notes are required' });
+    }
+
+    const selectedModel = getModelForOperation('simplifySpeakerNotes', model);
+    console.log(`🎯 Simplifying speaker notes using ${selectedModel}`);
+
+    const prompt = `Simplify these speaker notes to key bullet points:
+
+Original Notes: "${notes}"
+
+Requirements:
+- Extract only the essential points
+- Use bullet points (•) for clarity
+- Each bullet should be 5-10 words max
+- Keep numbers, names, and concrete details
+- Remove fluff, filler, and unnecessary context
+- Make it scannable (quick glance reference)
+
+Return ONLY valid JSON (no markdown):
+{
+  "simplified": "• Point 1\\n• Point 2\\n• Point 3",
+  "bulletCount": 3,
+  "keyTerms": ["term1", "term2", "term3"]
+}`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Simplified to ${result.bulletCount} key points`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error simplifying speaker notes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Speaker Note Transformation: Add Analogy
+app.post('/api/add-analogy', createTimingMiddleware('addAnalogy'), async (req, res) => {
+  try {
+    const { content, notes, model } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'content is required' });
+    }
+
+    const selectedModel = getModelForOperation('addAnalogy', model);
+    console.log(`📖 Generating analogy using ${selectedModel}`);
+
+    const prompt = `Create a memorable analogy for this slide content:
+
+Slide Content: "${content}"
+${notes ? `Speaker Notes: "${notes}"` : ''}
+
+Requirements:
+- Generate ONE clear, memorable analogy that makes the concept accessible
+- Use concrete, relatable comparisons (everyday objects, common experiences)
+- Avoid clichés ("tip of the iceberg", "low-hanging fruit")
+- The analogy should clarify, not complicate
+- Keep it brief (2-3 sentences)
+- Make it appropriate for professional settings
+
+Return ONLY valid JSON (no markdown):
+{
+  "analogy": "Think of [concept] like [relatable thing]. Just as [comparison], our [concept] [parallel].",
+  "analogyType": "metaphor|simile|comparison",
+  "reasoning": "why this analogy works for this content"
+}`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Generated ${result.analogyType}: ${result.analogy.substring(0, 50)}...`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating analogy:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Speaker Note Transformation: Add Story
+app.post('/api/add-story', createTimingMiddleware('addStory'), async (req, res) => {
+  try {
+    const { content, notes, model } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'content is required' });
+    }
+
+    const selectedModel = getModelForOperation('addStory', model);
+    console.log(`💡 Generating story/example using ${selectedModel}`);
+
+    const prompt = `Create a concrete story or example that illustrates this slide content:
+
+Slide Content: "${content}"
+${notes ? `Speaker Notes: "${notes}"` : ''}
+
+Requirements:
+- Generate a SHORT, concrete story or example (3-4 sentences)
+- Use realistic details (names, numbers, situations) that COULD be true
+- Make it relatable and memorable
+- Should illustrate the key point clearly
+- Professional tone appropriate for business settings
+- If you use specific names/companies, make them obviously fictional or generic
+
+IMPORTANT: This story will be labeled as "AI-generated" so the user knows to verify details.
+You can be creative but stay plausible.
+
+Return ONLY valid JSON (no markdown):
+{
+  "story": "Let me tell you about [character/situation]...",
+  "storyType": "customer-example|case-study|hypothetical|analogy",
+  "warning": "AI-generated story - verify details before using",
+  "keyPoint": "what this story illustrates"
+}`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Generated ${result.storyType} story`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating story:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Smart Q&A Anticipation: Predict likely audience questions
+app.post('/api/anticipate-questions', createTimingMiddleware('anticipateQuestions'), async (req, res) => {
+  try {
+    const { sections, knowledgeBase, model } = req.body;
+
+    if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      return res.status(400).json({ error: 'sections array is required' });
+    }
+
+    const selectedModel = getModelForOperation('anticipateQuestions', model);
+    console.log(`🔮 Anticipating audience questions using ${selectedModel}`);
+
+    // Combine all slide content
+    const allContent = sections.map((s, i) => `Slide ${i + 1}: ${s.content}`).join('\n\n');
+    const existingQA = knowledgeBase && knowledgeBase.length > 0
+      ? knowledgeBase.map(q => q.question).join('\n')
+      : 'None';
+
+    const prompt = `You're analyzing a business presentation. Predict the top 10 questions a skeptical audience would ask during Q&A:
+
+PRESENTATION CONTENT:
+${allContent}
+
+EXISTING Q&A (already prepared):
+${existingQA}
+
+Requirements:
+- Think like a skeptical executive, investor, or stakeholder
+- Focus on gaps, risks, concerns, implementation details, proof points
+- Questions should be natural (how people actually speak, not formal)
+- Avoid questions already covered in existing Q&A
+- Rank by likelihood (most likely first)
+- Include confidence score (0-100%)
+- Categorize each question
+
+Categories:
+- roi: Return on investment, cost, budget
+- risk: Potential problems, downsides, what could go wrong
+- implementation: Timeline, resources, how it actually works
+- proof: Evidence, data, case studies, validation
+- alternative: Why not do something else, comparison to competitors
+
+Return ONLY valid JSON (no markdown):
+{
+  "questions": [
+    {
+      "question": "exact question text as audience would ask it",
+      "likelihood": 95,
+      "category": "roi",
+      "reasoning": "brief explanation why they'd ask this",
+      "slideReference": 3
+    }
+  ]
+}
+
+Generate exactly 10 questions.`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Anticipated ${result.questions.length} questions (avg likelihood: ${Math.round(result.questions.reduce((sum, q) => sum + q.likelihood, 0) / result.questions.length)}%)`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error anticipating questions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Smart Q&A: Generate answer for predicted question
+app.post('/api/generate-qa-answer', createTimingMiddleware('generateQAAnswer'), async (req, res) => {
+  try {
+    const { question, presentationContent, knowledgeBase, selectedTone, model } = req.body;
+
+    if (!question || !presentationContent) {
+      return res.status(400).json({ error: 'question and presentationContent are required' });
+    }
+
+    const selectedModel = getModelForOperation('generateQAAnswer', model);
+    console.log(`💬 Generating answer for: "${question.substring(0, 50)}..." using ${selectedModel}`);
+
+    const prompt = `Generate two answer versions for this anticipated Q&A question:
+
+QUESTION: "${question}"
+
+PRESENTATION CONTENT:
+${presentationContent}
+
+${knowledgeBase ? `ADDITIONAL CONTEXT:\n${knowledgeBase}` : ''}
+
+TONE: ${selectedTone || 'professional'}
+
+Generate TWO versions:
+
+1. SHORT ANSWER (30 seconds):
+   - 50-75 words
+   - Direct, concise, confident
+   - Immediately addresses the core question
+   - One key fact or number if available
+
+2. DETAILED ANSWER (2-3 minutes):
+   - 150-200 words
+   - Structured with clear sections
+   - Includes data points, examples, or case studies
+   - Addresses nuances and potential follow-up concerns
+   - Ends with confidence/reassurance
+
+Requirements:
+- Conversational tone (write how you'd actually speak)
+- Use specific numbers/data from the presentation content when available
+- If no data available, use frameworks/logic instead of making up statistics
+- Be honest if information isn't in the presentation ("That's a great question. While I don't have exact figures in this deck, here's what we do know...")
+
+Return ONLY valid JSON (no markdown):
+{
+  "shortAnswer": "30-second response text",
+  "detailedAnswer": "2-3 minute response text",
+  "keyPoints": ["point1", "point2", "point3"],
+  "confidence": "high|medium|low",
+  "missingInfo": "what information you wish you had to answer better (or null)"
+}`;
+
+    const response = await openRouterClient.chat(prompt, selectedModel);
+    const result = JSON.parse(response);
+
+    console.log(`✅ Generated answers (confidence: ${result.confidence})`);
+    res.json(result);
+  } catch (error) {
+    console.error('Error generating Q&A answer:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -572,7 +1073,7 @@ app.post('/api/generate-questions', createTimingMiddleware('generateQuestions'),
 
 app.post('/api/generate-slide-options', createTimingMiddleware('generateSlideOptions'), async (req, res) => {
   try {
-    const { topic, answers, numSlides, model } = req.body;
+    const { topic, answers, sectionNumber, totalSections, model } = req.body;
 
     if (!topic || topic.trim().length === 0) {
       return res.status(400).json({ error: 'Topic is required' });
@@ -582,34 +1083,46 @@ app.post('/api/generate-slide-options', createTimingMiddleware('generateSlideOpt
       return res.status(400).json({ error: 'Answers are required' });
     }
 
-    if (!numSlides || numSlides < 1 || numSlides > 20) {
-      return res.status(400).json({ error: 'Number of slides must be between 1 and 20' });
+    if (!sectionNumber || sectionNumber < 1) {
+      return res.status(400).json({ error: 'Section number must be >= 1' });
+    }
+
+    if (!totalSections || totalSections < 1) {
+      return res.status(400).json({ error: 'Total sections must be >= 1' });
     }
 
     const selectedModel = getModelForOperation('generateSlideOptions', model);
-    console.log(`🎨 Generating ${numSlides} slide options for topic: "${topic}" using ${selectedModel}`);
-    const slides = await openRouterClient.generateSlideOptions(topic, answers, numSlides, selectedModel);
-    console.log(`✅ Generated ${slides.length} slides with 4 options each`);
+    console.log(`🎨 Generating slide ${sectionNumber}/${totalSections} in TalkAdvantage Pro format for topic: "${topic}" using ${selectedModel}`);
+    const slide = await openRouterClient.generateSlideOptions(topic, answers, sectionNumber, totalSections, selectedModel);
+    console.log(`✅ Generated slide: "${slide.heading}"`);
 
-    res.json({ slides });
+    res.json({ slide });
   } catch (error) {
-    console.error('Error generating slide options:', error);
+    console.error('Error generating slide:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.post('/api/generate-speaker-notes', createTimingMiddleware('generateSpeakerNotes'), async (req, res) => {
   try {
-    const { slides, model } = req.body;
+    const { slides, topic, answers, model } = req.body;
 
     if (!slides || !Array.isArray(slides) || slides.length === 0) {
       return res.status(400).json({ error: 'Slides array is required' });
     }
 
+    if (!topic || topic.trim().length === 0) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    if (!answers) {
+      return res.status(400).json({ error: 'Answers are required' });
+    }
+
     const selectedModel = getModelForOperation('generateSpeakerNotes', model);
-    console.log(`📝 Generating speaker notes for ${slides.length} slides using ${selectedModel}`);
-    const speakerNotes = await openRouterClient.generateSpeakerNotes(slides, selectedModel);
-    console.log(`✅ Generated ${speakerNotes.length} speaker notes`);
+    console.log(`📝 Generating TalkAdvantage Pro speaker notes for ${slides.length} slides using ${selectedModel}`);
+    const speakerNotes = await openRouterClient.generateSpeakerNotes(slides, topic, answers, selectedModel);
+    console.log(`✅ Generated ${speakerNotes.length} speaker notes with profound statements and 3 talking points each`);
 
     res.json({ speakerNotes });
   } catch (error) {

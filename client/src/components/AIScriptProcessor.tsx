@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Progress } from './ui/progress';
 import { PowerPointUpload } from './PowerPointUpload';
 import { useOpenRouter } from '@/hooks/useOpenRouter';
+import { usePresentationStore } from '@/stores';
 import { Loader2, Sparkles, FileText, Upload, TestTube } from 'lucide-react';
 import type { Section } from '@/lib/script-parser';
 
@@ -83,6 +84,26 @@ export function AIScriptProcessor({ onSectionsGenerated, selectedModel }: AIScri
   const [rawText, setRawText] = useState('');
   const [preserveWording, setPreserveWording] = useState(true); // Default: preserve exact wording
   const { processScript, isProcessing, error, progress } = useOpenRouter();
+  const { clearPresentation, setSelectedTone } = usePresentationStore();
+  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
+
+  const GOALS = [
+    { id: 'pitch', label: 'Pitch', description: 'Persuade, sell an idea, call to action', tone: 'bold' },
+    { id: 'training', label: 'Training', description: 'Teach, step-by-step, educational', tone: 'conversational' },
+    { id: 'update', label: 'Status Update', description: 'Inform, progress report, metrics', tone: 'professional' },
+    { id: 'keynote', label: 'Keynote', description: 'Inspire, big ideas, storytelling', tone: 'storytelling' },
+  ];
+
+  const hasStructuredMarkers = (text: string) => {
+    return /SECTION\s+\d+/i.test(text) || /^#{1,3}\s/m.test(text) || /^\d+\.\s+[A-Z]/m.test(text);
+  };
+
+  const handleGoalSelect = (goal: typeof GOALS[number]) => {
+    setSelectedGoal(goal.id);
+    setSelectedTone(goal.tone);
+    setShowGoalPicker(false);
+  };
 
   const loadTestPresentation = () => {
     setRawText(TEST_PRESENTATION);
@@ -93,6 +114,15 @@ export function AIScriptProcessor({ onSectionsGenerated, selectedModel }: AIScri
       alert('Please enter some text to process');
       return;
     }
+
+    // If unstructured text and no goal selected, show goal picker
+    if (!hasStructuredMarkers(rawText) && !selectedGoal) {
+      setShowGoalPicker(true);
+      return;
+    }
+
+    // Clear old presentation data before generating new one
+    clearPresentation();
 
     try {
       const result = await processScript(rawText, selectedModel, preserveWording);
@@ -122,6 +152,8 @@ export function AIScriptProcessor({ onSectionsGenerated, selectedModel }: AIScri
   };
 
   const handlePowerPointExtracted = (sections: Section[]) => {
+    // Clear old presentation data before loading PowerPoint content
+    clearPresentation();
     onSectionsGenerated(sections);
   };
 
@@ -239,6 +271,47 @@ The problem we're solving is simple but critical. Millions of people struggle wi
             <span>Max: 50,000 characters</span>
           </div>
         </div>
+
+        {/* Goal Picker - shown for unstructured text */}
+        {showGoalPicker && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">What type of presentation is this?</label>
+              <button
+                onClick={() => { setShowGoalPicker(false); setSelectedGoal('general'); }}
+                className="text-xs text-gray-500 hover:text-blue-600"
+              >
+                Skip — just process it
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {GOALS.map((goal) => (
+                <button
+                  key={goal.id}
+                  onClick={() => handleGoalSelect(goal)}
+                  className={`p-4 rounded-lg border-2 text-left transition-all hover:border-blue-500 hover:shadow-md ${
+                    selectedGoal === goal.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="font-semibold text-sm text-gray-900">{goal.label}</div>
+                  <div className="text-xs text-gray-600 mt-1">{goal.description}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Selected goal badge */}
+        {selectedGoal && selectedGoal !== 'general' && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+              {GOALS.find(g => g.id === selectedGoal)?.label || selectedGoal}
+            </span>
+            <button onClick={() => setSelectedGoal(null)} className="text-xs text-gray-500 hover:text-red-500">
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* Processing State */}
         {isProcessing && (
