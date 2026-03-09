@@ -4,11 +4,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'logo.png'],
+      includeAssets: ['favicon.ico', 'icon.ico', 'logo.png'],
       manifest: {
         name: 'VerbaDeck - Voice-Driven Presentations',
         short_name: 'VerbaDeck',
@@ -18,6 +22,11 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         icons: [
+          {
+            src: '/icon.ico',
+            sizes: '48x48',
+            type: 'image/x-icon'
+          },
           {
             src: '/logo.png',
             sizes: '512x512',
@@ -52,8 +61,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api': {
+        target: 'http://localhost:3002',
+        changeOrigin: true,
+      },
       '/ws': {
-        target: 'ws://localhost:3001',
+        target: 'ws://localhost:3002',
         ws: true,
       },
     },

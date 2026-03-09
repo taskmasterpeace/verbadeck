@@ -11,9 +11,24 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "npm run dev --workspace=server",
     "dev:client": "npm run dev --workspace=client",
-    "build:client": "npm run build --workspace=client"
+    "build:client": "npm run build --workspace=client",
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:new": "playwright test tests/navigation.spec.ts tests/editor-workflow.spec.ts tests/presenter-workflow.spec.ts tests/know-it-all-workflow.spec.ts tests/library-workflow.spec.ts tests/settings-workflow.spec.ts tests/keyboard-shortcuts-integration.spec.ts tests/mobile-responsive.spec.ts tests/performance.spec.ts --project=chromium"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "react-router-dom": "^7.9.5",
+    "zustand": "^5.0.8"
   }
 }
