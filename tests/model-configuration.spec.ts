@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Model Configuration - Settings UI', () => {
   test('should load all operations with correct models in Settings modal', async ({ page }) => {
     // Navigate to app
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
     console.log('✅ App loaded');
 
@@ -50,7 +50,7 @@ test.describe('Model Configuration - Settings UI', () => {
   });
 
   test('should show clear descriptions indicating WHERE each operation is used', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -87,7 +87,7 @@ test.describe('Model Configuration - Settings UI', () => {
   });
 
   test('should allow changing model for an operation and persist change', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
     console.log('✅ App loaded');
 
@@ -151,7 +151,7 @@ test.describe('Model Configuration - Settings UI', () => {
   });
 
   test('should show bulk model changer and apply to all operations', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models

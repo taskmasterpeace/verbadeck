@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('VerbaDeck - Landing Page', () => {
   test('should load landing page with 3 creation paths', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Check VerbaDeck branding
@@ -31,7 +31,7 @@ test.describe('VerbaDeck - Landing Page', () => {
   });
 
   test('should show 3 creation path buttons', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // All 3 action buttons should be present
@@ -47,7 +47,7 @@ test.describe('VerbaDeck - Landing Page', () => {
   });
 
   test('should have Library and Load buttons', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Check for Library and Load buttons in top right
@@ -58,7 +58,7 @@ test.describe('VerbaDeck - Landing Page', () => {
   });
 
   test('should have Settings button that opens modal', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Find and click settings button
@@ -80,7 +80,7 @@ test.describe('VerbaDeck - Landing Page', () => {
 
 test.describe('VerbaDeck - Process Content Flow', () => {
   test('should navigate to Process Content view', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Click Process Content button
@@ -102,7 +102,7 @@ test.describe('VerbaDeck - Process Content Flow', () => {
 
 test.describe('VerbaDeck - Create from Scratch Flow', () => {
   test('should navigate to Create from Scratch view', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Click Start from Scratch button
@@ -123,7 +123,7 @@ test.describe('VerbaDeck - Create from Scratch Flow', () => {
 
 test.describe('VerbaDeck - Know It All Wall Flow', () => {
   test('should navigate to Know It All Wall view', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Click Start Q&A Practice button
@@ -144,7 +144,7 @@ test.describe('VerbaDeck - Know It All Wall Flow', () => {
 
 test.describe('VerbaDeck - Workflow Navigation', () => {
   test('should show progressive workflow steps in top bar', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Workflow steps should be visible (1-3 only, Voice button is separate)
@@ -161,7 +161,7 @@ test.describe('VerbaDeck - Workflow Navigation', () => {
   });
 
   test('should have Present button disabled when no content', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Present button should be disabled (no content created yet)
@@ -172,7 +172,7 @@ test.describe('VerbaDeck - Workflow Navigation', () => {
   });
 
   test('should show Edit count as (0) when no content', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Edit button should show (0) indicating no sections
@@ -184,7 +184,7 @@ test.describe('VerbaDeck - Workflow Navigation', () => {
 
 test.describe('VerbaDeck - Voice Control', () => {
   test('should have Voice button in top right', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Voice button should be in top right corner (blue, prominent)
@@ -197,7 +197,7 @@ test.describe('VerbaDeck - Voice Control', () => {
 
 test.describe('VerbaDeck - Footer', () => {
   test('should show Machine King Labs branding', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Check for footer branding
@@ -207,7 +207,7 @@ test.describe('VerbaDeck - Footer', () => {
   });
 
   test('should show version information', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Check for version info

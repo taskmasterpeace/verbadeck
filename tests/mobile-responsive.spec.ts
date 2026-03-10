@@ -12,7 +12,7 @@ test.use({ ...devices['iPhone 12'] });
 test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
 
   test('should load on mobile device', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
@@ -21,7 +21,7 @@ test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
   });
 
   test('should show three creation cards in mobile layout', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('Create from Scratch')).toBeVisible();
     await expect(page.getByText('Process Existing Content')).toBeVisible();
@@ -31,7 +31,7 @@ test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
   });
 
   test('should stack cards vertically on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const cards = page.locator('[data-testid*="card"]').or(page.locator('.card'));
     const count = await cards.count();
@@ -50,7 +50,7 @@ test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
   });
 
   test('should show hamburger menu on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Look for menu button (hamburger icon)
     const menuButton = page.locator('button[aria-label*="menu"]').or(
@@ -67,7 +67,7 @@ test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
   });
 
   test('should open navigation drawer on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const menuButton = page.locator('button[aria-label*="menu"]').first();
 
@@ -88,7 +88,7 @@ test.describe('VerbaDeck V2.0 - Mobile Home Page', () => {
 
 test.describe('VerbaDeck V2.0 - Mobile Editor', () => {
   test('should show editor in mobile layout', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     const body = await page.locator('body').textContent();
     expect(body).toBeTruthy();
@@ -97,7 +97,7 @@ test.describe('VerbaDeck V2.0 - Mobile Editor', () => {
   });
 
   test('should use sheet drawer for section editing on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     const section = page.locator('[data-testid*="section"]').first();
 
@@ -116,7 +116,7 @@ test.describe('VerbaDeck V2.0 - Mobile Editor', () => {
   });
 
   test('should have touch-friendly buttons on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     // Check button sizes (should be at least 44x44px for touch)
     const buttons = page.locator('button');
@@ -133,7 +133,7 @@ test.describe('VerbaDeck V2.0 - Mobile Editor', () => {
   });
 
   test('should handle long-press gestures', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     const section = page.locator('[data-testid*="section"]').first();
 
@@ -150,7 +150,7 @@ test.describe('VerbaDeck V2.0 - Mobile Editor', () => {
 
 test.describe('VerbaDeck V2.0 - Mobile Presenter', () => {
   test('should show presenter view on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     const body = await page.locator('body').textContent();
     expect(body).toBeTruthy();
@@ -159,7 +159,7 @@ test.describe('VerbaDeck V2.0 - Mobile Presenter', () => {
   });
 
   test('should support swipe gestures for navigation', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     // Simulate swipe left (next slide)
     await page.touchscreen.tap(200, 300);
@@ -170,7 +170,7 @@ test.describe('VerbaDeck V2.0 - Mobile Presenter', () => {
   });
 
   test('should hide transcript on small screens', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     // Transcript ticker may be hidden on very small screens
     const ticker = page.locator('[data-testid="transcript-ticker"]');
@@ -180,7 +180,7 @@ test.describe('VerbaDeck V2.0 - Mobile Presenter', () => {
   });
 
   test('should have large tap targets for voice control', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     const voiceButton = page.locator('button:has-text("Start Listening")').or(
       page.locator('button:has-text("Stop Listening")')
@@ -201,7 +201,7 @@ test.describe('VerbaDeck V2.0 - Tablet Layout', () => {
   test.use({ ...devices['iPad Pro'] });
 
   test('should show optimized layout on tablet', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
 
@@ -209,7 +209,7 @@ test.describe('VerbaDeck V2.0 - Tablet Layout', () => {
   });
 
   test('should use grid layout for cards on tablet', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const cards = page.locator('[data-testid*="card"]').or(page.locator('.card'));
     const count = await cards.count();
@@ -226,7 +226,7 @@ test.describe('VerbaDeck V2.0 - Tablet Layout', () => {
   });
 
   test('should show sidebar on tablet', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     // Tablet may show sidebar instead of hamburger
     const sidebar = page.locator('[data-testid*="sidebar"]').or(page.locator('.sidebar'));
@@ -239,7 +239,7 @@ test.describe('VerbaDeck V2.0 - Tablet Layout', () => {
 test.describe('VerbaDeck V2.0 - Responsive Breakpoints', () => {
   test('should adapt to 320px width (smallest mobile)', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
 
@@ -248,7 +248,7 @@ test.describe('VerbaDeck V2.0 - Responsive Breakpoints', () => {
 
   test('should adapt to 768px width (tablet)', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
 
@@ -257,7 +257,7 @@ test.describe('VerbaDeck V2.0 - Responsive Breakpoints', () => {
 
   test('should adapt to 1024px width (small desktop)', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
 
@@ -266,7 +266,7 @@ test.describe('VerbaDeck V2.0 - Responsive Breakpoints', () => {
 
   test('should adapt to 1920px width (full HD)', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     await expect(page.getByText('VerbaDeck')).toBeVisible();
 
@@ -276,7 +276,7 @@ test.describe('VerbaDeck V2.0 - Responsive Breakpoints', () => {
 
 test.describe('VerbaDeck V2.0 - Touch Interactions', () => {
   test('should handle tap events', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const button = page.locator('button').first();
     await button.tap();
@@ -286,7 +286,7 @@ test.describe('VerbaDeck V2.0 - Touch Interactions', () => {
   });
 
   test('should handle double-tap events', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     const slide = page.locator('[data-testid*="slide"]').or(page.locator('.slide')).first();
 
@@ -300,7 +300,7 @@ test.describe('VerbaDeck V2.0 - Touch Interactions', () => {
   });
 
   test('should handle pinch-to-zoom (if enabled)', async ({ page }) => {
-    await page.goto('http://localhost:5173/presenter');
+    await page.goto('http://localhost:5175/presenter');
 
     // Pinch gestures
     await page.touchscreen.tap(200, 300);
@@ -310,7 +310,7 @@ test.describe('VerbaDeck V2.0 - Touch Interactions', () => {
   });
 
   test('should prevent text selection on UI controls', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const button = page.locator('button').first();
 
@@ -327,7 +327,7 @@ test.describe('VerbaDeck V2.0 - Mobile Performance', () => {
   test('should load quickly on mobile', async ({ page }) => {
     const startTime = Date.now();
 
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     const loadTime = Date.now() - startTime;
@@ -338,7 +338,7 @@ test.describe('VerbaDeck V2.0 - Mobile Performance', () => {
   });
 
   test('should be scrollable without lag', async ({ page }) => {
-    await page.goto('http://localhost:5173/editor');
+    await page.goto('http://localhost:5175/editor');
 
     // Scroll down
     await page.mouse.wheel(0, 500);
@@ -352,7 +352,7 @@ test.describe('VerbaDeck V2.0 - Mobile Performance', () => {
   });
 
   test('should handle orientation change', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Change to landscape
     await page.setViewportSize({ width: 844, height: 390 }); // iPhone 12 landscape
@@ -367,7 +367,7 @@ test.describe('VerbaDeck V2.0 - Mobile Performance', () => {
 
 test.describe('VerbaDeck V2.0 - Mobile Accessibility', () => {
   test('should have sufficient touch target sizes', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     const buttons = page.locator('button');
     const count = await buttons.count();
@@ -387,7 +387,7 @@ test.describe('VerbaDeck V2.0 - Mobile Accessibility', () => {
   });
 
   test('should support screen reader on mobile', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Check for ARIA labels
     const ariaLabels = page.locator('[aria-label]');
@@ -399,7 +399,7 @@ test.describe('VerbaDeck V2.0 - Mobile Accessibility', () => {
   });
 
   test('should have good contrast ratio', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Check text is visible (contrast test would require screenshot analysis)
     const text = page.locator('body');

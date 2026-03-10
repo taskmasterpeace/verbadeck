@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Examine slide headings from generated content', async ({ page }) => {
-  await page.goto('http://localhost:5173');
+  await page.goto('http://localhost:5175');
 
   // Wait for app to load
   await page.waitForSelector('text=Create Your Presentation', { timeout: 10000 });
@@ -77,7 +77,7 @@ test('Examine slide headings from generated content', async ({ page }) => {
   }
 
   // Also test "Process Existing Content" workflow
-  await page.goto('http://localhost:5173');
+  await page.goto('http://localhost:5175');
   await page.waitForSelector('text=Create Your Presentation', { timeout: 10000 });
 
   await page.click('button:has-text("Process Existing Content")');

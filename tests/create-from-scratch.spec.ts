@@ -338,7 +338,7 @@ test.describe('VerbaDeck - Create from Scratch Question Types', () => {
       });
     });
 
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.getByRole('button', { name: /Create from Scratch/i }).click();
   });
 

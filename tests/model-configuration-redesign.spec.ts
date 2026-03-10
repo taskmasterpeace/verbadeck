@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Model Configuration Redesign - UI Tests', () => {
   test('should display redesigned UI with presets and categories', async ({ page }) => {
     // Navigate to app
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
     console.log('✅ App loaded');
 
@@ -69,7 +69,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should expand/collapse categories', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -112,7 +112,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should apply preset and show visual feedback', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -151,7 +151,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should apply category bulk model changer', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -195,7 +195,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should toggle collapsible help section', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -238,7 +238,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should show compact dropdowns with model badges', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -267,7 +267,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should expand operation details on click', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -305,7 +305,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
   });
 
   test('should reset to server defaults', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models
@@ -341,7 +341,7 @@ test.describe('Model Configuration Redesign - UI Tests', () => {
 
 test.describe('Model Configuration Redesign - Integration', () => {
   test('should persist preset changes across modal close/reopen', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.waitForLoadState('networkidle');
 
     // Open Settings -> Models

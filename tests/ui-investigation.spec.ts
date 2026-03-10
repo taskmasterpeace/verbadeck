@@ -4,7 +4,7 @@ test('UI Investigation - Capture actual current state', async ({ page }) => {
   console.log('🔍 UI Investigation Starting...\n');
 
   // Navigate to app
-  await page.goto('http://localhost:5173');
+  await page.goto('http://localhost:5175');
   await page.waitForLoadState('networkidle');
   console.log('✅ App loaded');
 

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Prompt Editor', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage before each test
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
     await page.evaluate(() => {
       localStorage.clear();
     });
@@ -11,7 +11,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should open Settings modal and navigate to Prompts tab', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Click Settings button
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -28,7 +28,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should expand operation and show prompt editor', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -48,7 +48,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should edit, save, and persist prompt', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -95,7 +95,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should reset individual prompt to default', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts and edit a prompt
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -122,7 +122,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should reset all prompts to defaults', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -158,7 +158,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should display parameters info for each operation', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -177,7 +177,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should show warning about JSON format requirements', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Open Settings > Prompts
     await page.getByRole('button', { name: /Settings/i }).click();
@@ -189,7 +189,7 @@ test.describe('Prompt Editor', () => {
   });
 
   test('should persist prompts across page reloads', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5175');
 
     // Edit and save a prompt
     await page.getByRole('button', { name: /Settings/i }).click();
