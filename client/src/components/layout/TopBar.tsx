@@ -27,6 +27,9 @@ interface TopBarProps {
   onModelChange?: (modelId: string) => void;
   cancelWord?: string;
   onCancelWordChange?: (word: string) => void;
+
+  // Hide voice button (e.g. Know It All handles its own streaming)
+  hideVoiceButton?: boolean;
 }
 
 export function TopBar({
@@ -44,6 +47,7 @@ export function TopBar({
   onModelChange,
   cancelWord,
   onCancelWordChange,
+  hideVoiceButton = false,
 }: TopBarProps) {
   const [showSettings, setShowSettings] = useState(false);
 
@@ -144,29 +148,31 @@ export function TopBar({
             <span className="hidden sm:inline">Settings</span>
           </Button>
 
-          {/* Voice Control - Primary Action */}
-          <Button
-            onClick={onToggleStream}
-            size="sm"
-            className={cn(
-              'gap-2 font-semibold shadow-md',
-              isStreaming
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600'
-            )}
-          >
-            {isStreaming ? (
-              <>
-                <Square className="h-4 w-4" />
-                <span>Stop</span>
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4" />
-                <span>Voice</span>
-              </>
-            )}
-          </Button>
+          {/* Voice Control - Primary Action (hidden when Know It All manages its own streaming) */}
+          {!hideVoiceButton && (
+            <Button
+              onClick={onToggleStream}
+              size="sm"
+              className={cn(
+                'gap-2 font-semibold shadow-md',
+                isStreaming
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600'
+              )}
+            >
+              {isStreaming ? (
+                <>
+                  <Square className="h-4 w-4" />
+                  <span>Stop</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" />
+                  <span>Voice</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 

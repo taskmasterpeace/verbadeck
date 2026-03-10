@@ -3,9 +3,35 @@ import { TONE_OPTIONS, ToneOption } from '../lib/tone-options';
 interface ToneSelectorProps {
   selectedTone: string;
   onToneChange: (tone: string) => void;
+  /** Compact mode: single-row pills instead of grid cards */
+  compact?: boolean;
 }
 
-export function ToneSelector({ selectedTone, onToneChange }: ToneSelectorProps) {
+export function ToneSelector({ selectedTone, onToneChange, compact = false }: ToneSelectorProps) {
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs font-medium text-gray-500 flex-shrink-0">Tone:</span>
+        {TONE_OPTIONS.map((option: ToneOption) => (
+          <button
+            key={option.value}
+            onClick={() => onToneChange(option.value)}
+            className={`
+              px-2 py-0.5 rounded-full text-xs transition-all
+              ${selectedTone === option.value
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }
+            `}
+            title={option.description}
+          >
+            {option.icon} {option.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">

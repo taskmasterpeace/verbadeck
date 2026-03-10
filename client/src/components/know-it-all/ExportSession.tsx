@@ -59,7 +59,6 @@ export function ExportSession({ questions, elapsedTime }: ExportSessionProps) {
             keywords: selectedAnswer?.keywords,
           } : null,
           triggerWord: q.triggerWord,
-          lockWord: q.lockWord,
         };
       }),
     };

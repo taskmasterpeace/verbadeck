@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { VoiceController } from '../lib/voice-controller';
 import { type Section } from '../lib/script-parser';
+import { useVoiceStore } from '../stores/voice';
 
 interface UseVoiceNavigationProps {
   sections: Section[];
@@ -29,6 +30,9 @@ export function useVoiceNavigation({
   const voiceControllerRef = useRef(new VoiceController());
   const voiceController = voiceControllerRef.current;
 
+  // Zustand voice store - sync transcripts globally
+  const setStoreLastTranscript = useVoiceStore((state) => state.setLastTranscript);
+
   // Live transcript
   const [transcript, setTranscript] = useState<string[]>([]);
   const [lastTranscript, setLastTranscript] = useState('');
@@ -38,6 +42,8 @@ export function useVoiceNavigation({
     console.log('📝 handleTranscript called:', text, 'isFinal:', isFinal);
 
     setLastTranscript(text);
+    // Sync to Zustand store so KnowItAllMode and other consumers get the transcript
+    setStoreLastTranscript(text, isFinal);
 
     // Add to transcript ticker (only final)
     if (isFinal) {
@@ -88,7 +94,8 @@ export function useVoiceNavigation({
     cancelWord,
     handleCancelQuestion,
     handleQuestionDetected,
-    voiceController
+    voiceController,
+    setStoreLastTranscript
   ]);
 
   return {

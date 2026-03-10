@@ -5,7 +5,7 @@
 
 import { QuestionCard } from '../lib/know-it-all-types';
 import { Card, CardContent, CardHeader } from './ui/card';
-import { Loader2, CheckCircle2, Circle, AlertCircle, Lock } from 'lucide-react';
+import { Loader2, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { HighlightedText } from './HighlightedText';
 import { motion } from 'framer-motion';
@@ -151,8 +151,7 @@ export function KnowItAllQuestionCard({
       'transition-all duration-300',
       question.isVisible && 'ring-2 ring-blue-500/20',
       isAnswered && 'bg-green-50/30',
-      isError && 'bg-red-50/30 border-red-200',
-      question.isLocked && 'bg-slate-50/30 border-slate-300 ring-2 ring-slate-500/30 shadow-lg'
+      isError && 'bg-red-50/30 border-red-200'
     )}>
       <CardHeader className="pb-3">
         {/* Question text */}
@@ -162,38 +161,10 @@ export function KnowItAllQuestionCard({
               {question.question}
             </h3>
 
-            {/* Lock word badge with explanation */}
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <div className="flex items-center gap-1" title="Say this word to lock/unlock this question and prevent new questions">
-                <span className="text-xs text-gray-500">Lock word:</span>
-                <span className={cn(
-                  "px-2 py-1 rounded-full text-xs font-medium transition-all cursor-help",
-                  question.isLocked
-                    ? "bg-slate-100 text-slate-700 ring-2 ring-slate-500 shadow-md"
-                    : "bg-gray-100 text-gray-600"
-                )}>
-                  {question.lockWord}
-                </span>
-              </div>
-              {question.isLocked ? (
-                <div className="flex items-center gap-1 text-xs text-slate-600">
-                  <Lock className="w-3 h-3 animate-pulse drop-shadow-lg" />
-                  <span className="font-medium">Say "{question.lockWord}", "unlock", or "next" to unlock</span>
-                </div>
-              ) : (
-                <span className="text-xs text-gray-400 italic">Say "{question.lockWord}" to lock this question</span>
-              )}
-            </div>
           </div>
 
           {/* Status indicator */}
           <div className="flex-shrink-0">
-            {question.isLocked && (
-              <div className="flex items-center gap-2 text-xs text-slate-600 mb-2 drop-shadow-md">
-                <Lock className="w-4 h-4 animate-pulse" />
-                <span>Locked</span>
-              </div>
-            )}
             {isGenerating && (
               <div className="flex items-center gap-2 text-xs text-blue-600">
                 <Loader2 className="w-4 h-4 animate-spin" />

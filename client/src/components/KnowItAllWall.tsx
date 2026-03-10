@@ -4,13 +4,15 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { QuestionCard, extractLockWord } from '../lib/know-it-all-types';
+import { QuestionCard } from '../lib/know-it-all-types';
 import { KnowItAllQuestionCard } from './KnowItAllQuestionCard';
 import { useKeywordDetection } from '../hooks/useKeywordDetection';
 import { extractTriggerWord } from '../lib/extract-trigger-word';
 import { apiPost } from '@/lib/api-client';
 import { SessionStats } from './know-it-all/SessionStats';
-import { ExportSession } from './know-it-all/ExportSession';
+import { Pause, Play } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { useVoiceStore } from '../stores/voice';
 
 interface KnowItAllWallProps {
   /** All questions in the current session */
@@ -43,6 +45,15 @@ export function KnowItAllWall({
   const containerRef = useRef<HTMLDivElement>(null);
   const [detectedQuestion, setDetectedQuestion] = useState<string | null>(null);
   const lastTriggerTranscriptRef = useRef<string>('');
+  const questionsRef = useRef(questions);
+  questionsRef.current = questions;
+
+  // Pause detection - simple on-screen button instead of voice-activated lock words
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Queue mode: when ON, only detect new questions after current one is fully answered
+  // When OFF (rapid fire), detect questions even while others are pending/generating
+  const [queueMode, setQueueMode] = useState(true);
 
   // Manual question input state
   const [manualQuestion, setManualQuestion] = useState<string>('');
@@ -60,54 +71,28 @@ export function KnowItAllWall({
     return () => clearInterval(interval);
   }, [sessionStartTime]);
 
-  // Detect questions from transcript + handle lock word detection
+  // Only detect questions from final transcripts (not interim partial speech)
+  const isLastTranscriptFinal = useVoiceStore((state) => state.isLastTranscriptFinal);
+
+  // Detect questions from transcript
   useEffect(() => {
     if (!transcript.trim()) return;
+    if (isPaused) return;
+    if (!isLastTranscriptFinal) return; // Wait for final transcript, not partial speech
 
     const text = transcript.trim().toLowerCase();
+    const currentQuestions = questionsRef.current;
 
-    // FIRST: Check for lock word detection (before question detection)
-    // Detect "next question" or "unlock" to unlock any locked question
-    const unlockTriggers = ['next question', 'unlock', 'next'];
-    const hasUnlockTrigger = unlockTriggers.some(trigger => text.includes(trigger));
-
-    if (hasUnlockTrigger) {
-      // Unlock any locked question
-      const lockedQuestion = questions.find(q => q.isLocked);
-      if (lockedQuestion) {
-        console.log(`🔓 Unlocking question via unlock trigger: "${text}"`);
-        onQuestionsChange(questions.map(q =>
-          q.id === lockedQuestion.id ? { ...q, isLocked: false } : q
-        ));
-        return; // Don't process as a question
-      }
-    }
-
-    // Check if any question's lock word is spoken (toggle lock)
-    for (const q of questions) {
-      if (q.lockWord && text.includes(q.lockWord)) {
-        console.log(`${q.isLocked ? '🔓 Unlocking' : '🔒 Locking'} question via lock word: "${q.lockWord}"`);
-        onQuestionsChange(questions.map(card =>
-          card.id === q.id ? { ...card, isLocked: !card.isLocked } : card
-        ));
-        return; // Don't process as a question
-      }
-    }
-
-    // Don't detect new questions if ANY question is locked
-    const hasLockedQuestion = questions.some(q => q.isLocked);
-    if (hasLockedQuestion) {
-      console.log('🔒 Question locked - new question detection blocked');
-      return;
-    }
-
-    // Don't detect new questions if there's an active question still being answered
-    const hasActiveQuestion = questions.some(
-      q => q.status === 'generating' || q.status === 'ready' || q.status === 'confirming'
-    );
-
-    if (hasActiveQuestion) {
-      return; // Wait for current question to be answered first
+    // Queue mode: block new questions until current one is fully answered
+    // Rapid fire: only block during active API calls
+    if (queueMode) {
+      const hasActiveQuestion = currentQuestions.some(
+        q => q.status === 'generating' || q.status === 'ready' || q.status === 'confirming'
+      );
+      if (hasActiveQuestion) return;
+    } else {
+      const isGenerating = currentQuestions.some(q => q.status === 'generating');
+      if (isGenerating) return;
     }
 
     // Question trigger words/phrases (at the start of sentences)
@@ -146,16 +131,15 @@ export function KnowItAllWall({
       const question = endsWithQuestion ? transcript.trim() : transcript.trim() + '?';
 
       // Check if this question already exists
-      const alreadyExists = questions.some(q =>
+      const alreadyExists = currentQuestions.some(q =>
         q.question.toLowerCase() === question.toLowerCase()
       );
 
       if (!alreadyExists) {
-        // New question detected
         setDetectedQuestion(question);
       }
     }
-  }, [transcript, questions, onQuestionsChange]);
+  }, [transcript, isPaused, isLastTranscriptFinal, queueMode]);
 
   // Generate answers for detected question
   useEffect(() => {
@@ -165,11 +149,8 @@ export function KnowItAllWall({
       // Extract trigger word from question
       const triggerWord = extractTriggerWord(detectedQuestion);
 
-      // Extract lock word (second-longest word) from question
-      const lockWord = extractLockWord(detectedQuestion);
-
       // Check if there's already an active question
-      const hasActiveQuestion = questions.some(q => q.isActive);
+      const hasActiveQuestion = questionsRef.current.some(q => q.isActive);
 
       // Create new question card with 'generating' status
       const newCard: QuestionCard = {
@@ -195,8 +176,6 @@ export function KnowItAllWall({
         status: 'generating',
         keywordsDetected: [],
         isVisible: true,
-        lockWord,
-        isLocked: false,
         triggerWord,
         isActive: !hasActiveQuestion, // Only active if no other active question
       };
@@ -410,68 +389,42 @@ export function KnowItAllWall({
 
   if (questions.length === 0) {
     return (
-      <div className="space-y-4">
-        {/* Session Stats - Always show */}
-        <SessionStats questions={questions} elapsedTime={elapsedTime} />
+      <div className="space-y-2">
+        {/* Session Stats (compact single row with export inline) */}
+        <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} />
 
-        {/* Instruction Banner */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <div className="text-3xl">🎤</div>
-            <div>
-              <h3 className="font-bold text-blue-900 text-lg mb-2">Ready to Answer Your Questions!</h3>
-              <div className="text-blue-800 space-y-2">
-                <p className="font-medium">How it works:</p>
-                <ol className="list-decimal list-inside space-y-1 text-sm ml-2">
-                  <li><strong>Speak your question</strong> out loud (must end with "?")</li>
-                  <li><strong>AI generates 2 answer options</strong> with keywords highlighted</li>
-                  <li><strong>Say a keyword</strong> (the blue highlighted words) to select an answer</li>
-                  <li><strong>Ask another question</strong> or say "next" to continue</li>
-                </ol>
-                <p className="text-sm mt-3 bg-white p-2 rounded border border-blue-300">
-                  💡 <strong>Example:</strong> "Are you a good fit for this position?" → Say "technical" or "leadership" to choose an answer
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Manual Question Input - Available from session start */}
-        <div className="border-2 border-gray-300 rounded-lg p-3 bg-gray-50">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={manualQuestion}
-              onChange={(e) => setManualQuestion(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleManualQuestionSubmit();
-                }
-              }}
-              placeholder="Type a question manually (press Enter to submit)"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              data-testid="manual-question-input"
-            />
-            <button
-              onClick={handleManualQuestionSubmit}
-              disabled={!manualQuestion.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-              data-testid="submit-manual-question"
-            >
-              Ask
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            💡 Type a question and press Enter, or use voice by speaking your question ending with "?"
+        {/* Compact instruction bar + listening dot */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
+          <p className="text-blue-800 flex-1">
+            <strong>Speak a question</strong> · AI gives 2 answers · <strong>Say a keyword</strong> to pick one
           </p>
         </div>
 
-        <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-gray-300 rounded-lg">
-          <div className="text-center text-muted-foreground">
-            <p className="text-lg font-medium mb-2">🎤 Listening for your first question...</p>
-            <p className="text-sm">Speak clearly and end with "?" or type above</p>
-          </div>
+        {/* Manual Question Input */}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={manualQuestion}
+            onChange={(e) => setManualQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleManualQuestionSubmit();
+              }
+            }}
+            placeholder="Or type a question here and press Enter"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            data-testid="manual-question-input"
+          />
+          <button
+            onClick={handleManualQuestionSubmit}
+            disabled={!manualQuestion.trim()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            data-testid="submit-manual-question"
+          >
+            Ask
+          </button>
         </div>
       </div>
     );
@@ -566,51 +519,52 @@ export function KnowItAllWall({
 
   return (
     <div className="space-y-2">
-      {/* Session Stats */}
-      <SessionStats questions={questions} elapsedTime={elapsedTime} />
+      {/* Session Stats (compact single row with export inline) */}
+      <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} />
 
-      {/* Export Button */}
-      <div className="flex justify-end">
-        <ExportSession questions={questions} elapsedTime={elapsedTime} />
+      {/* Manual Question Input */}
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={manualQuestion}
+          onChange={(e) => setManualQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleManualQuestionSubmit();
+            }
+          }}
+          placeholder="Or type a question here and press Enter"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          data-testid="manual-question-input"
+        />
+        <button
+          onClick={handleManualQuestionSubmit}
+          disabled={!manualQuestion.trim()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+          data-testid="submit-manual-question"
+        >
+          Ask
+        </button>
       </div>
 
-      {/* Manual Question Input - Always Available */}
-      <div className="border-2 border-gray-300 rounded-lg p-3 bg-gray-50">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={manualQuestion}
-            onChange={(e) => setManualQuestion(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleManualQuestionSubmit();
-              }
-            }}
-            placeholder="Type a question manually (press Enter to submit)"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            data-testid="manual-question-input"
-          />
-          <button
-            onClick={handleManualQuestionSubmit}
-            disabled={!manualQuestion.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-            data-testid="submit-manual-question"
-          >
-            Ask
-          </button>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          💡 Type a question and press Enter, or use voice by speaking your question ending with "?"
-        </p>
-      </div>
-
-      {/* Status Banner - Compact */}
-      <div className={`${colors.bg} border ${colors.border} rounded-lg p-2`}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{status.emoji}</span>
-          <p className={`${colors.title} text-xs font-semibold flex-1`}>{status.title}</p>
-        </div>
+      {/* Compact status + pause inline */}
+      <div className={`flex items-center gap-2 ${colors.bg} border ${colors.border} rounded-lg px-3 py-1.5 text-xs`}>
+        <span>{isPaused ? '⏸️' : status.emoji}</span>
+        <span className={`${colors.title} font-medium flex-1 truncate`}>
+          {isPaused ? 'Paused' : status.title}
+        </span>
+        <button
+          onClick={() => setIsPaused(p => !p)}
+          className={cn(
+            'flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold transition-colors',
+            isPaused
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'text-amber-700 hover:bg-amber-200'
+          )}
+        >
+          {isPaused ? <><Play className="w-3 h-3" /> Resume</> : <><Pause className="w-3 h-3" /> Pause</>}
+        </button>
       </div>
 
       {/* Current Active Question */}

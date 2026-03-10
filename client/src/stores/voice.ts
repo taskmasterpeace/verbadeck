@@ -8,6 +8,7 @@ interface VoiceState {
   // Transcript data
   transcript: string[];
   lastTranscript: string;
+  isLastTranscriptFinal: boolean;
 
   // Q&A listening mode
   isListeningForQuestions: boolean;
@@ -16,7 +17,7 @@ interface VoiceState {
   setIsStreaming: (streaming: boolean) => void;
   setStatus: (status: 'connecting' | 'connected' | 'disconnected') => void;
   setTranscript: (transcript: string[]) => void;
-  setLastTranscript: (text: string) => void;
+  setLastTranscript: (text: string, isFinal?: boolean) => void;
   addToTranscript: (text: string) => void;
   setIsListeningForQuestions: (listening: boolean) => void;
 
@@ -29,6 +30,7 @@ const initialState = {
   status: 'disconnected' as const,
   transcript: [],
   lastTranscript: '',
+  isLastTranscriptFinal: false,
   isListeningForQuestions: false,
 };
 
@@ -38,7 +40,7 @@ export const useVoiceStore = create<VoiceState>((set) => ({
   setIsStreaming: (streaming) => set({ isStreaming: streaming }),
   setStatus: (status) => set({ status }),
   setTranscript: (transcript) => set({ transcript }),
-  setLastTranscript: (text) => set({ lastTranscript: text }),
+  setLastTranscript: (text, isFinal = false) => set({ lastTranscript: text, isLastTranscriptFinal: isFinal }),
 
   addToTranscript: (text) =>
     set((state) => ({

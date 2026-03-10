@@ -16,6 +16,7 @@ import { useKnowledgeBase } from './hooks/useKnowledgeBase';
 import { usePresentationStyle } from './hooks/usePresentationStyle';
 import { useModalState } from './hooks/useModalState';
 import { usePresentationStore } from './stores';
+import { useVoiceStore } from './stores/voice';
 import { type Section } from './lib/script-parser';
 import { VoiceController } from './lib/voice-controller';
 import { TranscriptTicker } from './components/TranscriptTicker';
@@ -249,6 +250,16 @@ export default function App() {
       alert(`Error: ${error}`);
     },
   });
+
+  // Sync streaming state to Zustand voice store so KnowItAllMode and other consumers can read it
+  const setStoreIsStreaming = useVoiceStore((state) => state.setIsStreaming);
+  const setStoreStatus = useVoiceStore((state) => state.setStatus);
+  useEffect(() => {
+    setStoreIsStreaming(isStreaming);
+  }, [isStreaming, setStoreIsStreaming]);
+  useEffect(() => {
+    setStoreStatus(status);
+  }, [status, setStoreStatus]);
 
   // Presentation style and bulk image generation
   const {
@@ -556,6 +567,7 @@ export default function App() {
       onModelChange={setSelectedModel}
       cancelWord={cancelWord}
       onCancelWordChange={setCancelWord}
+      hideVoiceButton={viewMode === 'know-it-all'}
     />
   );
 

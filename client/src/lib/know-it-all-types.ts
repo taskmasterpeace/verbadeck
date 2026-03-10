@@ -4,25 +4,6 @@
  */
 
 /**
- * Extract lock word from question (second-longest word)
- * This word is used to lock/unlock question to prevent new questions while answering
- */
-export function extractLockWord(question: string): string {
-  // Remove punctuation and split into words
-  const words = question
-    .toLowerCase()
-    .replace(/[?!.,;:]/g, '')
-    .split(/\s+/)
-    .filter(w => w.length > 0);
-
-  // Sort by length (descending)
-  const sortedWords = [...words].sort((a, b) => b.length - a.length);
-
-  // Return second-longest word (or longest if only one word)
-  return sortedWords[1] || sortedWords[0] || 'lock';
-}
-
-/**
  * Single answer option with keywords for voice-activated selection
  */
 export interface AnswerWithKeywords {
@@ -82,12 +63,6 @@ export interface QuestionCard {
 
   /** Error message if status is 'error' */
   errorMessage?: string;
-
-  /** Lock word to prevent new questions while answering this one */
-  lockWord: string;
-
-  /** Whether this question is locked (preventing new question detection) */
-  isLocked: boolean;
 
   /** Whether this card is currently visible in the viewport */
   isVisible: boolean;

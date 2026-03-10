@@ -46,15 +46,18 @@ export function normalizeToken(word: string): string {
 export function createTokenPattern(token: string): RegExp {
   const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+  // Treat hyphens as flexible separators: "user-centric" matches "user centric", "user-centric", or "usercentric"
+  const flexible = escaped.replace(/\\-/g, '[\\s\\-]?');
+
   // Special handling for words ending in 'y' (e.g., opportunity -> opportunities)
   if (token.toLowerCase().endsWith('y')) {
-    const baseWithoutY = escaped.slice(0, -1); // Remove the 'y'
+    const baseWithoutY = flexible.slice(0, -1); // Remove the 'y'
     // Match: opportunity, opportunities (y->ies), or opportunitys (rare but possible)
     return new RegExp(`\\b${baseWithoutY}(y|ies)\\b`, 'i');
   }
 
   // Match exact token with optional s/es/ies suffix, with word boundaries
-  return new RegExp(`\\b${escaped}(s|es|ies)?\\b`, 'i');
+  return new RegExp(`\\b${flexible}(s|es|ies)?\\b`, 'i');
 }
 
 /**

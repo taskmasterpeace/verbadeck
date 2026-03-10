@@ -101,11 +101,59 @@ export function useKeywordDetection({
         const keyword1Lower = keyword1.toLowerCase();
         const keyword2Lower = keyword2.toLowerCase();
 
+        // Collect newly matched keywords (order doesn't matter)
+        const newlyDetected: string[] = [];
         if (match1 && !detectedKeywords.includes(keyword1Lower)) {
-          // First keyword detected
-          console.log(`🔑 Keyword detected: "${keyword1}" for question: ${question.question}`);
+          newlyDetected.push(keyword1Lower);
+        }
+        if (match2 && !detectedKeywords.includes(keyword2Lower)) {
+          newlyDetected.push(keyword2Lower);
+        }
 
-          // Play sound effect
+        if (newlyDetected.length === 0) continue;
+
+        const updatedDetected = [...question.keywordsDetected, ...newlyDetected.map(k => k.toLowerCase())];
+
+        newlyDetected.forEach(k => {
+          console.log(`🔑 Keyword detected: "${k}" for question: ${question.question}`);
+        });
+
+        // Check if both keywords are now detected
+        const bothDetected = updatedDetected.some(k => k === keyword1Lower) &&
+                             updatedDetected.some(k => k === keyword2Lower);
+
+        if (bothDetected) {
+          // Both keywords confirmed - answer selected!
+          console.log(`✅ Answer ${answerIndex} confirmed for: ${question.question}`);
+          playSound('answer-selected');
+
+          onQuestionsChange(
+            questions.map(q =>
+              q.id === question.id
+                ? {
+                    ...q,
+                    keywordsDetected: updatedDetected,
+                    selectedAnswer: answerIndex,
+                    status: 'confirming' as const,
+                  }
+                : q
+            )
+          );
+
+          // Mark as answered after brief delay
+          setTimeout(() => {
+            onQuestionsChange((prev: QuestionCard[]) =>
+              prev.map((q: QuestionCard) =>
+                q.id === question.id
+                  ? { ...q, status: 'answered' as const }
+                  : q
+              )
+            );
+          }, 1500);
+
+          return;
+        } else {
+          // Partial match - one keyword so far
           playSound('keyword-detected');
 
           onQuestionsChange(
@@ -113,80 +161,14 @@ export function useKeywordDetection({
               q.id === question.id
                 ? {
                     ...q,
-                    keywordsDetected: [...q.keywordsDetected, keyword1Lower],
+                    keywordsDetected: updatedDetected,
                     status: 'confirming' as const,
                   }
                 : q
             )
           );
 
-          return; // Exit after first keyword detection
-        }
-
-        if (match2 && !detectedKeywords.includes(keyword2Lower)) {
-          // Second keyword detected
-          console.log(`🔑 Keyword detected: "${keyword2}" for question: ${question.question}`);
-
-          const updatedDetected = [...question.keywordsDetected, keyword2Lower];
-
-          // Check if both keywords are now detected
-          if (
-            updatedDetected.includes(keyword1Lower) &&
-            updatedDetected.includes(keyword2Lower)
-          ) {
-            // Both keywords confirmed - answer selected!
-            console.log(`✅ Answer ${answerIndex} confirmed for: ${question.question}`);
-
-            // Play answer selected sound
-            playSound('answer-selected');
-
-            // Immediately update to show selection, then mark as answered after delay
-            onQuestionsChange(
-              questions.map(q =>
-                q.id === question.id
-                  ? {
-                      ...q,
-                      keywordsDetected: updatedDetected,
-                      selectedAnswer: answerIndex,
-                      status: 'confirming' as const, // Keep in confirming state briefly
-                    }
-                  : q
-              )
-            );
-
-            // Add 1.5 second delay before marking as answered (lets user see the selection)
-            setTimeout(() => {
-              onQuestionsChange((prev: QuestionCard[]) =>
-                prev.map((q: QuestionCard) =>
-                  q.id === question.id
-                    ? {
-                        ...q,
-                        status: 'answered' as const,
-                      }
-                    : q
-                )
-              );
-            }, 1500);
-
-            return; // Exit after answer confirmation
-          } else {
-            // Only one keyword detected so far
-            playSound('keyword-detected');
-
-            onQuestionsChange(
-              questions.map(q =>
-                q.id === question.id
-                  ? {
-                      ...q,
-                      keywordsDetected: updatedDetected,
-                      status: 'confirming' as const,
-                    }
-                  : q
-              )
-            );
-
-            return;
-          }
+          return;
         }
       }
     }

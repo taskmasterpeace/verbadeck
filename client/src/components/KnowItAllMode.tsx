@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Play, Square, Download, Trash2, Lightbulb, MessageCircleQuestion, CheckCircle2, Clock, X } from 'lucide-react';
+import { Play, Square, Download, Trash2, MessageCircleQuestion, CheckCircle2, Clock } from 'lucide-react';
 import { KnowItAllWall } from './KnowItAllWall';
 import { QuestionCard } from '../lib/know-it-all-types';
 import { AlertDialog } from './ui/alert-dialog';
@@ -85,10 +85,6 @@ export function KnowItAllMode({
   const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; type?: 'info' | 'danger'; onConfirm: () => void }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
   const [promptDialog, setPromptDialog] = useState<{ isOpen: boolean; title: string; message: string; placeholder?: string; onSubmit: (value: string) => void }>({ isOpen: false, title: '', message: '', onSubmit: () => {} });
 
-  // Lock word help banner state (dismissible)
-  const [showLockWordHelp, setShowLockWordHelp] = useState<boolean>(() => {
-    return localStorage.getItem('verbadeck-kia-hide-lock-help') !== 'true';
-  });
 
   // Setup wizard hook
   const {
@@ -100,10 +96,6 @@ export function KnowItAllMode({
     onSessionReady: () => setIsSessionActive(true),
   });
 
-  const dismissLockWordHelp = () => {
-    localStorage.setItem('verbadeck-kia-hide-lock-help', 'true');
-    setShowLockWordHelp(false);
-  };
 
   // Helper function to update knowledge base and sync with store
   const updateKnowledgeBase = (content: string) => {
@@ -558,46 +550,17 @@ export function KnowItAllMode({
                   />
                 )}
 
-                {/* Tone Selector */}
+                {/* Tone Selector - Compact pills */}
                 {!isSessionActive && (
-                  <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
-                    <ToneSelector
-                      selectedTone={selectedTone}
-                      onToneChange={setSelectedTone}
-                    />
-                  </div>
+                  <ToneSelector
+                    selectedTone={selectedTone}
+                    onToneChange={setSelectedTone}
+                    compact
+                  />
                 )}
 
-                {/* Session Controls */}
+                {/* Start Session */}
                 <div className="space-y-3">
-                  {!isStreaming && !isTestMode && (
-                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3" data-testid="voice-info">
-                      <div className="flex items-start gap-2">
-                        <span className="text-lg">🎤</span>
-                        <div>
-                          <p className="text-sm font-bold text-blue-900">Voice Control</p>
-                          <p className="text-xs text-blue-700 mt-1">
-                            Voice listening will start automatically when you click <strong>"Start Session"</strong>.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {isStreaming && !isSessionActive && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <span className="text-lg">✅</span>
-                        <div>
-                          <p className="text-sm font-bold text-green-900">Ready to Start!</p>
-                          <p className="text-xs text-green-700 mt-1">
-                            Voice control is active. Click <strong>"Start Session"</strong> below to begin.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {isTestMode && (
                     <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded" data-testid="test-mode-indicator">
                       🧪 Test Mode Active - Voice streaming requirement bypassed
@@ -613,6 +576,7 @@ export function KnowItAllMode({
                     <Play className="w-5 h-5" />
                     Start Session
                   </button>
+                  <p className="text-xs text-center text-muted-foreground">Voice listening starts automatically</p>
                 </div>
               </>
             )}
@@ -620,37 +584,6 @@ export function KnowItAllMode({
         </Card>
       )}
 
-      {/* Lock Word Help Banner - Shows once when session is active */}
-      {isSessionActive && showLockWordHelp && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-4 shadow-md">
-          <div className="flex items-start gap-3">
-            <Lightbulb className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                Lock Word System Explained
-              </h4>
-              <div className="space-y-2 text-sm text-blue-800">
-                <p>
-                  <strong>What are lock words?</strong> Each question has a unique "lock word" that lets you pause and focus without interruption.
-                </p>
-                <p>
-                  <strong>How to use:</strong> Simply say the lock word to lock/unlock a question. When locked, new questions won't interrupt you.
-                </p>
-                <p>
-                  <strong>Quick unlock:</strong> Say "unlock" or "next" to move on to the next question anytime.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={dismissLockWordHelp}
-              className="flex-shrink-0 p-1 rounded-full hover:bg-blue-100 transition-colors"
-              title="Dismiss help"
-            >
-              <X className="w-5 h-5 text-blue-600" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Question Wall */}
       {isSessionActive && (
