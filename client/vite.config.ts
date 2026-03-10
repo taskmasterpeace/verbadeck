@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icon.ico', 'logo.png'],
+      includeAssets: ['favicon.ico', 'logo.png', 'logo-icon.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'VerbaDeck - Voice-Driven Presentations',
         short_name: 'VerbaDeck',
@@ -23,12 +23,17 @@ export default defineConfig({
         orientation: 'any',
         icons: [
           {
-            src: '/icon.ico',
-            sizes: '48x48',
+            src: '/favicon.ico',
+            sizes: '16x16 32x32 48x48',
             type: 'image/x-icon'
           },
           {
-            src: '/logo.png',
+            src: '/apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
