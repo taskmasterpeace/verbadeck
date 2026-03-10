@@ -186,6 +186,54 @@ Option A is the clear winner for VerbaDeck's use case:
 
 5. **Dark theme only**: Reduce distraction. Dark background, muted text, so the phone glow is minimal if visible to audience.
 
+### Q&A Mode from Phone
+
+The killer feature: tap a button on your phone to activate Q&A listening. Flow:
+
+1. Phone shows a **"Q&A" toggle button** in the bottom bar (alongside PREV/NEXT)
+2. Tap Q&A → phone sends `{ type: 'toggle-qa' }` to server → relayed to presenter
+3. Presenter browser activates voice listening for questions (same as existing Q&A detection)
+4. When a question is detected and answered, presenter sends `{ type: 'qa-update', question, answers, isLoading }` back through the room
+5. Phone shows the Q&A side panel with the question + answer options
+6. Presenter can tap "Dismiss" on phone to close Q&A on both devices
+
+**Phone Q&A UI (replaces nav controls while active):**
+```
++----------------------------------+
+|  Q&A MODE ACTIVE       [Close]  |
++----------------------------------+
+|                                  |
+|  "How does this compare to       |
+|   competitor X?"                 |
+|                                  |
+|  +----------------------------+  |
+|  | QUICK ANSWER:              |  |
+|  | We differentiate through   |  |
+|  | real-time voice analysis   |  |
+|  +----------------------------+  |
+|                                  |
+|  KEY POINTS:                     |
+|  - Sub-second response time      |
+|  - Works during live meetings    |
+|  - No competitor has this        |
+|                                  |
+|  [Option A] [Option B]          |
+|                                  |
++----------------------------------+
+|  [ DISMISS Q&A ]                |
++----------------------------------+
+```
+
+**Additional protocol messages:**
+```
+Phone -> Server:     { type: 'toggle-qa', enabled: true }
+Server -> Presenter: { type: 'toggle-qa', enabled: true }
+Presenter -> Server: { type: 'qa-update', question: '...', answers: {...}, isLoading: bool }
+Server -> Phone:     { type: 'qa-update', question: '...', answers: {...}, isLoading: bool }
+Phone -> Server:     { type: 'dismiss-qa' }
+Server -> Presenter: { type: 'dismiss-qa' }
+```
+
 ### Component List
 
 | Component | Description |
@@ -193,7 +241,8 @@ Option A is the clear winner for VerbaDeck's use case:
 | `ControllerPage.tsx` | New route page at `/controller`, handles room connection |
 | `ControllerPairingScreen.tsx` | Room code input UI (shown before connected) |
 | `ControllerRemote.tsx` | Main remote control UI (shown after connected) |
-| `useControllerSocket.ts` | Hook: manages WebSocket to `/ws/control`, room join, state sync |
+| `ControllerQAPanel.tsx` | Phone-optimized Q&A display (question + answers) |
+| `useControllerSocket.ts` | Hook: manages WebSocket to `/ws/control`, room join, state sync, Q&A relay |
 | `PairingDialog.tsx` | Desktop-side modal showing room code + QR code |
 | `QRCodeDisplay.tsx` | QR code renderer (use `qrcode` npm package or similar) |
 
@@ -287,4 +336,4 @@ Option A is the clear winner for VerbaDeck's use case:
 
 2. **Should room codes be persisted (database/file)?** For MVP, in-memory is fine. Sessions are ephemeral by nature.
 
-3. **Should the phone be able to control other features?** (e.g., toggle Q&A mode, change slides in editor). Start with navigation only; expand based on user feedback.
+3. ~~Should the phone be able to control other features?~~ **YES** — Q&A mode toggle is included in MVP. Phone can activate voice listening for questions and see AI-generated answers.

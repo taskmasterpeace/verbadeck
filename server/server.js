@@ -16,6 +16,7 @@ import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
+import { createRoom, joinRoom, leaveRoom, getRoom, broadcastToControllers, sendToPresenter } from './room-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1164,7 +1165,6 @@ const server = app.listen(PORT, () => {
 
 const wss = new WebSocketServer({ noServer: true });
 const controlWss = new WebSocketServer({ noServer: true });
-const { createRoom, joinRoom, leaveRoom, getRoom, broadcastToControllers, sendToPresenter } = require('./room-manager');
 
 server.on('upgrade', async (req, socket, head) => {
   if (req.url === '/ws') {

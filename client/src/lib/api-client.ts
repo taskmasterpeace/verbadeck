@@ -3,7 +3,7 @@
  * Provides consistent error handling and response parsing
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export class APIError extends Error {
   constructor(

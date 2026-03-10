@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // In-memory room storage
 const rooms = new Map();
@@ -79,4 +79,4 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-module.exports = { createRoom, joinRoom, leaveRoom, getRoom, broadcastToControllers, sendToPresenter };
+export { createRoom, joinRoom, leaveRoom, getRoom, broadcastToControllers, sendToPresenter };

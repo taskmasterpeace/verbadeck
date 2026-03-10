@@ -948,7 +948,8 @@ Return ONLY valid JSON in this exact format:
         if (isRateLimit) {
           throw new Error('Rate limited - max retries exceeded');
         } else {
-          throw new Error('Failed to answer question with keywords');
+          const detail = error.response?.data?.error?.message || error.message || 'Unknown error';
+          throw new Error(`Failed to answer question: ${detail}`);
         }
       }
     }

@@ -18,13 +18,13 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6 items-stretch">
         {/* From Scratch Option */}
         <Card
-          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group"
+          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group flex flex-col"
           onClick={onSelectFromScratch}
         >
-          <CardContent className="p-4 sm:p-8 text-center">
+          <CardContent className="p-4 sm:p-8 text-center flex flex-col flex-1">
             <div className="mb-4 sm:mb-6 flex justify-center">
               <div className="p-4 sm:p-6 rounded-full bg-sky-50 group-hover:bg-sky-100 transition-colors">
                 <Wand2 className="w-10 h-10 sm:w-16 sm:h-16 text-brand-deep" />
@@ -54,6 +54,7 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
               </div>
             </div>
 
+            <div className="flex-1" />
             <button className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-brand-deep to-brand-teal text-white rounded-lg hover:opacity-90 font-heading font-semibold transition-all shadow-md">
               Start from Scratch
             </button>
@@ -62,10 +63,10 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
 
         {/* Process Content Option */}
         <Card
-          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group"
+          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group flex flex-col"
           onClick={onSelectProcessContent}
         >
-          <CardContent className="p-4 sm:p-8 text-center">
+          <CardContent className="p-4 sm:p-8 text-center flex flex-col flex-1">
             <div className="mb-4 sm:mb-6 flex justify-center">
               <div className="p-4 sm:p-6 rounded-full bg-sky-50 group-hover:bg-sky-100 transition-colors">
                 <FileText className="w-10 h-10 sm:w-16 sm:h-16 text-brand-deep" />
@@ -95,6 +96,7 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
               </div>
             </div>
 
+            <div className="flex-1" />
             <button className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-brand-deep to-brand-teal text-white rounded-lg hover:opacity-90 font-heading font-semibold transition-all shadow-md">
               Process Content
             </button>
@@ -103,10 +105,10 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
 
         {/* Know It All Wall Option */}
         <Card
-          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group"
+          className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-brand-teal group flex flex-col"
           onClick={onSelectKnowItAll}
         >
-          <CardContent className="p-4 sm:p-8 text-center">
+          <CardContent className="p-4 sm:p-8 text-center flex flex-col flex-1">
             <div className="mb-4 sm:mb-6 flex justify-center">
               <div className="p-4 sm:p-6 rounded-full bg-sky-50 group-hover:bg-sky-100 transition-colors">
                 <Brain className="w-10 h-10 sm:w-16 sm:h-16 text-brand-deep" />
@@ -136,6 +138,7 @@ export function CreatePresentation({ onSelectFromScratch, onSelectProcessContent
               </div>
             </div>
 
+            <div className="flex-1" />
             <button className="mt-6 w-full px-6 py-3 bg-gradient-to-r from-brand-deep to-brand-teal text-white rounded-lg hover:opacity-90 font-heading font-semibold transition-all shadow-md">
               Start Q&A Practice
             </button>
