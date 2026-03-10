@@ -27,7 +27,6 @@ import {
   MessageCircle,
   BookOpen,
   ChevronDown,
-  Brain,
   Settings,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -118,13 +117,11 @@ function SidebarNav() {
     <>
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 text-white">
-            <Brain className="size-4" />
-          </div>
+          <img src="/logo-icon.png" alt="VerbaDeck" className="size-8 rounded-lg object-contain" />
           {state === 'expanded' && (
             <div className="flex flex-col gap-0.5 leading-none">
-              <span className="font-semibold">VerbaDeck</span>
-              <span className="text-xs text-muted-foreground">V2.0</span>
+              <span className="font-heading font-semibold bg-gradient-to-r from-brand-deep to-brand-teal bg-clip-text text-transparent">VerbaDeck</span>
+              <span className="text-xs text-muted-foreground">Voice-Driven Presentations</span>
             </div>
           )}
         </div>

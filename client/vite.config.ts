@@ -17,7 +17,7 @@ export default defineConfig({
         name: 'VerbaDeck - Voice-Driven Presentations',
         short_name: 'VerbaDeck',
         description: 'Voice-controlled presentation system with real-time AI assistance',
-        theme_color: '#2563eb',
+        theme_color: '#0052A5',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'any',

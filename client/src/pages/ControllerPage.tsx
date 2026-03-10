@@ -9,8 +9,8 @@ function PairingScreen({ onJoin, error }: { onJoin: (code: string) => void; erro
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6">
       <div className="text-center space-y-6 w-full max-w-sm">
-        <div className="text-4xl">🎮</div>
-        <h1 className="text-2xl font-bold">VerbaDeck Remote</h1>
+        <img src="/logo-icon.png" alt="VerbaDeck" className="h-16 mx-auto" />
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">VerbaDeck Remote</h1>
         <p className="text-gray-400 text-sm">Enter the room code shown on the presenter's screen</p>
 
         <input

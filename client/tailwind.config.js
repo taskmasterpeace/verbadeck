@@ -9,7 +9,17 @@ export default {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			heading: ['Montserrat', 'system-ui', 'sans-serif'],
+  			body: ['Open Sans', 'system-ui', 'sans-serif'],
+  		},
   		colors: {
+  			brand: {
+  				deep: '#0052A5',
+  				teal: '#00A9B5',
+  				light: '#72D6F1',
+  				dark: '#333333',
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
