@@ -1,12 +1,12 @@
 /**
  * SessionStats - Compact single-row stats bar for Know It All Wall session
- * Shows: Timer, Total/Answered/Pending counts, Avg time, Sound toggle, Export
+ * Shows: Timer, Total/Answered/Pending counts, Queue toggle, Pause, Sound, Export
  */
 
 import { QuestionCard } from '../../lib/know-it-all-types';
 import { cn } from '../../lib/utils';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import { useState } from 'react';
 import { ExportSession } from './ExportSession';
 
@@ -15,9 +15,12 @@ interface SessionStatsProps {
   elapsedTime: number;
   queueMode: boolean;
   onQueueModeChange: (enabled: boolean) => void;
+  isPaused: boolean;
+  onPauseChange: (paused: boolean) => void;
+  statusText?: string;
 }
 
-export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeChange }: SessionStatsProps) {
+export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeChange, isPaused, onPauseChange, statusText }: SessionStatsProps) {
   const { areSoundsEnabled, toggleSounds } = useSoundEffects();
   const [soundsEnabled, setSoundsEnabled] = useState(areSoundsEnabled);
 
@@ -31,7 +34,6 @@ export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeCha
   const pending = questions.filter(q => q.status !== 'answered' && q.status !== 'error').length;
   const errors = questions.filter(q => q.status === 'error').length;
 
-  // Placeholder avg time
   const avgTime = answered > 0 ? '30s' : '--';
 
   const formatTime = (seconds: number) => {
@@ -41,7 +43,7 @@ export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeCha
   };
 
   return (
-    <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs flex-wrap">
+    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs flex-wrap">
       {/* Timer */}
       <span className="font-mono font-bold text-purple-700">{formatTime(elapsedTime)}</span>
 
@@ -64,8 +66,29 @@ export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeCha
       )}
       <span className="text-gray-500">avg {avgTime}</span>
 
+      {/* Status indicator — inline, subtle */}
+      {statusText && !isPaused && (
+        <>
+          <span className="text-gray-300">|</span>
+          <span className="text-gray-500 truncate max-w-[200px]">{statusText}</span>
+        </>
+      )}
+
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* Pause/Resume */}
+      <button
+        onClick={() => onPauseChange(!isPaused)}
+        className={cn(
+          'flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold transition-colors',
+          isPaused
+            ? 'bg-green-600 text-white hover:bg-green-700'
+            : 'text-amber-700 hover:bg-amber-200'
+        )}
+      >
+        {isPaused ? <><Play className="w-3 h-3" /> Resume</> : <><Pause className="w-3 h-3" /> Pause</>}
+      </button>
 
       {/* Queue mode toggle */}
       <button

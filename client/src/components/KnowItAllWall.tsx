@@ -10,8 +10,6 @@ import { useKeywordDetection } from '../hooks/useKeywordDetection';
 import { extractTriggerWord } from '../lib/extract-trigger-word';
 import { apiPost } from '@/lib/api-client';
 import { SessionStats } from './know-it-all/SessionStats';
-import { Pause, Play } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { useVoiceStore } from '../stores/voice';
 
 interface KnowItAllWallProps {
@@ -395,16 +393,8 @@ export function KnowItAllWall({
   if (questions.length === 0) {
     return (
       <div className="space-y-2">
-        {/* Session Stats (compact single row with export inline) */}
-        <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} />
-
-        {/* Compact instruction bar + listening dot */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
-          <p className="text-blue-800 flex-1">
-            <strong>Speak a question</strong> · AI gives 2 answers · <strong>Say a keyword</strong> to pick one
-          </p>
-        </div>
+        {/* Session Stats with pause, queue toggle, status all inline */}
+        <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} isPaused={isPaused} onPauseChange={setIsPaused} statusText="Speak a question" />
 
         {/* Manual Question Input */}
         <div className="flex items-center gap-2">
@@ -498,34 +488,11 @@ export function KnowItAllWall({
 
   const status = getStatusMessage();
 
-  // Map status color to Tailwind classes
-  const colorClasses = {
-    blue: {
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
-      title: 'text-blue-900',
-      text: 'text-blue-700',
-    },
-    amber: {
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
-      title: 'text-amber-900',
-      text: 'text-amber-700',
-    },
-    green: {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      title: 'text-green-900',
-      text: 'text-green-700',
-    },
-  };
-
-  const colors = colorClasses[status.color as keyof typeof colorClasses];
-
   return (
     <div className="space-y-2">
       {/* Session Stats (compact single row with export inline) */}
-      <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} />
+      {/* Session Stats with pause, queue toggle, status all inline */}
+      <SessionStats questions={questions} elapsedTime={elapsedTime} queueMode={queueMode} onQueueModeChange={setQueueMode} isPaused={isPaused} onPauseChange={setIsPaused} statusText={isPaused ? undefined : status.title} />
 
       {/* Manual Question Input */}
       <div className="flex items-center gap-2">
@@ -550,25 +517,6 @@ export function KnowItAllWall({
           data-testid="submit-manual-question"
         >
           Ask
-        </button>
-      </div>
-
-      {/* Compact status + pause inline */}
-      <div className={`flex items-center gap-2 ${colors.bg} border ${colors.border} rounded-lg px-3 py-1.5 text-xs`}>
-        <span>{isPaused ? '⏸️' : status.emoji}</span>
-        <span className={`${colors.title} font-medium flex-1 truncate`}>
-          {isPaused ? 'Paused' : status.title}
-        </span>
-        <button
-          onClick={() => setIsPaused(p => !p)}
-          className={cn(
-            'flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold transition-colors',
-            isPaused
-              ? 'bg-green-600 text-white hover:bg-green-700'
-              : 'text-amber-700 hover:bg-amber-200'
-          )}
-        >
-          {isPaused ? <><Play className="w-3 h-3" /> Resume</> : <><Pause className="w-3 h-3" /> Pause</>}
         </button>
       </div>
 

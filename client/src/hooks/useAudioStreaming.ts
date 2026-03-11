@@ -24,31 +24,61 @@ export function useAudioStreaming({
   const [isStreaming, setIsStreaming] = useState(false);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
 
+  // All refs — avoids stale closures and dependency chain issues
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioWorkletRef = useRef<AudioWorkletNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // Store callbacks in refs to avoid stale closure issues
+  const isStreamingRef = useRef(false);
   const onTranscriptRef = useRef(onTranscript);
   const onErrorRef = useRef(onError);
+  const onStatusChangeRef = useRef(onStatusChange);
 
-  // Update refs when callbacks change
-  useEffect(() => {
-    onTranscriptRef.current = onTranscript;
-  }, [onTranscript]);
+  // Keep refs in sync
+  onTranscriptRef.current = onTranscript;
+  onErrorRef.current = onError;
+  onStatusChangeRef.current = onStatusChange;
 
-  useEffect(() => {
-    onErrorRef.current = onError;
-  }, [onError]);
-
-  const updateStatus = useCallback((newStatus: typeof status) => {
+  const updateStatus = useCallback((newStatus: 'connecting' | 'connected' | 'disconnected') => {
     setStatus(newStatus);
-    onStatusChange?.(newStatus);
-  }, [onStatusChange]);
+    onStatusChangeRef.current?.(newStatus);
+  }, []); // Stable — uses ref for callback
+
+  const stopStreaming = useCallback(() => {
+    console.log('Stopping audio stream');
+
+    // Close WebSocket
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Stop audio worklet
+    if (audioWorkletRef.current) {
+      audioWorkletRef.current.disconnect();
+      audioWorkletRef.current = null;
+    }
+
+    // Close AudioContext
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
+    // Stop microphone
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    isStreamingRef.current = false;
+    setIsStreaming(false);
+    updateStatus('disconnected');
+  }, [updateStatus]); // updateStatus is now stable
 
   const startStreaming = useCallback(async () => {
-    if (isStreaming) return;
+    // Use ref to avoid stale closure on isStreaming
+    if (isStreamingRef.current) return;
 
     try {
       updateStatus('connecting');
@@ -100,7 +130,6 @@ export function useAudioStreaming({
           if (msg.type === 'Turn' && msg.transcript) {
             const isFinal = msg.end_of_turn === true;
             console.log('📝 Transcript received:', msg.transcript, 'isFinal:', isFinal);
-            // Send both interim and final transcripts - use ref to get latest callback
             onTranscriptRef.current?.(msg.transcript, isFinal);
           }
 
@@ -125,6 +154,7 @@ export function useAudioStreaming({
 
       ws.onclose = () => {
         console.log('WebSocket closed');
+        isStreamingRef.current = false;
         updateStatus('disconnected');
         setIsStreaming(false);
       };
@@ -135,8 +165,6 @@ export function useAudioStreaming({
       audioWorkletRef.current = workletNode;
 
       workletNode.port.onmessage = (event) => {
-        // Receive PCM16 ArrayBuffer from worklet, send to WebSocket
-        // Only send if WebSocket is open AND AssemblyAI is ready
         if (ws.readyState === WebSocket.OPEN && aaiReady) {
           ws.send(event.data);
         }
@@ -144,8 +172,8 @@ export function useAudioStreaming({
 
       // Connect: mic -> worklet -> (messages to WebSocket)
       source.connect(workletNode);
-      // Note: worklet doesn't need to connect to destination (we're not playing audio)
 
+      isStreamingRef.current = true;
       setIsStreaming(true);
       console.log('Audio streaming started');
 
@@ -153,51 +181,20 @@ export function useAudioStreaming({
       console.error('Error starting audio stream:', error);
       onErrorRef.current?.(error instanceof Error ? error.message : 'Failed to start audio stream');
       updateStatus('disconnected');
-      // Cleanup on error
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     }
-  }, [isStreaming, updateStatus]);
+  }, [updateStatus]); // updateStatus is now stable — no more cascading recreations
 
-  const stopStreaming = useCallback(() => {
-    console.log('Stopping audio stream');
-
-    // Close WebSocket
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-
-    // Stop audio worklet
-    if (audioWorkletRef.current) {
-      audioWorkletRef.current.disconnect();
-      audioWorkletRef.current = null;
-    }
-
-    // Close AudioContext
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-
-    // Stop microphone
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-
-    setIsStreaming(false);
-    updateStatus('disconnected');
-  }, [updateStatus]);
-
-  // Cleanup on unmount only — use ref to avoid re-running on stopStreaming identity changes
-  const stopStreamingRef = useRef(stopStreaming);
-  stopStreamingRef.current = stopStreaming;
-
+  // Cleanup on unmount only
   useEffect(() => {
     return () => {
-      stopStreamingRef.current();
+      // Inline cleanup to avoid any ref/callback issues
+      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+      if (audioWorkletRef.current) { audioWorkletRef.current.disconnect(); audioWorkletRef.current = null; }
+      if (audioContextRef.current) { audioContextRef.current.close(); audioContextRef.current = null; }
+      if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     };
   }, []);
 
