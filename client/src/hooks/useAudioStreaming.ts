@@ -191,12 +191,15 @@ export function useAudioStreaming({
     updateStatus('disconnected');
   }, [updateStatus]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount only — use ref to avoid re-running on stopStreaming identity changes
+  const stopStreamingRef = useRef(stopStreaming);
+  stopStreamingRef.current = stopStreaming;
+
   useEffect(() => {
     return () => {
-      stopStreaming();
+      stopStreamingRef.current();
     };
-  }, [stopStreaming]);
+  }, []);
 
   return {
     isStreaming,
