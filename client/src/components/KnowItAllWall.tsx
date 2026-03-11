@@ -78,9 +78,15 @@ export function KnowItAllWall({
   useEffect(() => {
     if (!transcript.trim()) return;
     if (isPaused) return;
-    if (!isLastTranscriptFinal) return; // Wait for final transcript, not partial speech
 
     const text = transcript.trim().toLowerCase();
+    const trimmed = transcript.trim();
+    const endsWithQuestion = trimmed.endsWith('?');
+
+    // If transcript ends with "?" — AssemblyAI is confident it's a question, detect immediately.
+    // Otherwise, only detect on final transcripts to avoid partial speech like "what is a tough".
+    if (!endsWithQuestion && !isLastTranscriptFinal) return;
+
     const currentQuestions = questionsRef.current;
 
     // Queue mode: block new questions until current one is fully answered
@@ -124,11 +130,10 @@ export function KnowItAllWall({
     const startsWithQuestion = questionStarters.some(starter =>
       text.startsWith(starter + ' ')
     );
-    const endsWithQuestion = transcript.trim().endsWith('?');
 
-    if ((startsWithQuestion || endsWithQuestion) && transcript.trim().length > 10) {
+    if ((startsWithQuestion || endsWithQuestion) && trimmed.length > 10) {
       // Add ? if not present but starts with question word
-      const question = endsWithQuestion ? transcript.trim() : transcript.trim() + '?';
+      const question = endsWithQuestion ? trimmed : trimmed + '?';
 
       // Check if this question already exists
       const alreadyExists = currentQuestions.some(q =>
