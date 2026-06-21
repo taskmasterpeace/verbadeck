@@ -57,4 +57,7 @@ scripts/shoot*.mjs
 /test-*.js
 .claude/*.local.md
 .claude/launch.json
+.claude/skills/
+claude*.bat
+tests/screenshots/
 # Curated README/docs images are kept under docs/screenshots/ (not ignored)
