@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useOpenRouter } from './hooks/useOpenRouter';
 import { useFileOperations } from './hooks/useFileOperations';
@@ -21,7 +21,7 @@ import { type Section } from './lib/script-parser';
 import { VoiceController } from './lib/voice-controller';
 import { DEMO_PRESENTATION } from './lib/demo-presentation';
 import { TranscriptTicker } from './components/TranscriptTicker';
-import { AIScriptProcessor } from './components/AIScriptProcessor';
+const AIScriptProcessor = lazy(() => import('./components/AIScriptProcessor').then(m => ({ default: m.AIScriptProcessor })));
 import { StatusIndicator } from './components/StatusIndicator';
 import { TriggerCarousel } from './components/TriggerCarousel';
 import { QAPanel } from './components/QAPanel';
@@ -29,17 +29,17 @@ import { LibraryBrowser } from './components/LibraryBrowser';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { MessageCircle, RotateCcw, X, FileText, Monitor } from 'lucide-react';
-import { CreateFromScratch } from './components/CreateFromScratch';
+const CreateFromScratch = lazy(() => import('./components/CreateFromScratch').then(m => ({ default: m.CreateFromScratch })));
 import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
 import { Footer } from './components/Footer';
-import { KnowItAllMode } from './components/KnowItAllMode';
+const KnowItAllMode = lazy(() => import('./components/KnowItAllMode').then(m => ({ default: m.KnowItAllMode })));
 import { MainLayout } from './layouts/MainLayout';
 import { TopBar } from './components/layout/TopBar';
 import { TranscriptBar } from './components/layout/TranscriptBar';
-import { EditorPage } from './pages/EditorPage';
-import { PresenterPage } from './pages/PresenterPage';
+const EditorPage = lazy(() => import('./pages/EditorPage').then(m => ({ default: m.EditorPage })));
+const PresenterPage = lazy(() => import('./pages/PresenterPage').then(m => ({ default: m.PresenterPage })));
 
 function getRelativeTime(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
@@ -654,6 +654,7 @@ export default function App() {
     <>
       {statusIndicator}
 
+      <Suspense fallback={<div className="flex items-center justify-center py-32"><div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" /></div>}>
       <div className={
         viewMode === 'presenter' || (isStreaming && sections.length > 0) ? 'h-screen overflow-hidden' :
         viewMode === 'know-it-all' ? 'p-4 space-y-4 pb-20 sm:pb-4' :
@@ -865,6 +866,7 @@ export default function App() {
           </div>
         )}
       </div>
+      </Suspense>
 
       {/* Q&A Side Panel */}
       {currentQuestion && (
