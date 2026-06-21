@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerbaDeck — Investor One-Pager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f14;
+    --surface:#121922;
+    --border:#243140;
+    --border-soft:#1a232e;
+    --text:#e6eef5;
+    --muted:#8da2b5;
+    --heading:#f4f9fd;
+    --brand:#15a6d6;
+    --accent:#2dd4bf;
+    --accent-ink:#7fd6ec;
+    --grid:rgba(120,200,230,.03);
+    --radius:14px;
+    --maxw:60rem;
+    --font-display:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--text);background:var(--bg);font-family:var(--font-body);
+    font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;letter-spacing:-0.006em;
+    background-image:
+      radial-gradient(120% 60% at 50% -10%, color-mix(in oklab, var(--brand) 14%, transparent), transparent 60%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:auto,32px 32px,32px 32px;background-attachment:scroll;min-height:100vh}
+  .sheet{max-width:var(--maxw);margin:0 auto;padding:clamp(2rem,5vw,3.6rem) 1.4rem 3.5rem}
+  .eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-mono);font-size:.72rem;
+    font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--brand)}
+  .eyebrow::before{content:"";width:1.6rem;height:1px;background:var(--brand);opacity:.7}
+  h1{font-family:var(--font-display);font-weight:700;color:var(--heading);font-size:clamp(2rem,5.5vw,3rem);
+    line-height:1.03;letter-spacing:-0.03em;margin:.6rem 0 .35rem}
+  .tagline{color:var(--muted);font-size:1.08rem;margin:0 0 1.4rem;max-width:36rem}
+  h2{font-family:var(--font-display);font-weight:700;color:var(--heading);font-size:1.35rem;
+    letter-spacing:-0.02em;margin:2.2rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--border-soft)}
+  h3{font-family:var(--font-display);font-weight:600;color:var(--heading);font-size:1.05rem;margin:1.3rem 0 .4rem}
+  p{margin:.5rem 0}
+  a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid color-mix(in oklab,var(--accent-ink) 35%,transparent)}
+  ul,ol{margin:.5rem 0 .8rem;padding-left:1.2rem}
+  li{margin:.28rem 0}
+  strong{color:var(--heading)}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:6px;padding:.08em .4em}
+  pre{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;overflow:auto}
+  pre code{background:none;border:0;padding:0}
+  blockquote{margin:1rem 0;padding:.7rem 1rem;border-left:3px solid var(--brand);background:var(--surface);
+    border-radius:0 var(--radius) var(--radius) 0;color:var(--muted)}
+  hr{border:0;border-top:1px solid var(--border-soft);margin:2rem 0}
+  .table-wrap{overflow:auto;margin:.8rem 0}
+  table{border-collapse:collapse;width:100%;font-size:.93rem}
+  th,td{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--border-soft)}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+  .ph{font-family:var(--font-mono);font-size:.82em;color:var(--accent);background:color-mix(in oklab,var(--accent) 12%,transparent);
+    border:1px dashed color-mix(in oklab,var(--accent) 55%,var(--border));border-radius:6px;padding:.05em .45em}
+  .meta{margin-top:2.5rem;padding-top:1.2rem;border-top:1px solid var(--border-soft);color:var(--muted);
+    font-family:var(--font-mono);font-size:.78rem;display:flex;flex-wrap:wrap;gap:1rem}
+  @media print{
+    body{background:#fff;color:#0b0d10}
+    .sheet{max-width:none;padding:0}
+    h1,h2,h3,strong,th{color:#0b0d10}
+    a{color:#0b3; border:0}
+    .meta,blockquote,code,pre,table,th,td{color:#333}
+    h2{border-color:#ccc}
+  }
+</style>
+</head>
+<body>
+  <main class="sheet">
+    <span class="eyebrow">Investor One-Pager · v1.0.0</span>
+    <h1>VerbaDeck</h1>
+    <p class="tagline">Present hands-free. Speak naturally, advance automatically.</p>
+    <h2 id="the-problem">The problem</h2>
+<p>A salesperson is mid-demo with both hands on the product when the slide needs to change. They break eye contact, reach for a clicker, lose their place, and the room feels it. The same person froze last week on a Q&amp;A question they didn't see coming, and burned an hour the night before hunting Google Images for one usable photo.</p>
+<p>Presentation software hasn't changed the core loop in twenty years: the human drives the deck, slide by slide, and the deck does nothing to help them deliver. PowerPoint, Keynote, and Google Slides are document editors — they make slides, not presenters.</p>
+<h2 id="the-solution">The solution</h2>
+<p>VerbaDeck advances slides when you say a trigger word, so your hands and eyes stay on the room instead of on a clicker. Around that, it wraps an AI coach on the whole loop: it suggests the trigger words, recommends slide images, rewrites sparse notes into a real speaking framework, and pre-writes answers to the questions you're most likely to get asked.</p>
+<p>The insight: a presenter's voice is already both the controller and the content. Capture it once, and the deck can follow the speaker instead of the speaker babysitting the deck.</p>
+<ul><li>Say a word, the slide advances — multi-trigger, plural-aware, with a "back" command</li><li>One-click image recommendations from millions of free stock photos</li><li>Speaker notes you can Expand, Simplify, or turn into an analogy or story</li><li>Q&amp;A anticipation: the ten most-likely questions, with answers written before you start</li><li>A countdown buffer so the audience advances instantly while you finish your sentence</li></ul>
+<h2 id="whats-shipped">What's shipped</h2>
+<p>Working today, end-to-end across create → prepare → present:</p>
+<ul><li><strong>Voice control</strong> — trigger-word slide advancement, multi-trigger and plural matching,</li></ul>
+<p>"back"/"previous" navigation, real-time transcription (AssemblyAI streaming)</p>
+<ul><li><strong>AI prep tools</strong> — image recommendations (Unsplash/Pexels), speaker-note transforms</li></ul>
+<p>(Expand / Simplify / Analogy / Story), and Q&amp;A anticipation with pre-written answers</p>
+<ul><li><strong>Live Q&amp;A</strong> — automatic question detection with eight answer tones and a managed</li></ul>
+<p>knowledge base</p>
+<ul><li><strong>Presenter system</strong> — dual-monitor sync (clean audience view + presenter view), a</li></ul>
+<p>countdown timer that buffers the presenter, and a live trigger carousel + transcript</p>
+<ul><li><strong>Three ways to build a deck</strong> — an AI-guided "Create from Scratch" wizard, "Process</li></ul>
+<p>Existing Content" (paste text or import a PowerPoint with text + images), and the "Know It All Wall" Q&amp;A practice mode</p>
+<ul><li><strong>Cost-optimized AI</strong> — 50+ models via OpenRouter with per-operation defaults (fast</li></ul>
+<p>cheap models for background tasks, premium models where quality matters)</p>
+<p><strong>Development momentum:</strong> v1.0.0 reached · 48 commits across 9 active build days · roughly 4.5 months of development (October 2025 – March 2026) · last shipped 2026-03-10. <em>(Verifiable from the repository. A formal shipping log — <code>/ship-changelog</code> — would turn this into a release-by-release cadence.)</em></p>
+<h2 id="who-its-for">Who it's for</h2>
+<p>Anyone who presents with their hands busy and their reputation on the line:</p>
+<ul><li><strong>Sales engineers &amp; solutions consultants</strong> demoing live — the core persona, because</li></ul>
+<p>they literally can't reach for a clicker mid-demo</p>
+<ul><li><strong>Product managers and executives</strong> in board, investor, and review settings</li><li><strong>Conference and TEDx speakers</strong> who need body language, not keyboard shortcuts</li><li><strong>Teachers, trainers, and medical presenters</strong> — preservation mode keeps exact wording</li></ul>
+<p>for clinical, legal, or compliance content</p>
+<p>The job to be done: deliver hands-free, look prepared in Q&amp;A, and cut presentation prep from hours to minutes.</p>
+<h2 id="why-now-why-us">Why now / why us</h2>
+<p>Two shifts make this the moment. Real-time speech-to-text finally got fast and cheap enough (sub-second, streaming) to drive a live UI without lag, and LLMs made per-slide coaching — notes, images, Q&amp;A — affordable per presentation rather than per enterprise seat. The clicker is a 1990s artifact in a hands-free, live-demo, hybrid-meeting world.</p>
+<p>We believe the wedge is the live-demo presenter who can't break flow, expanding outward to every hands-on speaker. We've shipped a working v1.0 that covers the entire create-prepare-present loop — not a single-feature demo — built by Machine King Labs.</p>
+<p><span class="ph">[SOURCE: presentation-software / sales-enablement market size]</span> · <span class="ph">[TEAM: founder and team bios]</span></p>
+<h2 id="traction">Traction</h2>
+<blockquote>Metrics below are placeholders until verified. Replace each bracket with a real, sourced number before sending.</blockquote>
+<ul><li><strong>Customers / pilots:</strong> <span class="ph">[TRACTION: # of paying or pilot users / teams]</span></li><li><strong>Revenue:</strong> <span class="ph">[METRIC: MRR or ARR, with as-of date]</span></li><li><strong>Usage:</strong> <span class="ph">[METRIC: active accounts / presentations delivered / weekly active]</span></li><li><strong>Retention or outcome proof:</strong> <span class="ph">[METRIC: retention %, or a customer outcome]</span></li><li><strong>Pipeline:</strong> <span class="ph">[TBD: signed LOIs, waitlist, demos booked]</span></li></ul>
+<p><em>Development momentum (verifiable from the repo): v1.0.0, 48 commits across 9 active build days, ~4.5 months of development through March 2026.</em></p>
+<h2 id="business-model">Business model</h2>
+<p>Today VerbaDeck is open-source (MIT) and runs on the user's own API keys, so cost to a user is just metered AI usage. The monetization path is a hosted tier that bundles the AI, adds team/organization features, and removes the bring-your-own-key setup.</p>
+<ul><li><strong>Model:</strong> <span class="ph">[MODEL: hosted/managed tier + team plan pricing — not yet live]</span></li><li><strong>Pricing reference point:</strong> legacy tools charge ~$159/year per seat; VerbaDeck's edge</li></ul>
+<p>is doing the prep work those tools don't</p>
+<h2 id="the-ask">The ask</h2>
+<p><span class="ph">[ASK: round/stage and amount — e.g. raising $X for N months of runway]</span></p>
+<ul><li><strong>Use of funds:</strong> <span class="ph">[TBD: hosted infrastructure, GTM to sales teams, first hires]</span></li><li><strong>Milestones this funds:</strong> <span class="ph">[TBD: first N paying teams, hosted launch, Rehearsal Mode]</span></li><li><strong>Contact:</strong> <span class="ph">[CONTACT: name · email]</span> · Machine King Labs · github.com/taskmasterpeace/verbadeck</li></ul>
+    <div class="meta">
+      <span>VerbaDeck</span>
+      <span>v1.0.0</span>
+      <span>Generated 2026-06-21</span>
+      <span>Metrics in [brackets] are unverified placeholders</span>
+    </div>
+  </main>
+</body>
+</html>
