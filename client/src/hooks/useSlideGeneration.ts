@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '@/lib/api-config';
-import type { Question, Slide, QuestionTypePreferences, SlideOption } from '@/components/create/types';
+import type { Question, QuestionTypePreferences, SlideOption } from '@/components/create/types';
 import type { Section } from '@/lib/script-parser';
 
 export function useSlideGeneration() {

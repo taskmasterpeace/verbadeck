@@ -10,8 +10,9 @@ export default {
   theme: {
   	extend: {
   		fontFamily: {
-  			heading: ['Montserrat', 'system-ui', 'sans-serif'],
-  			body: ['Open Sans', 'system-ui', 'sans-serif'],
+  			heading: ['Sora', 'system-ui', 'sans-serif'],
+  			body: ['Inter', 'system-ui', 'sans-serif'],
+  			mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
   		},
   		colors: {
   			brand: {
@@ -68,6 +69,13 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		boxShadow: {
+  			'elevation-low': '0 1px 2px 0 hsl(205 40% 20% / 0.04), 0 1px 3px 0 hsl(205 40% 20% / 0.06)',
+  			'elevation': '0 2px 4px -1px hsl(205 40% 20% / 0.06), 0 4px 12px -2px hsl(205 40% 20% / 0.08)',
+  			'elevation-high': '0 8px 24px -4px hsl(205 40% 20% / 0.12), 0 2px 8px -2px hsl(205 40% 20% / 0.08)',
+  			'glow-primary': '0 0 0 1px hsl(var(--primary) / 0.15), 0 8px 28px -6px hsl(var(--primary) / 0.35)',
+  			'glow-accent': '0 0 0 1px hsl(var(--accent) / 0.18), 0 8px 28px -6px hsl(var(--accent) / 0.4)',
   		},
   		keyframes: {
   			'accordion-down': {

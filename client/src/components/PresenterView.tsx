@@ -298,36 +298,36 @@ export function PresenterView({
                       {false ? (
                         // DISABLED: Stacking all 3 takes too much vertical space
                         <div className="space-y-3">
-                          {currentSection.structuredSpeakerNotes.talkingPoints.data && (
+                          {currentSection.structuredSpeakerNotes?.talkingPoints?.data && (
                             <div>
                               <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1.5">
                                 <Database className="w-3 h-3" />
                                 Data
                               </div>
                               <p className={`${layoutClasses.sectionContent} leading-relaxed text-foreground`}>
-                                {currentSection.structuredSpeakerNotes.talkingPoints.data}
+                                {currentSection.structuredSpeakerNotes?.talkingPoints?.data}
                               </p>
                             </div>
                           )}
-                          {currentSection.structuredSpeakerNotes.talkingPoints.vision && (
+                          {currentSection.structuredSpeakerNotes?.talkingPoints?.vision && (
                             <div>
                               <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1.5">
                                 <Eye className="w-3 h-3" />
                                 Vision
                               </div>
                               <p className={`${layoutClasses.sectionContent} leading-relaxed text-foreground`}>
-                                {currentSection.structuredSpeakerNotes.talkingPoints.vision}
+                                {currentSection.structuredSpeakerNotes?.talkingPoints?.vision}
                               </p>
                             </div>
                           )}
-                          {currentSection.structuredSpeakerNotes.talkingPoints.proof && (
+                          {currentSection.structuredSpeakerNotes?.talkingPoints?.proof && (
                             <div>
                               <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1.5">
                                 <CheckCircle className="w-3 h-3" />
                                 Proof
                               </div>
                               <p className={`${layoutClasses.sectionContent} leading-relaxed text-foreground`}>
-                                {currentSection.structuredSpeakerNotes.talkingPoints.proof}
+                                {currentSection.structuredSpeakerNotes?.talkingPoints?.proof}
                               </p>
                             </div>
                           )}
@@ -372,14 +372,14 @@ export function PresenterView({
                           </div>
 
                           <div className={`${layoutClasses.sectionContent} ${useUltraDense ? 'leading-[1.1]' : (useTwoColumnLayout ? 'leading-tight' : 'leading-relaxed')} text-foreground`}>
-                            {activeTab === 'data' && currentSection.structuredSpeakerNotes.talkingPoints.data && (
-                              <p>{currentSection.structuredSpeakerNotes.talkingPoints.data}</p>
+                            {activeTab === 'data' && currentSection.structuredSpeakerNotes?.talkingPoints?.data && (
+                              <p>{currentSection.structuredSpeakerNotes?.talkingPoints?.data}</p>
                             )}
-                            {activeTab === 'vision' && currentSection.structuredSpeakerNotes.talkingPoints.vision && (
-                              <p>{currentSection.structuredSpeakerNotes.talkingPoints.vision}</p>
+                            {activeTab === 'vision' && currentSection.structuredSpeakerNotes?.talkingPoints?.vision && (
+                              <p>{currentSection.structuredSpeakerNotes?.talkingPoints?.vision}</p>
                             )}
-                            {activeTab === 'proof' && currentSection.structuredSpeakerNotes.talkingPoints.proof && (
-                              <p>{currentSection.structuredSpeakerNotes.talkingPoints.proof}</p>
+                            {activeTab === 'proof' && currentSection.structuredSpeakerNotes?.talkingPoints?.proof && (
+                              <p>{currentSection.structuredSpeakerNotes?.talkingPoints?.proof}</p>
                             )}
                           </div>
                         </>

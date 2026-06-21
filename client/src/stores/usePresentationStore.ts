@@ -64,7 +64,8 @@ interface PresentationActions {
   addSection: (section: Section) => void;
   removeSection: (index: number) => void;
   reorderSections: (fromIndex: number, toIndex: number) => void;
-  setCurrentSectionIndex: (index: number) => void;
+  deleteSection: (index: number) => void;
+  setCurrentSectionIndex: (index: number | ((prev: number) => number)) => void;
   setPresenterDisplayIndex: (index: number) => void;
   setIsCountingDown: (counting: boolean) => void;
   nextSection: () => void;
@@ -86,6 +87,7 @@ interface PresentationActions {
   setCancelWord: (word: string) => void;
   setOperationModels: (models: Record<string, string>) => void;
   setOperationModel: (operation: string, model: string) => void;
+  getOperationModel: (operation: string) => string | undefined;
   setPresentationStyle: (style: PresentationStyle | null) => void;
   setCountdownDuration: (seconds: number) => void;
 
@@ -214,6 +216,14 @@ export const usePresentationStore = create<PresentationStore>()(
           return { sections: newSections };
         }),
 
+        // Alias for removeSection — kept for components that reference deleteSection
+        deleteSection: (index) => set((state) => ({
+          sections: state.sections.filter((_, i) => i !== index),
+          currentSectionIndex: state.currentSectionIndex >= state.sections.length - 1
+            ? Math.max(0, state.sections.length - 2)
+            : state.currentSectionIndex
+        })),
+
         setCurrentSectionIndex: (index) => {
           // IMPORTANT: Support functional updates like React's setState
           if (typeof index === 'function') {
@@ -261,6 +271,21 @@ export const usePresentationStore = create<PresentationStore>()(
         setOperationModel: (operation, model) => set((state) => ({
           operationModels: { ...state.operationModels, [operation]: model }
         })),
+
+        // Read the model configured for an operation. Prefers store state, then
+        // falls back to the localStorage key shared with useModelManagement so both
+        // sources stay consistent. Returns undefined → caller uses its own default.
+        getOperationModel: (operation) => {
+          const fromState = get().operationModels[operation];
+          if (fromState) return fromState;
+          try {
+            const saved = localStorage.getItem('verbadeck-operation-models');
+            if (saved) return JSON.parse(saved)[operation];
+          } catch {
+            /* ignore malformed localStorage */
+          }
+          return undefined;
+        },
 
         setPresentationStyle: (style) => set({ presentationStyle: style }),
 

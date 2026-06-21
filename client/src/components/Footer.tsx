@@ -1,21 +1,23 @@
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-white py-3 mt-8">
+    <footer className="border-t border-border bg-card/60 py-3 mt-8">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-          <span>Created by</span>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          <span className="font-heading font-semibold text-gradient-brand">VerbaDeck</span>
+          <span className="text-border">•</span>
+          <span>Voice-driven presentations</span>
+          <span className="text-border">•</span>
+          <span>Built by</span>
           <a
             href="https://machinekinglabs.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+            className="font-semibold text-primary hover:underline"
           >
             Machine King Labs
           </a>
-          <span>•</span>
-          <span>Internal Tool for Presenting</span>
-          <span>•</span>
-          <span>Version 2.0 • 2026</span>
+          <span className="text-border">•</span>
+          <span className="font-mono text-[11px]">v1.0.0</span>
         </div>
       </div>
     </footer>
