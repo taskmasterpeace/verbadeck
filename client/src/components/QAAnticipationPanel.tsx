@@ -166,37 +166,36 @@ export function QAAnticipationPanel({
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 text-white">
+      <div className="bg-gray-50 border-b border-gray-200 px-5 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">Smart Q&A Anticipation</h2>
-              <p className="text-sm opacity-90">Predict & prepare for likely audience questions</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-blue-600" />
+            <h2 className="text-sm font-semibold text-gray-900">Q&A Anticipation</h2>
+            <span className="text-xs text-gray-500">Predict likely audience questions</span>
           </div>
 
-          {predictions.length === 0 && (
-            <button
-              onClick={handleAnticipateQuestions}
-              disabled={loading || sections.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Brain className="w-4 h-4" />
-                  Anticipate Questions
-                </>
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleAnticipateQuestions}
+            disabled={loading || sections.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Analyzing...
+              </>
+            ) : predictions.length > 0 ? (
+              <>
+                <Brain className="w-3.5 h-3.5" />
+                Regenerate
+              </>
+            ) : (
+              <>
+                <Brain className="w-3.5 h-3.5" />
+                Anticipate Questions
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -204,39 +203,33 @@ export function QAAnticipationPanel({
       <div className="p-6">
         {/* Empty State */}
         {predictions.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <Brain className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No predictions yet</h3>
-            <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
-              Click "Anticipate Questions" to have AI predict the top 10 questions your audience is likely to ask during Q&A.
+          <div className="text-center py-8">
+            <Brain className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <h3 className="text-base font-medium text-gray-900 mb-1">No predictions yet</h3>
+            <p className="text-sm text-gray-500">
+              Click "Anticipate Questions" above to predict the top 10 questions your audience will ask.
             </p>
-            <button
-              onClick={handleAnticipateQuestions}
-              disabled={sections.length === 0}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium transition-colors"
-            >
-              <Brain className="w-5 h-5" />
-              Anticipate Questions
-            </button>
             {sections.length === 0 && (
-              <p className="text-xs text-gray-500 mt-3">Create slides first to enable this feature</p>
+              <p className="text-xs text-gray-400 mt-2">Create slides first to enable this feature</p>
             )}
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && predictions.length === 0 && (
+          <div className="text-center py-8">
+            <Loader2 className="w-8 h-8 mx-auto mb-3 text-blue-500 animate-spin" />
+            <p className="text-sm text-gray-600">Analyzing your presentation for likely questions...</p>
           </div>
         )}
 
         {/* Predictions List */}
         {predictions.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4">
               <p className="text-sm text-gray-600">
-                AI predicted <span className="font-semibold text-gray-900">{predictions.length} likely questions</span>
+                AI predicted <span className="font-semibold text-gray-900">{predictions.length} likely questions</span> — click any to prepare an answer
               </p>
-              <button
-                onClick={handleAnticipateQuestions}
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-              >
-                Regenerate
-              </button>
             </div>
 
             {predictions.map((pred, index) => {
@@ -335,10 +328,10 @@ export function QAAnticipationPanel({
                           {/* Detailed Answer */}
                           <div>
                             <h4 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded">2-3 minutes</span>
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded">2-3 minutes</span>
                               DETAILED ANSWER
                             </h4>
-                            <div className="text-sm text-gray-800 bg-purple-50 border border-purple-100 rounded-lg p-3 whitespace-pre-wrap">
+                            <div className="text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg p-3 whitespace-pre-wrap">
                               {answer.detailedAnswer}
                             </div>
                           </div>
@@ -438,7 +431,7 @@ export function QAAnticipationPanel({
                   });
                 }}
                 disabled={generatedAnswers.size === 0}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
                 Save All Prepared Answers
               </button>

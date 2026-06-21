@@ -32,6 +32,16 @@ export function KnowledgeBaseEditor({
   const [isAdding, setIsAdding] = useState(false);
   const [showQAAnticipation, setShowQAAnticipation] = useState(false);
 
+  // Strip markdown formatting for display
+  const stripMarkdown = (text: string) => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '$1')  // **bold** → bold
+      .replace(/\*(.+?)\*/g, '$1')       // *italic* → italic
+      .replace(/^[-*]\s+/gm, '  - ')     // bullet normalization
+      .replace(/^#+\s+/gm, '')           // # headings → plain
+      .trim();
+  };
+
   // Get store data for Q&A anticipation
   const selectedTone = usePresentationStore((state) => state.selectedTone);
   const updateSection = usePresentationStore((state) => state.updateSection);
@@ -121,10 +131,14 @@ export function KnowledgeBaseEditor({
               <button
                 onClick={() => setShowQAAnticipation(!showQAAnticipation)}
                 disabled={sections.length === 0}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  showQAAnticipation
+                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
                 <Brain className="w-4 h-4" />
-                {showQAAnticipation ? 'Hide' : 'Anticipate Questions'}
+                {showQAAnticipation ? 'Hide Anticipation' : 'Anticipate Questions'}
               </button>
               <button
                 onClick={onGenerateFAQs}
@@ -254,7 +268,8 @@ export function KnowledgeBaseEditor({
       {/* FAQ List */}
       {knowledgeBase.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700">Prepared FAQs</h3>
             <Badge variant="outline" className="text-xs">
               {knowledgeBase.length} {knowledgeBase.length === 1 ? 'entry' : 'entries'}
             </Badge>
@@ -271,7 +286,7 @@ export function KnowledgeBaseEditor({
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-green-600 mb-1">ANSWER:</div>
-                      <div className="text-sm text-muted-foreground">{entry.answer}</div>
+                      <div className="text-sm text-muted-foreground whitespace-pre-line">{stripMarkdown(entry.answer)}</div>
                     </div>
                   </div>
 
