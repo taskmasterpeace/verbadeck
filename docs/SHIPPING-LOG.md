@@ -20,8 +20,12 @@
 - **A premium, refreshed interface.** A deep-contrast navigation rail, refined typography, real
   depth and a calmer, more focused home screen — VerbaDeck now looks the part on stage and in
   front of investors.
-- **Clearer identity throughout.** Consistent product naming and versioning across the app
-  (no more "internal tool" placeholder text).
+- **A cinematic audience display.** The projected slide now renders in a refined dark theme with
+  a soft brand glow — high-contrast, easy on the eyes in a dim room, and built to impress.
+- **Faster first load.** The app loads each section's code only when you open it, so the initial
+  screen appears noticeably quicker.
+- **Clearer identity throughout.** Consistent product naming and versioning, full brand-colour
+  consistency (no off-palette accents), and respect for your reduced-motion preference.
 
 ### 🐛 Fixed
 - **Reliable editor, presenter, and Q&A.** Squashed a batch of correctness bugs so deleting a
