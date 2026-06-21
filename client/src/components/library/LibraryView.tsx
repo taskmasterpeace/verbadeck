@@ -94,7 +94,7 @@ export function LibraryView({ onLoad, onImportFile, onNewPresentation }: Library
           {onNewPresentation && (
             <button
               onClick={onNewPresentation}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all text-sm font-medium shadow-elevation-low"
             >
               <Plus className="w-4 h-4" />
               New Presentation

@@ -23,8 +23,18 @@ export function AudienceView({
 }: AudienceViewProps) {
   if (!currentSection) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Waiting for presentation...</p>
+      <div className="dark relative min-h-screen overflow-hidden bg-background flex items-center justify-center">
+        <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(60% 50% at 50% 38%, hsl(199 100% 22% / 0.28), transparent 70%)' }} />
+        <div className="relative text-center">
+          <div className="font-heading text-3xl font-bold text-gradient-brand mb-3">VerbaDeck</div>
+          <p className="flex items-center justify-center gap-2.5 text-muted-foreground">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 animate-live-pulse" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
+            </span>
+            Waiting for the presentation to begin…
+          </p>
+        </div>
       </div>
     );
   }
@@ -159,7 +169,12 @@ export function AudienceView({
       shouldFlash={shouldFlash}
       className="min-h-screen"
     >
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="dark relative min-h-screen overflow-hidden bg-background text-foreground flex flex-col">
+        {/* Cinematic backdrop — subtle brand glow + vignette for a projected slide */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0" style={{ background: 'radial-gradient(80% 55% at 50% 0%, hsl(199 100% 18% / 0.35), transparent 60%), radial-gradient(60% 50% at 50% 100%, hsl(183 86% 16% / 0.22), transparent 70%)' }} />
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0" style={{ boxShadow: 'inset 0 0 200px 40px rgba(0,0,0,0.55)' }} />
+        {/* content sits above the backdrop */}
+        <div className="contents [&>*]:relative [&>*]:z-10">
         {/* Hidden measurement div for dynamic text sizing */}
         <TextSizeMeasurement
           content={<MarkdownRenderer content={currentSection.content} />}
@@ -379,6 +394,7 @@ export function AudienceView({
           <ProgressBar />
         </div>
       )}
+        </div>
 
         {/* Presentation Controls - Hover to expand */}
         <div
