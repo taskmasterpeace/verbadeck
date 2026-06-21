@@ -14,6 +14,8 @@ existing PowerPoint, and let AI field the hard questions in real time.
 [![Tests](https://img.shields.io/badge/tests-65%20passing-2dd4bf)](#testing)
 [![Built by Machine King Labs](https://img.shields.io/badge/by-Machine%20King%20Labs-0a0f14)](https://machinekinglabs.com)
 
+**[▶ Landing page](docs/landing/index.html)** · open the file locally, or host `docs/` on GitHub Pages
+
 <img src="docs/screenshots/home.png" alt="VerbaDeck home" width="820" />
 
 </div>
