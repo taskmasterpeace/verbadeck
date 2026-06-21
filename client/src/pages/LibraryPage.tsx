@@ -147,8 +147,8 @@ export function LibraryPage() {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         {/* Sample Presentations Section */}
-        <div className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl">
-          <h2 className="text-xl font-bold mb-4 text-purple-900">📊 Sample Presentations</h2>
+        <div className="mb-8 p-6 bg-secondary/60 border border-border rounded-xl">
+          <h2 className="text-xl font-heading font-bold mb-4 text-foreground">📊 Sample Presentations</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={handleLoadAdaptiveShowcase}
@@ -177,20 +177,20 @@ export function LibraryPage() {
 
             <button
               onClick={handleLoadSampleTalkAdvantagePro}
-              className="flex flex-col gap-2 p-4 bg-white border-2 border-purple-300 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all text-left group"
+              className="flex flex-col gap-2 p-4 bg-white border-2 border-teal-300 rounded-lg hover:border-teal-500 hover:shadow-lg transition-all text-left group"
             >
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg text-purple-900 group-hover:text-purple-600">
+                <h3 className="font-bold text-lg text-teal-900 group-hover:text-teal-600">
                   TalkAdvantage Pro - VC Pitch Deck
                 </h3>
-                <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                <span className="text-xs font-semibold bg-teal-100 text-teal-700 px-2 py-1 rounded">
                   13 slides
                 </span>
               </div>
               <p className="text-sm text-gray-600">
                 Complete VC pitch deck with TalkAdvantage Pro format: profound statements, 3 talking points (Data/Vision/Proof), high impact paragraphs, and recommended images.
               </p>
-              <div className="text-xs text-purple-600 font-medium mt-2">
+              <div className="text-xs text-teal-600 font-medium mt-2">
                 Click to load and present →
               </div>
             </button>

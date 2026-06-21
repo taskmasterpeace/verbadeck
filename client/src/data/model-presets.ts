@@ -75,8 +75,8 @@ export const PRESETS: Preset[] = [
     name: 'Quality',
     iconName: 'Gem',
     description: 'Premium models for best results (higher cost)',
-    color: 'bg-purple-100 text-purple-800 border-purple-300',
-    hoverColor: 'hover:bg-purple-200',
+    color: 'bg-amber-100 text-amber-800 border-amber-300',
+    hoverColor: 'hover:bg-amber-200',
     models: {
       generateQuestions: 'anthropic/claude-3.5-sonnet',
       generateSlideOptions: 'anthropic/claude-3.5-sonnet',

@@ -208,7 +208,7 @@ export function StatusBar({
                   {onSaveToLibrary && (
                     <button
                       onClick={onSaveToLibrary}
-                      className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-semibold transition-all shadow-md flex items-center gap-2"
+                      className="px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 font-semibold transition-all shadow-md flex items-center gap-2"
                       title="Save to Library"
                     >
                       <BookMarked className="w-4 h-4" />
@@ -231,7 +231,7 @@ export function StatusBar({
                   {onLoadFromLibrary && (
                     <button
                       onClick={onLoadFromLibrary}
-                      className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 font-semibold transition-all shadow-md flex items-center gap-2"
+                      className="px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 font-semibold transition-all shadow-md flex items-center gap-2"
                       title="Load from Library"
                     >
                       <BookMarked className="w-4 h-4" />

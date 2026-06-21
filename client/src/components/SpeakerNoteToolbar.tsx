@@ -171,7 +171,7 @@ export function SpeakerNoteToolbar({
       icon: BookOpen,
       label: 'Add Analogy',
       tooltip: 'Generate memorable comparison',
-      color: 'bg-purple-50 text-purple-600 hover:bg-purple-100 border-purple-200',
+      color: 'bg-teal-50 text-teal-600 hover:bg-teal-100 border-teal-200',
     },
     {
       type: 'story' as TransformationType,

@@ -45,7 +45,7 @@ export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeCha
   return (
     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs flex-wrap">
       {/* Timer */}
-      <span className="font-mono font-bold text-purple-700">{formatTime(elapsedTime)}</span>
+      <span className="font-mono font-bold text-teal-700">{formatTime(elapsedTime)}</span>
 
       <span className="text-gray-300">|</span>
 
@@ -111,7 +111,7 @@ export function SessionStats({ questions, elapsedTime, queueMode, onQueueModeCha
         className={cn(
           'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
           soundsEnabled
-            ? 'text-purple-700 hover:bg-purple-100'
+            ? 'text-teal-700 hover:bg-teal-100'
             : 'text-gray-400 hover:bg-gray-200'
         )}
         title={soundsEnabled ? 'Sound on' : 'Sound off'}

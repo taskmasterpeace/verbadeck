@@ -146,7 +146,7 @@ export function QAAnticipationPanel({
       roi: 'bg-green-100 text-green-800 border-green-200',
       risk: 'bg-red-100 text-red-800 border-red-200',
       implementation: 'bg-blue-100 text-blue-800 border-blue-200',
-      proof: 'bg-purple-100 text-purple-800 border-purple-200',
+      proof: 'bg-teal-100 text-teal-800 border-teal-200',
       alternative: 'bg-amber-100 text-amber-800 border-amber-200',
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';

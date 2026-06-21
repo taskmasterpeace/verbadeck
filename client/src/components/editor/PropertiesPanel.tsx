@@ -154,7 +154,7 @@ export function PropertiesPanel({
           <button
             onClick={handleAISuggest}
             disabled={isProcessing}
-            className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 rounded-lg bg-gradient-to-r from-brand-deep to-brand-teal text-white hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Sparkles className="w-4 h-4" />
             {isProcessing ? 'Suggesting...' : 'AI Suggest Triggers'}
