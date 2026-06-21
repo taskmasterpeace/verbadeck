@@ -15,6 +15,7 @@ interface ImageRecommendation {
   isHighRes: boolean;
   searchQuery: string;
   likes: number;
+  source?: 'pexels' | 'unsplash';
 }
 
 interface ImageRecommendationDialogProps {

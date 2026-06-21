@@ -22,7 +22,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    headless: process.env.CI ? true : false,
+    headless: process.env.CI || process.env.HEADLESS ? true : false,
   },
 
   // Cross-browser testing projects

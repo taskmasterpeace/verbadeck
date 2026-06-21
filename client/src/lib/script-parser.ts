@@ -26,6 +26,7 @@ export interface Section {
       proof: string;
     };
     highImpactParagraph: string;
+    recommendedImage?: string;      // Optional image description tied to the notes
   };
 }
 

@@ -117,11 +117,11 @@ function SidebarNav() {
     <>
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-2">
-          <img src="/logo-icon.png" alt="VerbaDeck" className="size-8 rounded-lg object-contain" />
+          <img src="/logo-icon.png" alt="VerbaDeck" className="size-8 rounded-lg object-contain ring-1 ring-sidebar-border" />
           {state === 'expanded' && (
             <div className="flex flex-col gap-0.5 leading-none">
-              <span className="font-heading font-semibold bg-gradient-to-r from-brand-deep to-brand-teal bg-clip-text text-transparent">VerbaDeck</span>
-              <span className="text-xs text-muted-foreground">Voice-Driven Presentations</span>
+              <span className="font-heading font-bold text-base bg-gradient-to-r from-brand-light to-brand-teal bg-clip-text text-transparent">VerbaDeck</span>
+              <span className="text-[11px] font-medium tracking-wide text-sidebar-foreground/55">Voice-Driven Presentations</span>
             </div>
           )}
         </div>
@@ -211,16 +211,16 @@ function SidebarNav() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <div className="px-2 py-2 text-xs text-muted-foreground">
+            <div className="px-2 py-2 text-xs text-sidebar-foreground/55">
               {state === 'expanded' ? (
                 <div className="flex flex-col gap-1">
-                  <div>Voice-driven presentations</div>
                   <div className="text-[10px]">
-                    Press <kbd className="px-1 py-0.5 bg-muted border border-border rounded text-[9px] font-mono">Ctrl+/</kbd> for shortcuts
+                    Press <kbd className="px-1 py-0.5 bg-sidebar-accent border border-sidebar-border rounded text-[9px] font-mono text-sidebar-foreground">Ctrl+/</kbd> for shortcuts
                   </div>
+                  <div className="font-mono text-[10px] text-sidebar-foreground/40">v1.0.0</div>
                 </div>
               ) : (
-                <div className="text-center">V2</div>
+                <div className="text-center font-mono text-[10px]">1.0</div>
               )}
             </div>
           </SidebarMenuItem>

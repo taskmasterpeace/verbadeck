@@ -1,0 +1,24 @@
+{
+  "name": "VerbaDeck",
+  "tagline": "Present hands-free. Speak naturally, advance automatically.",
+  "colors": {
+    "bg": "#0a0f14",
+    "surface": "#121922",
+    "border": "#243140",
+    "border-soft": "#1a232e",
+    "text": "#e6eef5",
+    "muted": "#8da2b5",
+    "heading": "#f4f9fd",
+    "brand": "#15a6d6",
+    "accent": "#2dd4bf",
+    "accent-ink": "#7fd6ec",
+    "grid": "rgba(120,200,230,.03)",
+    "radius": "14px",
+    "maxw": "60rem"
+  },
+  "fonts": {
+    "display": "Inter",
+    "body": "Inter",
+    "mono": "JetBrains Mono"
+  }
+}

@@ -48,3 +48,16 @@ downloads/
 *_ROADMAP.md
 *_ANALYSIS.md
 WORK_PLAN*.md
+
+# Scratch / generated artifacts (keep the repo clean)
+.playwright-mcp/
+/screenshots/
+/*.png
+scripts/shoot*.mjs
+/test-*.js
+.claude/*.local.md
+.claude/launch.json
+.claude/skills/
+claude*.bat
+tests/screenshots/
+# Curated README/docs images are kept under docs/screenshots/ (not ignored)
