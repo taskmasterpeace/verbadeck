@@ -1,4 +1,4 @@
-import { Wand2, FileText, Brain, Mic, ArrowRight, ChevronRight } from 'lucide-react';
+import { Wand2, FileText, Brain, Mic, ArrowRight, ChevronRight, Play } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface CreatePresentationProps {
@@ -98,6 +98,19 @@ export function CreatePresentation(props: CreatePresentationProps) {
                 </div>
               );
             })}
+          </div>
+
+          {/* Try a live sample — instant first-run payoff */}
+          <div className="mt-7">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('verbadeck-load-demo'))}
+              className="group inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-5 py-2.5 font-heading text-sm font-semibold text-accent shadow-elevation-low transition-all hover:bg-accent/10 hover:shadow-glow-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Play className="h-4 w-4 fill-current" />
+              Try a live sample pitch
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <p className="mt-2 text-xs text-muted-foreground">Loads a 4-slide investor pitch you can present right now — no setup.</p>
           </div>
         </div>
       </header>

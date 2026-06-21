@@ -19,6 +19,7 @@ import { usePresentationStore } from './stores';
 import { useVoiceStore } from './stores/voice';
 import { type Section } from './lib/script-parser';
 import { VoiceController } from './lib/voice-controller';
+import { DEMO_PRESENTATION } from './lib/demo-presentation';
 import { TranscriptTicker } from './components/TranscriptTicker';
 import { AIScriptProcessor } from './components/AIScriptProcessor';
 import { StatusIndicator } from './components/StatusIndicator';
@@ -27,7 +28,7 @@ import { QAPanel } from './components/QAPanel';
 import { LibraryBrowser } from './components/LibraryBrowser';
 import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { MessageCircle, RotateCcw, X } from 'lucide-react';
+import { MessageCircle, RotateCcw, X, FileText, Monitor } from 'lucide-react';
 import { CreateFromScratch } from './components/CreateFromScratch';
 import { ToneSelector } from './components/ToneSelector';
 import { CreatePresentation } from './components/CreatePresentation';
@@ -260,6 +261,71 @@ export default function App() {
   useEffect(() => {
     setStoreStatus(status);
   }, [status, setStoreStatus]);
+
+  // --- testMode bridge: programmatic control for E2E + agent-native access ---
+  // Exposes window.__verbadeck so the deck can be driven exactly as a voice would,
+  // without a microphone. Anything a presenter can do by speaking, an agent or a
+  // test can do here. Active only when ?testMode=true (or the localStorage flag).
+  const bridgeRef = useRef({ handleTranscript, advanceSection, goBackSection, goToSection, setViewModeWithRoute, setIsListeningForQuestions, isListeningForQuestions, currentQuestion, isLoadingQA, questionAnswers });
+  bridgeRef.current = { handleTranscript, advanceSection, goBackSection, goToSection, setViewModeWithRoute, setIsListeningForQuestions, isListeningForQuestions, currentQuestion, isLoadingQA, questionAnswers };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const testMode = params.get('testMode') === 'true' || localStorage.getItem('verbadeck-test-mode') === 'true';
+    if (!testMode) return;
+    (window as Window & { __verbadeck?: unknown }).__verbadeck = {
+      /** Simulate speaking — drives the same trigger/Q&A pipeline as live audio. */
+      say: (text: string, isFinal = true) => bridgeRef.current.handleTranscript(text, isFinal),
+      next: () => bridgeRef.current.advanceSection(),
+      back: () => bridgeRef.current.goBackSection(),
+      goto: (i: number) => bridgeRef.current.goToSection(i),
+      setView: (m: string) => bridgeRef.current.setViewModeWithRoute(m as never),
+      enableQA: (on = true) => bridgeRef.current.setIsListeningForQuestions(on),
+      /** Load the bundled sample pitch and jump to the presenter view. */
+      loadDemo: () => {
+        const store = usePresentationStore.getState();
+        store.loadPresentationData({
+          sections: DEMO_PRESENTATION.sections,
+          knowledgeBase: DEMO_PRESENTATION.knowledgeBase,
+          settings: { currentSectionIndex: 0 },
+        });
+        store.setSharedKnowledgeBase(DEMO_PRESENTATION.sharedKnowledgeBase);
+        bridgeRef.current.setViewModeWithRoute('presenter' as never);
+      },
+      getState: () => {
+        const s = usePresentationStore.getState();
+        const b = bridgeRef.current;
+        return {
+          currentSectionIndex: s.currentSectionIndex,
+          sectionCount: s.sections.length,
+          isCountingDown: s.isCountingDown,
+          // Q&A state lives in the useQASession hook, not the store — read it live.
+          isListeningForQuestions: b.isListeningForQuestions,
+          currentQuestion: b.currentQuestion,
+          isLoadingQA: b.isLoadingQA,
+          hasAnswers: !!b.questionAnswers,
+        };
+      },
+    };
+    console.log('🧪 VerbaDeck testMode bridge ready → window.__verbadeck');
+    return () => { delete (window as Window & { __verbadeck?: unknown }).__verbadeck; };
+  }, []);
+
+  // Onboarding: load the bundled sample pitch and jump to the presenter.
+  // Dispatched from the home "Try a live sample" action.
+  useEffect(() => {
+    const loadSample = () => {
+      const store = usePresentationStore.getState();
+      store.loadPresentationData({
+        sections: DEMO_PRESENTATION.sections,
+        knowledgeBase: DEMO_PRESENTATION.knowledgeBase,
+        settings: { currentSectionIndex: 0 },
+      });
+      store.setSharedKnowledgeBase(DEMO_PRESENTATION.sharedKnowledgeBase);
+      bridgeRef.current.setViewModeWithRoute('presenter' as never);
+    };
+    window.addEventListener('verbadeck-load-demo', loadSample);
+    return () => window.removeEventListener('verbadeck-load-demo', loadSample);
+  }, []);
 
   // Presentation style and bulk image generation
   const {
@@ -665,6 +731,33 @@ export default function App() {
           />
         )}
 
+        {/* Editor Empty State */}
+        {viewMode === 'editor' && !isStreaming && sections.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4">
+              <FileText className="w-8 h-8 text-blue-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No presentation loaded</h2>
+            <p className="text-sm text-gray-500 mb-6 max-w-md">
+              Create a new presentation or load an existing one to start editing.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setViewModeWithRoute('ai-processor')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+              >
+                Process Content
+              </button>
+              <button
+                onClick={() => setViewModeWithRoute('create-from-scratch')}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+              >
+                Create from Scratch
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Section Editor View */}
         {viewMode === 'editor' && !isStreaming && sections.length > 0 && (
           <EditorPage
@@ -689,6 +782,33 @@ export default function App() {
               setSharedKnowledgeBase={setSharedKnowledgeBase}
               setViewMode={setViewModeWithRoute}
             />
+        )}
+
+        {/* Presenter Empty State */}
+        {viewMode === 'presenter' && !isStreaming && sections.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4">
+              <Monitor className="w-8 h-8 text-blue-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No presentation to present</h2>
+            <p className="text-sm text-gray-500 mb-6 max-w-md">
+              Create or load a presentation first, then come back here to present it.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setViewModeWithRoute('ai-processor')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+              >
+                Process Content
+              </button>
+              <button
+                onClick={() => setViewModeWithRoute('create')}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Presenter View */}

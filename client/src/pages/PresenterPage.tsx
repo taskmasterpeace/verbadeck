@@ -124,13 +124,13 @@ export function PresenterPage({
                 className="group relative cursor-pointer transition-transform hover:scale-105 active:scale-95"
               >
                 <div className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-lg p-1 shadow-xl">
-                  <div className="bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-700 rounded-md px-8 py-6 min-w-[200px]">
+                  <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 rounded-md px-8 py-6 min-w-[200px]">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
                         <Smartphone className="w-5 h-5 text-white" />
                         <div className="text-white font-bold text-lg">Phone Remote</div>
                       </div>
-                      <div className="text-purple-100 text-sm">Control from your phone</div>
+                      <div className="text-teal-50 text-sm">Control from your phone</div>
                     </div>
                     <div className="absolute top-2 left-2 w-8 h-8 bg-white/10 rounded-full blur-sm" />
                   </div>
