@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import type { ViewMode } from '@/lib/view-mode';
 
-export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
+export type { ViewMode };
 
 // Map routes to view modes
 const routeToViewMode: Record<string, ViewMode> = {

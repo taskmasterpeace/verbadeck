@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { type Section } from '../lib/script-parser';
 import { saveToLibrary, loadFromLibrary } from '../lib/presentation-library';
-
-type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
+import type { ViewMode } from '@/lib/view-mode';
 
 interface UseLibraryOperationsProps {
   sections: Section[];

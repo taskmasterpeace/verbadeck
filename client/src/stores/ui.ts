@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { ViewMode } from '@/lib/view-mode';
 
-export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
+export type { ViewMode };
 export type EditorTab = 'sections' | 'knowledge' | 'testing';
 
 interface UIState {

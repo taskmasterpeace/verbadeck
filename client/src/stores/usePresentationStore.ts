@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { Section } from '@/lib/script-parser';
 import type { PresentationStyle } from '@/components/PresentationStyleManager';
+import type { ViewMode } from '@/lib/view-mode';
 
-export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
+export type { ViewMode };
 
 export interface Answer {
   heading: string;
