@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import type { Section } from '@/lib/script-parser';
 import type { PresentationStyle } from '@/components/PresentationStyleManager';
 
-export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all';
+export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
 
 export interface Answer {
   heading: string;

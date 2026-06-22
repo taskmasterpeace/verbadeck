@@ -70,6 +70,11 @@ const router = createBrowserRouter([
         path: 'know-it-all',
         element: null, // Handled by App.tsx viewMode='know-it-all'
       },
+      {
+        // Knowledge Brain — semantic store for live recall
+        path: 'knowledge',
+        element: null, // Handled by App.tsx viewMode='knowledge'
+      },
     ],
   },
   {

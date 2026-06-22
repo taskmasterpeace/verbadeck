@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all';
+export type ViewMode = 'create' | 'ai-processor' | 'editor' | 'presenter' | 'create-from-scratch' | 'know-it-all' | 'knowledge';
 
 // Map routes to view modes
 const routeToViewMode: Record<string, ViewMode> = {
@@ -12,6 +12,7 @@ const routeToViewMode: Record<string, ViewMode> = {
   '/editor': 'editor',
   '/presenter': 'presenter',
   '/know-it-all': 'know-it-all',
+  '/knowledge': 'knowledge',
 };
 
 // Map view modes to routes
@@ -22,6 +23,7 @@ const viewModeToRoute: Record<ViewMode, string> = {
   'presenter': '/presenter',
   'create-from-scratch': '/create/scratch',
   'know-it-all': '/know-it-all',
+  'knowledge': '/knowledge',
 };
 
 /**

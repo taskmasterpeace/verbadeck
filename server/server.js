@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { dirname, resolve, join } from 'path';
 import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
+import { KnowledgeStore } from './knowledge-store.js';
+import { createEmbedder } from './embeddings.js';
 import { ReplicateImageGenerator } from './image-generator.js';
 import { UnsplashClient } from './unsplash-client.js';
 import { PexelsClient } from './pexels-client.js';
@@ -55,6 +57,51 @@ if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) {
 
 // Initialize OpenRouter client
 const openRouterClient = new OpenRouterClient(OPENROUTER_API_KEY);
+
+// Initialize the Knowledge Brain: a server-side semantic index over pasted text.
+// Embeds via OpenRouter (text-embedding-3-small) with a deterministic local fallback.
+const knowledgeEmbedder = createEmbedder({ mode: process.env.KNOWLEDGE_EMBED_MODE || 'auto', apiKey: OPENROUTER_API_KEY });
+const knowledgeStore = new KnowledgeStore({
+  embedder: knowledgeEmbedder,
+  // Store OUTSIDE server/ so `node --watch` (dev) doesn't restart on every knowledge write.
+  dataFile: process.env.KNOWLEDGE_DATA_FILE || resolve(__dirname, '..', '.data', 'knowledge.json'),
+});
+knowledgeStore.load()
+  .then(() => console.log(`🧠 Knowledge Brain ready (${knowledgeStore.stats().chunks} chunks, embed: ${knowledgeEmbedder.provider})`))
+  .catch((e) => console.warn('Knowledge Brain load failed:', e.message));
+
+const KNOWLEDGE_AUTO_TAG = process.env.KNOWLEDGE_AUTO_TAG !== 'false' && !!OPENROUTER_API_KEY;
+
+// Best-effort ingestion agent: derive a title + topic tags for a freshly added document.
+// Runs async (off the live path); failure never affects the add.
+async function tagDocumentAsync(docId, text) {
+  if (!KNOWLEDGE_AUTO_TAG) return;
+  try {
+    const model = getModelForOperation('suggestTriggers');
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [{
+          role: 'user',
+          content: `Return ONLY JSON {"title": "<=6 words", "tags": ["topic", ...up to 5 lowercase topics]} summarizing this text:\n\n${text.slice(0, 4000)}`,
+        }],
+        response_format: { type: 'json_object' },
+        temperature: 0.2,
+      }),
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    const parsed = JSON.parse(json.choices?.[0]?.message?.content || '{}');
+    if (parsed.title || Array.isArray(parsed.tags)) {
+      await knowledgeStore.setDocMeta(docId, { title: parsed.title, tags: (parsed.tags || []).slice(0, 5) });
+      console.log(`🏷️  Tagged knowledge doc ${docId}: ${parsed.title} [${(parsed.tags || []).join(', ')}]`);
+    }
+  } catch (e) {
+    console.warn('Knowledge auto-tag failed (non-fatal):', e.message);
+  }
+}
 
 // Initialize Replicate Image Generator client
 const replicateClient = new ReplicateImageGenerator(REPLICATE_API_KEY);
@@ -629,6 +676,81 @@ app.post('/api/answer-question-with-keywords', createTimingMiddleware('answerQue
     res.json(answers);
   } catch (error) {
     console.error('Error answering question with keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------------- Knowledge Brain (server-side semantic recall over pasted text) ----------------
+
+// Add a document: chunk + embed + store. Async best-effort title/topic tagging follows.
+app.post('/api/knowledge/add', createTimingMiddleware('knowledgeAdd'), async (req, res) => {
+  try {
+    const { text, title } = req.body;
+    if (!text || String(text).trim().length === 0) {
+      return res.status(400).json({ error: 'text is required' });
+    }
+    const result = await knowledgeStore.addDocument(text, { title });
+    console.log(`🧠 Knowledge add: doc ${result.docId} (${result.chunks} chunks)`);
+    tagDocumentAsync(result.docId, text); // fire-and-forget
+    res.json({ ...result, stats: knowledgeStore.stats() });
+  } catch (error) {
+    console.error('Knowledge add error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Live ask: retrieve top-k chunks, answer grounded in them, return answer + sources.
+app.post('/api/knowledge/ask', createTimingMiddleware('knowledgeAsk'), async (req, res) => {
+  try {
+    const { question, topK, model, tone } = req.body;
+    if (!question || String(question).trim().length === 0) {
+      return res.status(400).json({ error: 'question is required' });
+    }
+    const hits = await knowledgeStore.search(question, topK || 8);
+    if (hits.length === 0) {
+      return res.json({ answers: null, sources: [], note: 'Knowledge base is empty — add text first.' });
+    }
+    const context = hits.map((h, i) => `[${i + 1}] ${h.title}\n${h.text}`).join('\n\n');
+    const selectedModel = getModelForOperation('answerQuestion', model);
+    const answers = await openRouterClient.answerQuestionWithKeywords(question, context, selectedModel, tone || 'professional');
+    const sources = hits.map((h) => ({
+      title: h.title, score: Number(h.score.toFixed(4)),
+      snippet: h.text.slice(0, 200) + (h.text.length > 200 ? '…' : ''),
+    }));
+    res.json({ answers, sources });
+  } catch (error) {
+    console.error('Knowledge ask error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Raw semantic search (no LLM) — inspection + agent use.
+app.post('/api/knowledge/search', createTimingMiddleware('knowledgeSearch'), async (req, res) => {
+  try {
+    const { question, topK } = req.body;
+    if (!question || String(question).trim().length === 0) {
+      return res.status(400).json({ error: 'question is required' });
+    }
+    const hits = await knowledgeStore.search(question, topK || 8);
+    res.json({ results: hits.map((h) => ({ title: h.title, score: Number(h.score.toFixed(4)), text: h.text, tags: h.tags })) });
+  } catch (error) {
+    console.error('Knowledge search error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// List documents + stats.
+app.get('/api/knowledge/list', (req, res) => {
+  res.json({ documents: knowledgeStore.listDocuments(), stats: knowledgeStore.stats() });
+});
+
+// Delete a document.
+app.delete('/api/knowledge/:docId', async (req, res) => {
+  try {
+    const ok = await knowledgeStore.deleteDocument(req.params.docId);
+    if (!ok) return res.status(404).json({ error: 'document not found' });
+    res.json({ ok: true, stats: knowledgeStore.stats() });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

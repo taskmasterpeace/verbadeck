@@ -35,6 +35,7 @@ import { CreatePresentation } from './components/CreatePresentation';
 import { useImageGeneration } from './hooks/useImageGeneration';
 import { Footer } from './components/Footer';
 const KnowItAllMode = lazy(() => import('./components/KnowItAllMode').then(m => ({ default: m.KnowItAllMode })));
+const KnowledgeBrain = lazy(() => import('./components/KnowledgeBrain').then(m => ({ default: m.KnowledgeBrain })));
 import { MainLayout } from './layouts/MainLayout';
 import { TopBar } from './components/layout/TopBar';
 import { TranscriptBar } from './components/layout/TranscriptBar';
@@ -304,6 +305,13 @@ export default function App() {
           isLoadingQA: b.isLoadingQA,
           hasAnswers: !!b.questionAnswers,
         };
+      },
+      // Agent-native access to the Knowledge Brain — same store the presenter uses.
+      knowledge: {
+        add: (text: string, title?: string) => fetch(`${import.meta.env.VITE_API_URL || ''}/api/knowledge/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, title }) }).then((r) => r.json()),
+        ask: (question: string, tone?: string) => fetch(`${import.meta.env.VITE_API_URL || ''}/api/knowledge/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, tone }) }).then((r) => r.json()),
+        search: (question: string, topK?: number) => fetch(`${import.meta.env.VITE_API_URL || ''}/api/knowledge/search`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, topK }) }).then((r) => r.json()),
+        list: () => fetch(`${import.meta.env.VITE_API_URL || ''}/api/knowledge/list`).then((r) => r.json()),
       },
     };
     console.log('🧪 VerbaDeck testMode bridge ready → window.__verbadeck');
@@ -723,6 +731,9 @@ export default function App() {
             startStreaming={startStreaming}
           />
         )}
+
+        {/* Knowledge Brain - semantic store for live recall */}
+        {viewMode === 'knowledge' && <KnowledgeBrain />}
 
         {/* AI Script Processor View */}
         {viewMode === 'ai-processor' && !isStreaming && (

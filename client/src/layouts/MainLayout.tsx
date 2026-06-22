@@ -28,6 +28,7 @@ import {
   BookOpen,
   ChevronDown,
   Settings,
+  Database,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { SettingsSidebar } from '../components/settings/SettingsSidebar';
@@ -77,6 +78,11 @@ const navigationItems = [
     title: 'Know It All Wall',
     icon: MessageCircle,
     to: '/know-it-all',
+  },
+  {
+    title: 'Knowledge Brain',
+    icon: Database,
+    to: '/knowledge',
   },
   {
     title: 'Library',

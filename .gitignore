@@ -18,6 +18,9 @@ client/public/uploads/
 server/uploads/
 uploads/
 
+# Knowledge Brain persisted data (local, can be large) — kept outside server/ so node --watch ignores it
+/.data/
+
 # Logs
 logs
 *.log
