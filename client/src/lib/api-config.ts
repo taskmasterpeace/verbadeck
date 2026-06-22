@@ -4,29 +4,16 @@
  * This allows the app to work on localhost, local network, and production
  */
 
-// Get the API base URL based on current location
-export const getApiBaseUrl = (): string => {
-  // If we're in development and accessing via network IP, use that IP for API
-  const hostname = window.location.hostname;
+// Same-origin by design. In dev, Vite proxies /api and /ws to the server (:3002); when the
+// built client is served by Express or sits behind the Cloudflare tunnel, it's already one
+// origin. Keeping requests same-origin means the auth session cookie is always sent.
+export const getApiBaseUrl = (): string => '';
 
-  // If accessing via localhost or 127.0.0.1, use localhost for API
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3002';
-  }
-
-  // Otherwise, use the same hostname as the frontend (for network access)
-  return `http://${hostname}:3002`;
-};
-
-// WebSocket URL for AssemblyAI proxy
+// WebSocket URL for the AssemblyAI voice proxy — same origin (Vite proxies /ws in dev; the
+// tunnel forwards wss). Secure scheme when the page is served over HTTPS.
 export const getWebSocketUrl = (): string => {
-  const hostname = window.location.hostname;
-
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'ws://localhost:3002/ws';
-  }
-
-  return `ws://${hostname}:3002/ws`;
+  const { protocol, host } = window.location;
+  return `${protocol === 'https:' ? 'wss:' : 'ws:'}//${host}/ws`;
 };
 
 export const API_BASE_URL = getApiBaseUrl();

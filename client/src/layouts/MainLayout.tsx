@@ -29,7 +29,9 @@ import {
   ChevronDown,
   Settings,
   Database,
+  LogOut,
 } from 'lucide-react';
+import { API_BASE_URL } from '../lib/api-config';
 import { cn } from '../lib/utils';
 import { SettingsSidebar } from '../components/settings/SettingsSidebar';
 import { useVoiceStore } from '../stores/voice';
@@ -214,6 +216,18 @@ function SidebarNav() {
             >
               <Settings className="size-4" />
               <span>Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={async () => {
+                try { await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' }); } catch { /* ignore */ }
+                window.location.reload();
+              }}
+              tooltip={state === 'collapsed' ? 'Sign out' : undefined}
+            >
+              <LogOut className="size-4" />
+              <span>Sign out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

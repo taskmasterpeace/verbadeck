@@ -8,6 +8,10 @@ import cors from 'cors';
 import { OpenRouterClient } from './openrouter.js';
 import { KnowledgeStore } from './knowledge-store.js';
 import { createEmbedder } from './embeddings.js';
+import {
+  getOwnerEmail, authConfigured, checkOwnerLogin, signSession, setSessionCookie,
+  clearSessionCookie, getOwnerFromReq, requireOwner, addToWaitlist, getWaitlist,
+} from './auth.js';
 import { ReplicateImageGenerator } from './image-generator.js';
 import { UnsplashClient } from './unsplash-client.js';
 import { PexelsClient } from './pexels-client.js';
@@ -118,17 +122,49 @@ if (pexelsClient) {
 }
 
 const app = express();
+// Trust the Cloudflare tunnel proxy so req.secure reflects X-Forwarded-Proto (https) → Secure cookies.
+app.set('trust proxy', true);
 
 // CORS configuration - restrict to known origins in production
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
     ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com']
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Development origins
+    : ['http://localhost:5175', 'http://127.0.0.1:5175', 'http://localhost:5173'], // Development origins
   credentials: true,
 };
 app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' })); // Increase limit for large scripts
+
+// ---- Auth gate (single-owner internal tool) ----------------------------------------------
+// Everything under /api requires the authenticated owner, EXCEPT the auth endpoints and the
+// public waitlist signup. /health and the static client stay public (the landing/login screen).
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/auth/')) return next();
+  if (req.method === 'POST' && req.path === '/waitlist') return next();
+  return requireOwner(req, res, next);
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body || {};
+  if (!authConfigured()) return res.status(503).json({ error: 'Auth not configured — set OWNER_PASSWORD in .env' });
+  if (checkOwnerLogin(email, password)) {
+    setSessionCookie(res, req, signSession(getOwnerEmail()));
+    return res.json({ ok: true, owner: true, email: getOwnerEmail() });
+  }
+  return res.status(401).json({ error: 'Invalid email or password' });
+});
+app.post('/api/auth/logout', (req, res) => { clearSessionCookie(res); res.json({ ok: true }); });
+app.get('/api/auth/me', (req, res) => {
+  const owner = getOwnerFromReq(req);
+  res.json({ authenticated: !!owner, owner: !!owner, email: owner || null });
+});
+// Waitlist: anyone may join; only the owner may read it.
+app.post('/api/waitlist', async (req, res) => {
+  try { const { email, name, note } = req.body || {}; res.json(await addToWaitlist({ email, name, note })); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.get('/api/waitlist', async (req, res) => { res.json({ waitlist: await getWaitlist() }); });
 
 // Configure multer for file uploads
 const upload = multer({
@@ -1295,6 +1331,19 @@ app.get('/api/prompts/:operation', (req, res) => {
   }
 });
 
+// ---- Serve the built client (single origin — required behind the Cloudflare tunnel) ----
+// In dev the client runs on Vite (:5175); in tunnel/prod, `npm run build:client` produces
+// client/dist and Express serves the whole app + API from one origin on :3002.
+const clientDist = resolve(__dirname, '..', 'client', 'dist');
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/ws')) return next();
+    res.sendFile(join(clientDist, 'index.html'));
+  });
+  console.log('📦 Serving built client from client/dist (single-origin mode)');
+}
+
 const server = app.listen(PORT, () => {
   console.log(`\n🎤 VerbaDeck Server running on http://localhost:${PORT}`);
   console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws`);
@@ -1307,6 +1356,12 @@ const wss = new WebSocketServer({ noServer: true });
 const controlWss = new WebSocketServer({ noServer: true });
 
 server.on('upgrade', async (req, socket, head) => {
+  // Gate the voice + control sockets behind the owner session (same-origin cookie is sent on upgrade).
+  if (!getOwnerFromReq(req)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
+    socket.destroy();
+    return;
+  }
   if (req.url === '/ws') {
   wss.handleUpgrade(req, socket, head, (clientWs) => {
     console.log('✅ Client connected');

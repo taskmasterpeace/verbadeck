@@ -80,6 +80,7 @@ export default defineConfig({
     url: 'http://localhost:5175',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: { AUTH_DISABLED: 'true' }, // tests exercise the app directly; auth is verified separately
     // Run from project root to start both client and server
   },
 });

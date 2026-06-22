@@ -64,15 +64,14 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 700,
+    // Single vendor chunk: splitting React into its own chunk caused a load-order crash
+    // (lucide evaluating React.forwardRef before React initialized). Route code is still
+    // split lazily via React.lazy, which is the bigger win. One vendor chunk loads reliably.
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes('node_modules')) return;
-          if (/[\\/]react(-dom|-router[^/]*)?[\\/]|[\\/]scheduler[\\/]/.test(id)) return 'vendor-react';
-          if (id.includes('framer-motion')) return 'vendor-motion';
-          if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor';
-          return 'vendor';
+          if (id.includes('node_modules')) return 'vendor';
         },
       },
     },

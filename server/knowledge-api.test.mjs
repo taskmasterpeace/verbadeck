@@ -37,6 +37,7 @@ before(async () => {
       KNOWLEDGE_EMBED_MODE: 'local',
       KNOWLEDGE_AUTO_TAG: 'false',
       KNOWLEDGE_DATA_FILE: dataFile,
+      AUTH_DISABLED: 'true', // integration test targets the data endpoints, not auth
     },
     stdio: 'ignore',
   });

@@ -6,6 +6,7 @@ import { AudiencePage } from './pages/AudiencePage.tsx'
 import { ControllerPage } from './pages/ControllerPage.tsx'
 import { LayoutDemoPage } from './pages/LayoutDemoPage.tsx'
 import { LibraryPage } from './pages/LibraryPage.tsx'
+import { AuthGate } from './components/auth/AuthGate.tsx'
 import { runMigration, getMigrationStatus } from './lib/storage-migration'
 import './index.css'
 
@@ -117,6 +118,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthGate>
+      <RouterProvider router={router} />
+    </AuthGate>
   </React.StrictMode>,
 )

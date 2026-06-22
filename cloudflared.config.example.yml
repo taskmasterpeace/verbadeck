@@ -1,0 +1,15 @@
+# cloudflared named-tunnel config for VerbaDeck (internal tool).
+# Copy to ~/.cloudflared/config.yml (or pass with `cloudflared tunnel --config`), then fill in
+# the two placeholders from `cloudflared tunnel create verbadeck`.
+#
+# This routes your public hostname → the single-origin VerbaDeck server on localhost:3002,
+# which serves the built client AND the API/WS. WebSockets (voice) pass through automatically.
+
+tunnel: <TUNNEL_UUID>                       # printed by `cloudflared tunnel create verbadeck`
+credentials-file: C:\Users\taskm\.cloudflared\<TUNNEL_UUID>.json
+
+ingress:
+  - hostname: app.verbadeck.com             # your chosen hostname (DNS routed below)
+    service: http://localhost:3002
+  # everything else 404s
+  - service: http_status:404
