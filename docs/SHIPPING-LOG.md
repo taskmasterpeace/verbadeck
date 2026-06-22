@@ -1,6 +1,27 @@
 # 📣 VerbaDeck — What's New
 
-> Built in public · 52 updates across 10 active build days · shipping since October 2025 · last shipped today.
+> Built in public · 57 updates across 11 active build days · shipping since October 2025 · last shipped today.
+
+---
+
+## v1.1.0 — June 22, 2026
+
+*Recall your whole knowledge base, live — and a home on the web.*
+
+### 🆕 New
+- **Knowledge Brain — answer from everything you know, on stage.** Paste a large, growing body of
+  text (company docs, transcripts, research, FAQs) and VerbaDeck indexes it instantly. When a
+  question comes mid-talk, it finds the few most relevant passages and answers from them in about
+  a second — so you can feed it far more than ever fit on a slide. Each document gets an
+  auto-generated title and topic tags as you add it.
+- **A home on the web.** VerbaDeck now has a polished landing page — an interface tour, the feature
+  highlights, and an honest side-by-side with other tools — deploying to **verbadeck.com**.
+- **Drive it from code.** Anything you can do in the Knowledge Brain, an agent or script can do
+  too: add, search, and ask through a simple programmatic interface and a public endpoint.
+
+### 🔧 Behind the scenes
+- 28 new automated tests cover the Knowledge Brain (index, search, endpoints, and UI), and the
+  dev server no longer restarts when you add to your knowledge base.
 
 ---
 
