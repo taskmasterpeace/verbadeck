@@ -7,7 +7,9 @@
 FROM node:20-slim AS client
 WORKDIR /client
 COPY client/package*.json ./
-RUN npm install
+# --include=dev is required: Coolify injects NODE_ENV=production, which would otherwise make
+# npm skip devDependencies (vite, @vitejs/plugin-react, vite-plugin-pwa all live there).
+RUN npm install --include=dev
 COPY client/ ./
 RUN npx vite build
 
