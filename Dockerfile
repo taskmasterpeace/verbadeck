@@ -9,9 +9,10 @@ COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 RUN npm ci
 
-# build the client (-> client/dist) then drop dev deps for a leaner runtime
+# build the client (-> client/dist). Use vite directly: tsc is hoisted out of the
+# client workspace's PATH, and vite/esbuild transpiles without a separate type-check.
 COPY . .
-RUN npm run build:client
+RUN cd client && npx vite build
 
 ENV NODE_ENV=production
 ENV PORT=3002
