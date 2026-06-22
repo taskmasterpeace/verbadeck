@@ -1,0 +1,24 @@
+{
+  "name": "VerbaDeck",
+  "mode": "refine",
+  "brand": "#0076A5 (ocean blue; bright variant #15a6d6 on dark)",
+  "accent": "#00A9B5 / #2dd4bf (teal)",
+  "no": ["purple", "green", "gradient-as-crutch", "feather/leaf/sun ornament", "AI clichés (globe, lightbulb, gear, hexagon badge)"],
+  "primary_motif": "a 'V' built from a symmetric voice waveform whose bars taper to a point that doubles as a forward/play chevron — monogram + voice + advance in one mark",
+  "output_spec": "flat vector logo, solid shapes, high contrast, centered, transparent background, no gradient unless specified, no photographic detail, no drop shadow, legible at 16px, no extra text, no letters except the ones requested, professional brand identity.",
+  "prompts": {
+    "minimalist_one_color": "Minimalist single-color logo for VerbaDeck, a voice-driven presentation tool where speaking advances the slide. A 'V' formed from a symmetric voice waveform — short bars stepping down to a single point that reads as a forward play-chevron — in one flat ocean blue (#0076A5) on transparent background. Maximum simplicity, even strokes, generous negative space, instantly recognizable as a silhouette. Confident, precise, modern. flat vector logo, solid shapes, high contrast, centered, transparent background, no gradient, no photographic detail, no drop shadow, legible at 16px, no extra text, professional brand identity.",
+
+    "monochrome": "Monochrome logo for VerbaDeck: the voice-waveform 'V' / forward-chevron mark in solid black, designed to also work as a pure white knockout on a dark #0a0f14 background. No color, no gradient, strong silhouette that survives a rubber stamp, an embossed card, and a 16px favicon. Precise, geometric, confident. flat vector logo, solid shapes, high contrast, centered, transparent background, no photographic detail, no drop shadow, legible at 16px, no extra text, professional brand identity.",
+
+    "comfortable": "Friendly, approachable logo for VerbaDeck, a hands-free presentation tool, for founders and speakers. A clean geometric microphone with a small forward play-chevron set inside the capsule — rounded corners, soft even geometry — in ocean blue #0076A5 with a touch of teal #2dd4bf. Warm and human, inviting not corporate, but still sharp and modern and flat. Keeps the 'microphone = voice' idea of the original mark, minus the ornament. flat vector logo, solid shapes, high contrast, centered, transparent background, no photographic detail, no drop shadow, legible at 16px, no extra text, professional brand identity.",
+
+    "premium": "Premium, refined logo for VerbaDeck, a voice-driven presentation studio. A precise, balanced mark: a microphone silhouette whose grille is suggested by two stacked slide cards, with a single voice pulse nudging them forward — exact geometry, confident even weight, timeless restraint, the identity a trusted, established brand would own. Solid ocean blue #0076A5, teal #2dd4bf only as a single accent step if it strengthens it. flat vector logo, solid shapes, high contrast, centered, transparent background, no gradient unless a single clean two-step, no photographic detail, no drop shadow, legible at 16px, no extra text, professional brand identity.",
+
+    "icon": "Standalone logo symbol (no text) for VerbaDeck: the voice-waveform 'V' that resolves into a forward play-chevron, in flat ocean blue #0076A5, balanced inside an invisible square, designed to stand alone as an app icon and a 16px favicon. flat vector logo, solid shapes, high contrast, centered, transparent background, no gradient, no photographic detail, no drop shadow, no extra text, professional brand identity.",
+
+    "wordmark": "Wordmark logo: the word \"VerbaDeck\" set as a custom logotype, modern geometric sans-serif close to Sora, tight even spacing, in ocean blue #0076A5 with the final letters easing to teal #2dd4bf in one clean two-step (no rainbow, no green). The 'V' is subtly formed from a voice-waveform chevron. Correct spelling 'VerbaDeck', no extra characters. flat vector logotype, solid shapes, high contrast, centered, transparent background, no photographic detail, no drop shadow, legible small, professional brand identity.",
+
+    "monogram": "Monogram logo for VerbaDeck: the letters 'V' and 'D' combined into one compact, balanced mark in ocean blue #0076A5 — the 'V' drawn as a downward voice-waveform chevron tucked into the bowl of the 'D'. Clever but legible interlock, suitable for a favicon and a circular app icon. flat vector logo, solid shapes, high contrast, centered, transparent background, no gradient, no photographic detail, no drop shadow, legible at 16px, no extra text, professional brand identity."
+  }
+}
