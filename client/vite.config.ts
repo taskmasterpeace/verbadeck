@@ -10,7 +10,8 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    VitePWA({
+    // PWA disabled for the Coolify dev deploy (its buildEnd hook errored); re-enable for prod PWA.
+    false && VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'logo.png', 'logo-icon.png', 'apple-touch-icon.png'],
       manifest: {
