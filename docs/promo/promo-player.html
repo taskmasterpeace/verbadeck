@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VerbaDeck promo — animatic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0a0f14;--brand:#15a6d6;--accent:#2dd4bf;--ink:#7fd6ec;--text:#e6eef5;--heading:#f4f9fd;
+    --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+  *{margin:0;box-sizing:border-box}
+  html,body{width:1280px;height:720px;overflow:hidden;background:var(--bg);font-family:var(--font)}
+  #stage{position:relative;width:1280px;height:720px;background:var(--bg)}
+  .shot{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}
+  .shot.on{opacity:1}
+  .bg{position:absolute;inset:0;background-size:cover;background-position:top center;transform:scale(1.02)}
+  .shot.on .bg{animation:kb var(--dur,6s) linear forwards}
+  @keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.12)}}
+  .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,17,.92) 0%,rgba(8,12,17,.25) 42%,rgba(8,12,17,.55) 100%)}
+  .cine{position:absolute;inset:0;background:
+    radial-gradient(60% 60% at 30% 30%,rgba(21,166,214,.18),transparent),
+    radial-gradient(50% 50% at 80% 70%,rgba(45,212,191,.14),transparent),
+    linear-gradient(120deg,#0a1622,#0a0f14)}
+  .cap{position:absolute;left:64px;right:64px;bottom:84px;opacity:0;transform:translateY(14px)}
+  .shot.on .cap{animation:rise .6s .25s ease forwards}
+  @keyframes rise{to{opacity:1;transform:translateY(0)}}
+  .cap .line{font-size:34px;font-weight:700;line-height:1.18;color:var(--heading);max-width:1000px;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+  .cap .ost{margin-top:14px;display:inline-block;font-family:var(--mono);font-size:15px;color:var(--ink);
+    background:rgba(10,15,20,.6);border:1px solid rgba(45,212,191,.35);border-radius:8px;padding:6px 12px}
+  .badge{position:absolute;top:40px;left:64px;font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+  .badge b{color:var(--accent)}
+  .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .center .word{font-size:96px;font-weight:800;letter-spacing:-.03em;
+    background:linear-gradient(100deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .center .tag{margin-top:8px;font-size:26px;color:var(--text)}
+  .center .url{margin-top:26px;font-family:var(--mono);font-size:22px;color:var(--accent)}
+  .grid{position:absolute;inset:0;background-image:radial-gradient(rgba(120,200,230,.05) 1.5px,transparent 1.5px);background-size:30px 30px;opacity:.5}
+  #prog{position:absolute;left:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--brand),var(--accent));width:0}
+  .inset{position:absolute;right:48px;bottom:120px;width:300px;border-radius:10px;overflow:hidden;border:2px solid rgba(45,212,191,.5);box-shadow:0 18px 50px rgba(0,0,0,.6)}
+  .inset img{display:block;width:100%}
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- shots injected by JS -->
+  <div id="prog"></div>
+</div>
+<script>
+  const S = '../screenshots/showcase/';
+  // [durationSec, vo, onScreenText, badge, builder()]
+  const shots = [
+    [6.2, "Every founder loses the room the second they reach for a clicker.", "", "01 · Hook",
+      () => `<div class="cine"></div><div class="grid"></div>`],
+    [3.8, "Present hands-free. Your voice runs the deck.", "VerbaDeck", "02 · Reveal",
+      () => `<div class="bg" style="background-image:url('${S}01-home.png')"></div><div class="scrim"></div>`],
+    [6.5, "Say a trigger word, and the slide moves.", "Say “problem” → advance", "03 · Voice",
+      () => `<div class="bg" style="background-image:url('${S}07-presenter.png')"></div><div class="scrim"></div>`],
+    [5.8, "Your audience sees a cinematic slide. You get a cockpit.", "Audience view · Presenter view", "04 · Two screens",
+      () => `<div class="bg" style="background-image:url('${S}08-audience.png')"></div><div class="scrim"></div><div class="inset"><img src="${S}07-presenter.png"></div>`],
+    [7.7, "Hit a hard question? It answers live — from your deck and your Knowledge Brain.", "Live Q&A · Knowledge Brain", "05 · Live answers",
+      () => `<div class="bg" style="background-image:url('${S}09-knowledge-brain.png')"></div><div class="scrim"></div>`],
+    [6.5, "Build with AI, import a deck, rehearse the tough questions.", "Open-source · yours in 5 minutes", "06 · Build it",
+      () => `<div class="bg" style="background-image:url('${S}03-create-from-scratch.png')"></div><div class="scrim"></div>`],
+    [3.0, "Hands free. Eyes up. Retire the clicker.", "", "07 · Payoff",
+      () => `<div class="cine"></div><div class="grid"></div>`],
+    [4.4, "", "", "08 · CTA",
+      () => `<div class="cine"></div><div class="grid"></div><div class="center"><div class="word">VerbaDeck</div><div class="tag">Present hands-free.</div><div class="url">verbadeck.com</div></div>`],
+  ];
+  const stage = document.getElementById('stage');
+  const prog = document.getElementById('prog');
+  const total = shots.reduce((a, s) => a + s[0], 0);
+  const els = shots.map(([dur, vo, ost, badge, build]) => {
+    const d = document.createElement('div');
+    d.className = 'shot';
+    d.style.setProperty('--dur', dur + 's');
+    const cap = vo ? `<div class="cap"><div class="line">${vo}</div>${ost ? `<span class="ost">${ost}</span>` : ''}</div>` : '';
+    const bdg = badge ? `<div class="badge"><b>${badge.split(' · ')[0]}</b> · ${badge.split(' · ')[1] || ''}</div>` : '';
+    d.innerHTML = build() + cap + bdg;
+    stage.insertBefore(d, prog);
+    return d;
+  });
+  let acc = 0;
+  shots.forEach(([dur], i) => {
+    setTimeout(() => {
+      els.forEach((e, j) => e.classList.toggle('on', j === i));
+    }, acc * 1000);
+    acc += dur;
+  });
+  // progress bar
+  const t0 = performance.now();
+  (function tick(){
+    const e = (performance.now() - t0) / 1000;
+    prog.style.width = Math.min(100, (e / total) * 100) + '%';
+    if (e < total + 1) requestAnimationFrame(tick);
+  })();
+  window.__promoDone = false;
+  setTimeout(() => { window.__promoDone = true; }, (total + 0.6) * 1000);
+</script>
+</body>
+</html>

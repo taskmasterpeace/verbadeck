@@ -57,6 +57,7 @@ WORK_PLAN*.md
 /screenshots/
 /*.png
 scripts/shoot*.mjs
+scripts/verify-*.mjs
 /test-*.js
 .claude/*.local.md
 .claude/launch.json

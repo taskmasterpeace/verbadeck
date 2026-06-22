@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerbaDeck — 45s promo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#0a0f14;--brand:#15a6d6;--accent:#2dd4bf;--text:#e6eef5;--muted:#8da2b5}
+  *{margin:0;box-sizing:border-box}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+    background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;padding:32px;
+    background-image:radial-gradient(rgba(120,200,230,.04) 1px,transparent 1px);background-size:26px 26px}
+  h1{font-weight:800;letter-spacing:-.02em;font-size:1.4rem}
+  h1 span{background:linear-gradient(100deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  video{width:min(960px,92vw);border-radius:14px;border:1px solid #243140;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  p{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.8rem}
+</style>
+</head>
+<body>
+  <h1>VerbaDeck — <span>present hands-free</span> · 45s</h1>
+  <video src="render/verbadeck-promo-45s.webm" controls autoplay muted loop playsinline></video>
+  <p>animatic · real app footage · regenerate: node scripts/record-promo.mjs</p>
+</body>
+</html>
