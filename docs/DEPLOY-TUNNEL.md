@@ -27,28 +27,33 @@ cd server && NODE_ENV=production node server.js
 ```
 Open http://localhost:3002 — you should see the landing/sign-in gate.
 
-## 2. Install cloudflared + authenticate (your Cloudflare account)
-```bash
-# install: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/
-cloudflared tunnel login                   # opens a browser → pick your Cloudflare zone
-```
-> Your domain must be on Cloudflare. To use `verbadeck.com`, move its nameservers from GoDaddy to
-> Cloudflare (Cloudflare → Add site → it gives you two nameservers → set them at GoDaddy).
-> Just testing? Skip the domain and run `cloudflared tunnel --url http://localhost:3002` for a
-> throwaway `*.trycloudflare.com` link.
+## 2. ⚠️ Move verbadeck.com onto Cloudflare (the one prerequisite, ~10 min + propagation)
+A *named* tunnel routes DNS through Cloudflare, so the zone has to live there. The apex GitHub
+Pages landing keeps working — you'll recreate those records in Cloudflare.
+1. Cloudflare dashboard → **Add a site** → `verbadeck.com` (Free plan) → it imports your records
+   and shows **two Cloudflare nameservers** (e.g. `xxx.ns.cloudflare.com`).
+2. GoDaddy → verbadeck.com → **Nameservers → Change** → enter Cloudflare's two → save.
+3. Wait for Cloudflare to email "verbadeck.com is active" (5 min–24 h).
+4. In Cloudflare DNS, re-add the **apex GitHub Pages** records (DNS-only / grey cloud):
+   four `A @ → 185.199.108–111.153` and `CNAME www → taskmasterpeace.github.io`.
 
-## 3. Create the tunnel + route DNS
-```bash
-cloudflared tunnel create verbadeck        # prints a TUNNEL_UUID + a credentials .json path
-cloudflared tunnel route dns verbadeck app.verbadeck.com
-```
-Copy `cloudflared.config.example.yml` → `~/.cloudflared/config.yml` and fill in the UUID +
-credentials-file path.
+> Just want to test now without the domain? You already have it: a throwaway tunnel via
+> `cloudflared tunnel --url http://localhost:3002` (that's what's running today).
 
-## 4. Run it
+## 3. Authenticate + bring the named tunnel up (one command)
+Once the domain is active on Cloudflare:
 ```bash
-cloudflared tunnel run verbadeck
+cloudflared tunnel login                   # browser → authorize verbadeck.com
+
+# build the client, start the single-origin server (one terminal):
+npm run build:client && (cd server && node server.js)
+
+# in another terminal — creates the tunnel, routes app.verbadeck.com, writes config, and runs it:
+node scripts/tunnel-up.mjs
 ```
+That finisher does `tunnel create` + `route dns app.verbadeck.com` + writes `~/.cloudflared/config.yml`
++ `tunnel run` for you. (Manual equivalents are in `cloudflared.config.example.yml`.)
+
 Visit **https://app.verbadeck.com** → the gate → sign in with your owner email + password.
 Voice, AI, and the Knowledge Brain all work because it's one secure origin (`wss://…/ws`).
 
