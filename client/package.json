@@ -39,7 +39,8 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.2.0",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.41.0",
