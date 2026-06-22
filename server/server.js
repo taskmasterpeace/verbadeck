@@ -1155,6 +1155,11 @@ app.get('/api/prompts/:operation', (req, res) => {
   }
 });
 
+// Production single-service: serve the built client (Vite) + SPA fallback.
+// Client calls the API with relative /api paths, so same-origin "just works".
+app.use(express.static(join(__dirname, '../client/dist')));
+app.get('*', (req, res) => res.sendFile(join(__dirname, '../client/dist/index.html')));
+
 const server = app.listen(PORT, () => {
   console.log(`\n🎤 VerbaDeck Server running on http://localhost:${PORT}`);
   console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws`);
