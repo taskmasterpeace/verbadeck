@@ -632,6 +632,24 @@ ${presentationGoal ? `PRESENTATION GOAL: ${presentationGoal}` : ''}`;
       return res.status(400).json({ error: 'Either sections+currentSlideIndex or presentationContent is required' });
     }
 
+    // Augment with the Knowledge Brain: pull the most relevant passages so live answers can
+    // draw on far more than fits on a slide. Automatic when the brain has content (opt out
+    // with useKnowledge:false). Server-side retrieval is milliseconds — stays within the live budget.
+    let knowledgeSources = [];
+    if (req.body.useKnowledge !== false && knowledgeStore.stats().chunks > 0) {
+      try {
+        const hits = await knowledgeStore.search(question, 5);
+        if (hits.length > 0) {
+          contextContent += `\n\nRELEVANT BACKGROUND KNOWLEDGE (from the presenter's knowledge base — ground your answer in this when applicable):\n` +
+            hits.map((h, i) => `[${i + 1}] ${h.title}\n${h.text}`).join('\n\n');
+          knowledgeSources = hits.map((h) => ({ title: h.title, score: Number(h.score.toFixed(4)) }));
+          console.log(`🧠 Q&A augmented with ${hits.length} knowledge passages`);
+        }
+      } catch (e) {
+        console.warn('Knowledge augmentation failed (non-fatal):', e.message);
+      }
+    }
+
     const selectedModel = getModelForOperation('answerQuestion', model);
     console.log(`💬 Answering question: "${question}" (tone: ${tone || 'professional'}, slide: ${currentSlideIndex ?? 'N/A'}) using ${selectedModel}`);
     const answers = await openRouterClient.answerQuestion(
@@ -643,7 +661,7 @@ ${presentationGoal ? `PRESENTATION GOAL: ${presentationGoal}` : ''}`;
     );
     console.log(`✅ Generated 2 answer options in ${tone || 'professional'} tone`);
 
-    res.json(answers);
+    res.json({ ...answers, knowledgeSources });
   } catch (error) {
     console.error('Error answering question:', error);
     res.status(500).json({ error: error.message });
