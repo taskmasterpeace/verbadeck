@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>VerbaDeck — deck generator UI · two directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--ink:#0a0f14;--s1:#121922;--s2:#16212c;--s3:#1b2935;--line:#243140;--soft:#1a2430;
+--tx:#e6eef5;--mut:#8da2b5;--head:#f4f9fd;--brand:#15a6d6;--teal:#2dd4bf;--ink2:#7fd6ec;
+--san:'Inter',sans-serif;--dis:'Sora',sans-serif;--mo:'JetBrains Mono',monospace;}
+*{margin:0;box-sizing:border-box}body{background:#06090d;color:var(--tx);font-family:var(--san);padding:34px;
+background-image:radial-gradient(rgba(120,200,230,.035) 1px,transparent 1px);background-size:26px 26px}
+.wrap{max-width:1180px;margin:0 auto}
+.lead{font-family:var(--mo);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
+h1{font-family:var(--dis);font-weight:800;font-size:30px;letter-spacing:-.02em;margin:6px 0 4px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:26px}
+.opt{margin:26px 0 40px}
+.tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mo);font-size:12px;font-weight:600;
+background:var(--s1);border:1px solid var(--line);border-radius:8px;padding:6px 12px;color:var(--teal)}
+.tag .n{color:var(--head)}.tag .d{color:var(--mut);font-weight:400}
+.frame{margin-top:12px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--ink);box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.bar{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--s1);border-bottom:1px solid var(--line)}
+.bar i{width:11px;height:11px;border-radius:50%;display:block}.r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+.bar .u{margin-left:12px;font-family:var(--mo);font-size:12px;color:var(--mut)}
+.brand{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:var(--dis);font-weight:700;font-size:14px}
+.dot{width:12px;height:12px;border-radius:4px;background:linear-gradient(135deg,var(--brand),var(--teal))}
+/* ---- shared form atoms ---- */
+.lbl{font-family:var(--mo);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);margin-bottom:7px;display:block}
+.fld{width:100%;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--tx);font-size:13.5px;font-family:var(--san)}
+.fld::placeholder{color:#5f7689}
+.seg{display:flex;background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--mut);font:600 12.5px var(--san);padding:7px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:linear-gradient(135deg,var(--brand),var(--teal));color:#04161d}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-size:12.5px;background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--mut);cursor:pointer}
+.chip.on{border-color:var(--teal);color:var(--teal);background:rgba(45,212,191,.08)}
+.cta{width:100%;border:0;border-radius:11px;padding:13px;font:700 14px var(--dis);color:#04161d;cursor:pointer;
+background:linear-gradient(100deg,var(--brand),var(--teal));display:flex;align-items:center;justify-content:center;gap:9px}
+.hint{font-size:12px;color:#5f7689;margin-top:9px}
+/* ---- A: studio two-pane ---- */
+.studio{display:grid;grid-template-columns:340px 1fr;min-height:560px}
+.rail{background:var(--s1);border-right:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+.rail h3{font-family:var(--dis);font-weight:700;font-size:16px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.pane{padding:18px 20px;background:#0c121a}
+.pane .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pane .top .m{font-family:var(--mo);font-size:12px;color:var(--mut)}
+.exp{font-size:12px;background:var(--s2);border:1px solid var(--line);border-radius:8px;padding:6px 11px;color:var(--tx);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--soft);aspect-ratio:16/9}
+.card .bg{position:absolute;inset:0;background-size:cover}
+.m1{background:radial-gradient(70% 90% at 80% 10%,rgba(45,212,191,.5),transparent 55%),linear-gradient(120deg,#06212e,#0a0f14)}
+.m2{background:radial-gradient(60% 80% at 20% 20%,rgba(21,166,214,.5),transparent 60%),linear-gradient(160deg,#0b1a24,#0a0f14)}
+.m3{background:conic-gradient(from 200deg at 70% 30%,rgba(45,212,191,.4),rgba(21,166,214,.35),transparent 60%),#0a0f14}
+.card .tx{position:absolute;inset:0;padding:11px;display:flex;flex-direction:column;justify-content:flex-end;z-index:2}
+.card .tx .e{font-family:var(--mo);font-size:7px;letter-spacing:.1em;color:var(--teal)}
+.card .tx .h{font-family:var(--dis);font-weight:700;font-size:12px;line-height:1.1;margin-top:3px}
+.card .sc{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,17,.85),transparent 60%);z-index:1}
+.tb{position:absolute;top:7px;right:7px;display:flex;gap:4px;z-index:3}
+.tb b{width:23px;height:23px;border-radius:6px;background:rgba(8,12,17,.82);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--tx);font-size:11px;cursor:pointer}
+.card.active{outline:2px solid var(--teal);outline-offset:1px}
+.num{position:absolute;top:7px;left:8px;font-family:var(--mo);font-size:9px;color:#a9c2d4;z-index:3}
+/* ---- B: prompt-first ---- */
+.pf{padding:54px 40px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;
+background:radial-gradient(60% 50% at 50% 0%,rgba(21,166,214,.14),transparent 60%)}
+.pf .eye{font-family:var(--mo);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal)}
+.pf h2{font-family:var(--dis);font-weight:800;font-size:32px;letter-spacing:-.02em;margin:12px 0 22px;max-width:620px}
+.pf h2 .gr{background:linear-gradient(100deg,var(--brand),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.box{width:100%;max-width:680px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:left;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.box .pq{font-size:16px;color:var(--tx)}.box .pqm{color:#5f7689}
+.box .row{display:flex;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.miniseg{display:inline-flex;background:var(--ink);border:1px solid var(--line);border-radius:9px;padding:2px;gap:2px}
+.miniseg span{font-size:11.5px;padding:5px 9px;border-radius:7px;color:var(--mut);font-weight:600}
+.miniseg span.on{background:linear-gradient(135deg,var(--brand),var(--teal));color:#04161d}
+.go{margin-left:auto;border:0;border-radius:10px;padding:9px 18px;font:700 13px var(--dis);color:#04161d;background:linear-gradient(100deg,var(--brand),var(--teal));cursor:pointer}
+.adv{width:100%;max-width:680px;margin-top:12px;background:var(--ink);border:1px dashed var(--line);border-radius:12px;padding:13px 15px;text-align:left}
+.adv .t{font-family:var(--mo);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.strip{display:flex;gap:10px;margin-top:24px;width:100%;max-width:720px;justify-content:center}
+.strip .card{width:128px;aspect-ratio:16/9}
+.pflbl{font-family:var(--mo);font-size:11px;color:#5f7689;margin-top:10px}
+</style></head>
+<body><div class="wrap">
+<div class="lead">VerbaDeck · deck generator · UI directions</div>
+<h1>Two ways to drive it — react &amp; pick</h1>
+<div class="sub">Same engine (AI picks layout → real text → AI/stock/upload image in the slot). Different cockpit.</div>
+
+<!-- OPTION A -->
+<div class="opt">
+<span class="tag"><span class="n">Option A</span> <span class="d">· “Deck Studio” — everything visible, power-user (Gamma/Beautiful.ai lane)</span></span>
+<div class="frame"><div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span class="u">verbadeck — new deck</span><span class="brand"><span class="dot"></span>VerbaDeck</span></div>
+<div class="studio">
+  <div class="rail">
+    <h3>New deck</h3>
+    <div class="sec"><span class="lbl">Topic</span><textarea class="fld" rows="2" placeholder="Investor pitch for VerbaDeck…">Series A pitch — voice-driven presentations</textarea></div>
+    <div class="sec"><span class="lbl">Audience</span><input class="fld" value="Seed & Series A VCs"/></div>
+    <div class="sec"><span class="lbl">Imagery — source</span>
+      <div class="seg"><button class="on">✦ AI</button><button>▦ Stock</button><button>⬆ Upload</button></div></div>
+    <div class="sec"><span class="lbl">Art direction <span style="color:#5f7689;text-transform:none;letter-spacing:0">· who appears / style</span></span>
+      <input class="fld" placeholder="e.g. Black women founders, documentary, warm light"/></div>
+    <div class="sec"><span class="lbl">Style</span><div class="chips"><span class="chip on">Photographic</span><span class="chip">Illustration</span><span class="chip">Abstract</span><span class="chip">3D</span></div></div>
+    <div class="sec"><span class="lbl">Design</span><div class="chips"><span class="chip on">Layouts: Auto ▾</span><span class="chip">6 slides ▾</span><span class="chip">16:9 ▾</span><span class="chip">Tone: Bold ▾</span></div></div>
+    <button class="cta">✦ Generate deck</button>
+    <div class="hint">Or start from the Knowledge Brain / paste content.</div>
+  </div>
+  <div class="pane">
+    <div class="top"><span class="m">6 slides · 16:9 · auto-layout</span><button class="exp">Export ▾ PNG</button></div>
+    <div class="grid">
+      <div class="card active"><div class="bg m1"></div><div class="sc"></div><span class="num">01</span>
+        <div class="tb"><b>↻</b><b>✎</b><b>▦</b><b>⬆</b><b>🔒</b></div>
+        <div class="tx"><span class="e">SERIES A · 2026</span><span class="h">Present hands-free</span></div></div>
+      <div class="card"><div class="bg m2"></div><div class="sc"></div><span class="num">02</span><div class="tx"><span class="e">PROBLEM</span><span class="h">Founders lose the room</span></div></div>
+      <div class="card"><div class="bg m3"></div><div class="sc"></div><span class="num">03</span><div class="tx"><span class="e">TRACTION</span><span class="h">38% MoM growth</span></div></div>
+      <div class="card"><div class="bg m2"></div><div class="sc"></div><span class="num">04</span><div class="tx"><span class="e">HOW</span><span class="h">Say a word, it advances</span></div></div>
+      <div class="card"><div class="bg m1"></div><div class="sc"></div><span class="num">05</span><div class="tx"><span class="e">MARKET</span><span class="h">$50B by 2028</span></div></div>
+      <div class="card"><div class="bg m3"></div><div class="sc"></div><span class="num">06</span><div class="tx"><span class="e">THE ASK</span><span class="h">Raising our seed</span></div></div>
+    </div>
+    <div class="hint" style="margin-top:13px">Hover any slide → <b style="color:var(--teal)">↻</b> regenerate image · <b style="color:var(--teal)">✎</b> edit text · <b style="color:var(--teal)">▦</b> stock · <b style="color:var(--teal)">⬆</b> upload · <b style="color:var(--teal)">🔒</b> lock.</div>
+  </div>
+</div></div></div>
+
+<!-- OPTION B -->
+<div class="opt">
+<span class="tag"><span class="n">Option B</span> <span class="d">· “Prompt-first” — one box, minimal, advanced tucked away (chat-to-deck lane)</span></span>
+<div class="frame"><div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span class="u">verbadeck — create</span><span class="brand"><span class="dot"></span>VerbaDeck</span></div>
+<div class="pf">
+  <div class="eye">Make a deck</div>
+  <h2>Describe it. We’ll <span class="gr">design &amp; illustrate</span> it.</h2>
+  <div class="box">
+    <div class="pq">A Series A pitch for VerbaDeck for <b>seed &amp; Series A VCs</b> — punchy, 6 slides.<span class="pqm"> |</span></div>
+    <div class="row">
+      <div class="miniseg" title="image source"><span class="on">✦ AI</span><span>▦ Stock</span><span>⬆ Upload</span></div>
+      <span class="chip on">🎨 Photographic</span>
+      <span class="chip">⚙ Advanced</span>
+      <button class="go">Generate →</button>
+    </div>
+  </div>
+  <div class="adv">
+    <div class="t">Art direction · who appears / style  <span style="color:#5f7689">(optional — AI decides if blank)</span></div>
+    <input class="fld" placeholder="e.g. Black women founders, documentary photography, warm natural light"/>
+  </div>
+  <div class="strip">
+    <div class="card"><div class="bg m1"></div><div class="sc"></div><div class="tx"><span class="h" style="font-size:10px">Present hands-free</span></div></div>
+    <div class="card"><div class="bg m2"></div><div class="sc"></div><div class="tx"><span class="h" style="font-size:10px">Founders lose the room</span></div></div>
+    <div class="card"><div class="bg m3"></div><div class="sc"></div><div class="tx"><span class="h" style="font-size:10px">38% MoM growth</span></div></div>
+    <div class="card" style="display:flex;align-items:center;justify-content:center"><div class="bg m1" style="opacity:.4"></div><span style="z-index:2;font-family:var(--mo);font-size:11px;color:var(--ink2)">+3 more…</span></div>
+  </div>
+  <div class="pflbl">slides stream in as they’re designed · click any to refine</div>
+</div></div></div>
+
+</div></body></html>

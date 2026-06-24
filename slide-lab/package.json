@@ -1,0 +1,1 @@
+{"name":"slide-lab","private":true,"type":"module","description":"Scratch: testing slide-gen tools + building our AI-layout+image pipeline","dependencies":{"pptxgenjs":"^4.0.1","replicate":"^1.4.0"}}

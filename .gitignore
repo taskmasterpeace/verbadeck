@@ -65,3 +65,13 @@ scripts/verify-*.mjs
 claude*.bat
 tests/screenshots/
 # Curated README/docs images are kept under docs/screenshots/ (not ignored)
+
+# slide-gen experiments
+/slide-lab/node_modules/
+/slide-lab/out/
+
+# runtime data + scratch audit tooling
+/server/data/
+scripts/walk.mjs
+scripts/journey-sheet.mjs
+scripts/mobile-sheet.mjs

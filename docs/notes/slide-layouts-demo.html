@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerbaDeck — programmatic slide layouts (real text + image slots)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0a0f14; --ink2:#0d141c; --brand:#0076A5; --brand-light:#15a6d6; --teal:#2dd4bf;
+    --paper:#f6f9fb; --line:#22303d;
+    --sans:'Inter',system-ui,sans-serif; --display:'Sora',var(--sans); --mono:'JetBrains Mono',monospace;
+  }
+  *{margin:0;box-sizing:border-box}
+  body{background:#0a0d11;font-family:var(--sans);padding:32px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .cap{align-self:flex-start;width:920px;margin:6px auto 0;font-family:var(--mono);font-size:12px;color:#8da2b5;letter-spacing:.04em}
+  .cap b{color:var(--teal)}
+  /* a slide is a fixed 16:9 stage; everything inside is REAL DOM text + image slots */
+  .slide{width:920px;height:517px;border-radius:16px;overflow:hidden;position:relative;
+    box-shadow:0 24px 70px rgba(0,0,0,.5);color:#eaf2f8;background:var(--ink)}
+  .slot{position:absolute;inset:0;background-size:cover;background-position:center}
+  /* "AI image slot" backgrounds — these are the ONLY thing a model generates */
+  .mesh1{background:radial-gradient(70% 90% at 80% 10%,rgba(45,212,191,.5),transparent 55%),radial-gradient(80% 80% at 10% 90%,rgba(21,166,214,.55),transparent 55%),linear-gradient(120deg,#06212e,#0a0f14)}
+  .mesh2{background:radial-gradient(60% 80% at 20% 20%,rgba(21,166,214,.45),transparent 60%),linear-gradient(160deg,#0b1a24,#0a0f14)}
+  .mesh3{background:conic-gradient(from 200deg at 70% 30%,rgba(45,212,191,.4),rgba(21,166,214,.35),transparent 60%),linear-gradient(#081019,#0a0f14)}
+  .grid{position:absolute;inset:0;background-image:radial-gradient(rgba(140,210,235,.07) 1px,transparent 1px);background-size:26px 26px;opacity:.6}
+  .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,12,17,.92) 38%,rgba(8,12,17,.25) 72%,transparent)}
+  .scrim-b{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,17,.95),transparent 55%)}
+  .pad{position:absolute;inset:0;padding:54px 60px;display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal)}
+  h1{font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:1.04}
+  .grad{background:linear-gradient(100deg,var(--brand-light),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .muted{color:#9fb3c4}
+  .brandmark{position:absolute;top:34px;right:40px;display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;color:#dbe9f2;font-size:15px}
+  .dot{width:11px;height:11px;border-radius:3px;background:linear-gradient(135deg,var(--brand-light),var(--teal))}
+  ul.bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:8px}
+  ul.bul li{display:flex;gap:13px;font-size:21px;line-height:1.35;color:#dceaf4}
+  ul.bul .n{font-family:var(--mono);color:var(--teal);font-size:15px;padding-top:4px}
+  /* split layout */
+  .split{display:grid;grid-template-columns:42% 58%}
+  .split .img{position:relative}
+  .split .body{padding:52px 56px;display:flex;flex-direction:column;justify-content:center;background:var(--ink)}
+  .page{position:absolute;bottom:26px;left:60px;font-family:var(--mono);font-size:12px;color:#5f7689}
+</style>
+</head>
+<body>
+
+<!-- 1. TITLE / HERO -->
+<div class="cap"><b>01 · Title</b> — real text over an AI-generated background slot</div>
+<div class="slide">
+  <div class="slot mesh1"></div><div class="grid"></div>
+  <div class="brandmark"><span class="dot"></span> VerbaDeck</div>
+  <div class="pad">
+    <span class="eyebrow">Series A · 2026</span>
+    <h1 style="font-size:64px;margin-top:14px">Present <span class="grad">hands-free.</span></h1>
+    <p class="muted" style="font-size:23px;margin-top:18px;max-width:600px">Your voice runs the deck — and AI answers the room, live, from your own knowledge.</p>
+  </div>
+</div>
+
+<!-- 2. SPLIT image/text -->
+<div class="cap"><b>02 · Split</b> — image slot left, real heading + bullets right</div>
+<div class="slide split">
+  <div class="img"><div class="slot mesh2"></div><div class="grid"></div></div>
+  <div class="body">
+    <span class="eyebrow">The problem</span>
+    <h1 style="font-size:33px;margin-top:12px">Founders lose the room the second they reach for a clicker.</h1>
+    <ul class="bul">
+      <li><span class="n">01</span> Eyes drop to a laptop; momentum dies.</li>
+      <li><span class="n">02</span> Hard questions derail the narrative.</li>
+      <li><span class="n">03</span> Notes and slides drift out of sync.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3. BIG STAT -->
+<div class="cap"><b>03 · Big stat</b> — auto-fit numerals, perfectly legible every time</div>
+<div class="slide">
+  <div class="slot mesh3"></div><div class="grid"></div>
+  <div class="pad" style="justify-content:center">
+    <span class="eyebrow">Traction</span>
+    <div style="font-family:var(--display);font-weight:800;font-size:140px;line-height:.9;letter-spacing:-.03em;margin-top:6px" class="grad">38%</div>
+    <p style="font-size:24px;margin-top:14px;max-width:560px">month-over-month growth in active presenters, with 18 months of runway.</p>
+  </div>
+</div>
+
+<!-- 4. QUOTE -->
+<div class="cap"><b>04 · Quote</b> — pull-quote layout, attribution as real text</div>
+<div class="slide">
+  <div class="slot mesh2"></div>
+  <div class="pad">
+    <div style="font-family:var(--display);font-weight:700;font-size:38px;line-height:1.25;max-width:720px">“The first time I pitched without touching a clicker, I actually <span class="grad">held the room.</span>”</div>
+    <div style="margin-top:26px;font-size:17px" class="muted">— Design partner, seed-stage fund</div>
+  </div>
+</div>
+
+<!-- 5. IMAGE-FORWARD lower third -->
+<div class="cap"><b>05 · Image-forward</b> — full AI image, real text in a lower-third</div>
+<div class="slide">
+  <div class="slot mesh1"></div><div class="scrim-b"></div>
+  <div class="brandmark"><span class="dot"></span> VerbaDeck</div>
+  <div class="pad" style="justify-content:flex-end">
+    <span class="eyebrow">How it works</span>
+    <h1 style="font-size:40px;margin-top:10px;max-width:640px">Say a trigger word. The slide advances. AI fields the question.</h1>
+  </div>
+  <div class="page">03 / 12</div>
+</div>
+
+</body>
+</html>
