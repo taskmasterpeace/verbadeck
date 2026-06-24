@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!-- Navigable user-guide shell. Rendered by user-guide-builder/scripts/render-guide.mjs from a
+     markdown guide + docs/brand.json. Self-contained; filtering/scrollspy are progressive JS. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VerbaDeck — User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f14;
+    --surface:#121922;
+    --border:#243140;
+    --border-soft:#1a232e;
+    --text:#e6eef5;
+    --muted:#8da2b5;
+    --heading:#f4f9fd;
+    --brand:#15a6d6;
+    --accent:#2dd4bf;
+    --accent-ink:#7fd6ec;
+    --grid:rgba(120,200,230,.03);
+    --radius:14px;
+    --maxw:60rem;
+    --sidebar-w:17rem;
+    --font-display:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;letter-spacing:-0.006em;
+    background-image:
+      radial-gradient(110% 50% at 50% -10%, color-mix(in oklab,var(--brand) 14%, transparent), transparent 60%),
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:auto,34px 34px,34px 34px;}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .layout{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr);gap:2.5rem;padding:0 1.4rem}
+  .toc-toggle{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+  /* ---------------- sidebar ---------------- */
+  .sidebar{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:1.6rem 0 2rem;
+    scrollbar-width:thin}
+  .brand{display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem}
+  .brand .logo{width:1.7rem;height:1.7rem;border-radius:7px;background:var(--brand);display:grid;place-items:center;
+    color:#fff;font-family:var(--font-display);font-weight:700;font-size:.95rem;flex:none}
+  .brand .name{font-family:var(--font-display);font-weight:700;color:var(--heading);font-size:1.05rem;letter-spacing:-0.02em}
+  .ver{display:inline-block;font-family:var(--font-mono);font-size:.72rem;color:var(--brand);
+    border:1px solid color-mix(in oklab,var(--brand) 40%,var(--border));border-radius:6px;padding:.06rem .4rem;margin:.5rem 0 1rem;
+    background:color-mix(in oklab,var(--brand) 10%,transparent)}
+  .toc-search{width:100%;font:inherit;font-size:.85rem;color:var(--text);background:var(--surface);
+    border:1px solid var(--border);border-radius:9px;padding:.5rem .7rem;margin-bottom:.9rem;outline:none}
+  .toc-search:focus{border-color:var(--brand)}
+  .toc-search::placeholder{color:var(--muted)}
+  .toc{display:block}
+  .toc a{display:block;color:var(--muted);font-size:.86rem;padding:.27rem .65rem;border-left:2px solid transparent;
+    border-radius:0 6px 6px 0;text-decoration:none;transition:color .15s,border-color .15s,background .15s}
+  .toc a:hover{color:var(--text);background:var(--surface)}
+  .toc a.lvl3{padding-left:1.5rem;font-size:.81rem}
+  .toc a.active{color:var(--heading);border-left-color:var(--brand);background:color-mix(in oklab,var(--brand) 10%,transparent)}
+  .toc-label{display:none}
+
+  /* ---------------- content ---------------- */
+  .content{padding:2.4rem 0 5rem;min-width:0}
+  .content :where(h1,h2,h3,h4){font-family:var(--font-display);color:var(--heading);letter-spacing:-0.025em;line-height:1.15;scroll-margin-top:1.2rem}
+  .content h1{font-size:clamp(2rem,5vw,2.7rem);margin:0 0 .3rem}
+  .content h2{font-size:1.5rem;margin:2.8rem 0 1rem;padding-top:1.6rem;border-top:1px solid var(--border-soft)}
+  .content h3{font-size:1.14rem;margin:1.8rem 0 .6rem;color:var(--heading)}
+  .content h4{font-size:1rem;margin:1.3rem 0 .4rem;color:var(--text)}
+  .content p{margin:.85rem 0;color:var(--text)}
+  .content strong{color:var(--heading);font-weight:700}
+  .content a{color:var(--brand)}
+  .content ul,.content ol{margin:.8rem 0;padding-left:1.3rem;color:var(--text)}
+  .content li{margin:.34rem 0}
+  .content li::marker{color:var(--muted)}
+  .content code{font-family:var(--font-mono);font-size:.84em;background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:5px;padding:.08em .35em;color:var(--accent-ink)}
+  .content pre{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:1rem 1.1rem;overflow:auto;margin:1.1rem 0}
+  .content pre code{background:none;border:0;padding:0;color:var(--text);font-size:.85rem;line-height:1.6}
+  .content blockquote{margin:1.1rem 0;padding:.7rem 1.1rem;border-left:3px solid var(--brand);
+    background:color-mix(in oklab,var(--brand) 7%,transparent);border-radius:0 9px 9px 0;color:var(--muted)}
+  .content blockquote p{margin:.2rem 0}
+  .content hr{border:0;border-top:1px solid var(--border-soft);margin:2rem 0}
+  .content img{max-width:100%;height:auto;border:1px solid var(--border);border-radius:11px;margin:1rem 0;display:block}
+  .table-wrap{overflow-x:auto;margin:1.1rem 0;border:1px solid var(--border);border-radius:11px}
+  .content table{border-collapse:collapse;width:100%;font-size:.9rem}
+  .content th,.content td{text-align:left;padding:.6rem .85rem;border-bottom:1px solid var(--border-soft);vertical-align:top}
+  .content thead th{background:var(--surface);color:var(--heading);font-weight:600;font-family:var(--font-body);
+    position:sticky;top:0;white-space:nowrap}
+  .content tbody tr:last-child td{border-bottom:0}
+  .content tbody tr:hover{background:color-mix(in oklab,var(--brand) 5%,transparent)}
+
+  .hero-tag{color:var(--muted);font-size:1.05rem;margin:.1rem 0 0}
+  .foot{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--border-soft);color:var(--muted);font-size:.82rem}
+  .foot .mono{font-family:var(--font-mono)}
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;gap:0}
+    .sidebar{position:static;height:auto;padding:1.4rem 0 .4rem;border-bottom:1px solid var(--border-soft)}
+    .toc-label{display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--heading);
+      font-weight:600;font-size:.92rem;padding:.5rem 0;font-family:var(--font-body)}
+    .toc-label .chev{transition:transform .2s;color:var(--muted)}
+    .toc,.toc-search{display:none}
+    #toc-toggle:checked ~ .sidebar .toc,#toc-toggle:checked ~ .sidebar .toc-search{display:block}
+    #toc-toggle:checked ~ .sidebar .toc-label .chev{transform:rotate(180deg)}
+    .content{padding:1.4rem 0 4rem}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <input type="checkbox" id="toc-toggle" class="toc-toggle">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">V</span><span class="name">VerbaDeck</span></div>
+    <span class="ver">v1.2.0</span>
+    <label for="toc-toggle" class="toc-label">On this page <span class="chev">▾</span></label>
+    <input type="search" class="toc-search" placeholder="Filter sections…" aria-label="Filter sections">
+    <nav class="toc" aria-label="Table of contents">
+      <a class="" href="#getting-in-sign-in-or-join-the-waitlist-available">Getting in — sign in or join the waitlist (Available)</a>
+      <a class="" href="#the-dashboard-available">The Dashboard (Available)</a>
+      <a class="" href="#creating-a-presentation">Creating a presentation</a>
+      <a class="lvl3" href="#create-from-scratch-available">Create from Scratch (Available)</a>
+      <a class="lvl3" href="#process-existing-content-available">Process Existing Content (Available)</a>
+      <a class="" href="#the-editor-available">The Editor (Available)</a>
+      <a class="" href="#presenting-the-presenter-view-voice-control-available">Presenting — the Presenter view + voice control (Available)</a>
+      <a class="lvl3" href="#live-qa-while-presenting-available">Live Q&amp;A while presenting (Available)</a>
+      <a class="" href="#audience-view-the-second-screen-available">Audience view — the second screen (Available)</a>
+      <a class="" href="#phone-remote-the-controller-available">Phone remote — the Controller (Available)</a>
+      <a class="" href="#know-it-all-wall-available">Know It All Wall (Available)</a>
+      <a class="" href="#knowledge-brain-available">Knowledge Brain (Available)</a>
+      <a class="" href="#library-available">Library (Available)</a>
+      <a class="" href="#settings-available">Settings (Available)</a>
+      <a class="" href="#on-the-roadmap-planned">On the roadmap (Planned)</a>
+      <a class="" href="#the-owner-account-waitlist-available">The owner account &amp; waitlist (Available)</a>
+      <a class="" href="#password-recovery-available-new-in-v120">Password recovery (Available — new in v1.2.0)</a>
+      <a class="" href="#running-it-behind-the-cloudflare-named-tunnel-available">Running it behind the Cloudflare named tunnel (Available)</a>
+      <a class="" href="#admin-gotchas-learned-the-hard-way">⚠️ Admin gotchas (learned the hard way)</a>
+      <a class="" href="#environment-keys">Environment &amp; keys</a>
+      <a class="" href="#troubleshooting">Troubleshooting</a>
+    </nav>
+  </aside>
+  <main class="content">
+<h1 id="verbadeck-user-admin-guide">VerbaDeck — User &amp; Admin Guide</h1>
+<p><em>Current as of <strong>v1.2.0</strong> (see <a href="VERSION">docs/VERSION</a>). What changed across releases: <a href="SHIPPING-LOG.md">SHIPPING-LOG.md</a>.</em></p>
+<p>VerbaDeck is a <strong>voice-driven presentation studio</strong>: you speak, and your slides advance on their own when you say a trigger word — no clicker, no keyboard. While you present, it listens for questions and answers them live from your own deck and your <strong>Knowledge Brain</strong>. It runs as a <strong>private, single-owner internal tool</strong> behind your own URL.</p>
+<p>This guide has two halves: <strong>Part 1 — Using VerbaDeck</strong> (for you, the presenter) and <strong>Part 2 — Admin &amp; Self-hosting</strong> (running it, the owner account, and the Cloudflare tunnel).</p>
+<blockquote><strong>Feature maturity</strong> is tagged on each section: <strong>(Available)</strong> ships today · <strong>(Partial)</strong> works with caveats · <strong>(Planned)</strong> designed, not yet built.</blockquote>
+<p>[SCREENSHOT: home-hero]</p>
+<hr>
+<h1 id="part-1-using-verbadeck">Part 1 — Using VerbaDeck</h1>
+<h2 id="getting-in-sign-in-or-join-the-waitlist-available">Getting in — sign in or join the waitlist (Available)</h2>
+<p><strong>What it does.</strong> VerbaDeck is invite-only. The single owner signs in to use the app; everyone else can request access and is added to a waitlist. <strong>Where.</strong> The first screen you see when you open the app (the landing gate). <strong>Steps (owner).</strong></p>
+<ol><li>On the gate, keep the <strong>Sign in</strong> tab selected.</li><li>Enter the owner <strong>email</strong> and <strong>password</strong>.</li><li>Click <strong>Sign in</strong> — the full app loads.</li></ol>
+<p><strong>Steps (everyone else).</strong></p>
+<ol><li>Click the <strong>Request access</strong> tab.</li><li>Enter your email (name + a note are optional) and click <strong>Join the waitlist</strong>.</li><li>You'll see "You're on the list."</li></ol>
+<p><strong>What you'll see.</strong> Signed in: the deep-ink sidebar (Dashboard, Create, Editor, Presenter, Know It All Wall, Knowledge Brain, Library) and a <strong>Sign out</strong> button at the bottom. Not signed in: the landing page with the "what's new" snippet and the sign-in / request-access card. <strong>Limitations.</strong> One owner account only. Forgot the password? See <em>Admin → Password recovery</em>.</p>
+<p>[SCREENSHOT: landing-gate]</p>
+<h2 id="the-dashboard-available">The Dashboard (Available)</h2>
+<p><strong>What it does.</strong> Your home base and the fastest way to start. <strong>Where.</strong> Sidebar → <strong>Dashboard</strong> (the <code>/</code> route). <strong>Steps.</strong> The quickest start is <strong>"Try a live sample pitch"</strong> — it loads a ready 4-slide investor deck and drops you into the Presenter so you can experience voice control with zero setup. Below that are the three creation paths as cards: <strong>Create from Scratch</strong>, <strong>Process Existing Content</strong>, and <strong>Know It All Wall</strong>. <strong>What you'll see.</strong> The "Present hands-free" hero, the say-a-word → slide-advances → AI-fields-the- question flow, and the three cards. <strong>Limitations.</strong> Presentations aren't auto-saved to the server; use <strong>Library</strong> to keep them (below).</p>
+<h2 id="creating-a-presentation">Creating a presentation</h2>
+<h3 id="create-from-scratch-available">Create from Scratch (Available)</h3>
+<p><strong>What it does.</strong> An AI-guided wizard that turns a topic into a structured deck with trigger words and speaker notes. <strong>Where.</strong> Sidebar → <strong>Create → From Scratch</strong> (<code>/create/scratch</code>). <em>(Note: visiting <code>/create</code> sends you straight here.)</em> <strong>Steps.</strong></p>
+<ol><li>Enter your <strong>topic</strong> and answer the guided questions the AI asks.</li><li>Review the generated sections; each gets a heading, content, and a suggested <strong>trigger word</strong>.</li><li>Send it to the <strong>Editor</strong> to refine, or to the <strong>Presenter</strong> to start.</li></ol>
+<p><strong>Example.</strong> Topic "Series A pitch for a voice app" → a title slide, problem, solution, traction, and ask, each with a trigger like "problem" or "traction". <strong>What you'll see.</strong> A step-by-step form, then a list of sections you can edit. <strong>Limitations.</strong> Generation quality depends on the model; always skim the result before presenting.</p>
+<h3 id="process-existing-content-available">Process Existing Content (Available)</h3>
+<p><strong>What it does.</strong> Paste raw text (notes, a script, an outline) and AI splits it into slides with trigger words. <strong>Where.</strong> Sidebar → <strong>Create → Process Content</strong> (<code>/create/process</code>). <strong>Steps.</strong> Pick an AI model (optional), paste your text, and run it. Review the sections it produces. <strong>What you'll see.</strong> A text box and a model selector; output is a set of editable sections. <strong>Limitations.</strong> Very long inputs may be summarized; check important details survived.</p>
+<h2 id="the-editor-available">The Editor (Available)</h2>
+<p><strong>What it does.</strong> Edit every part of a slide: heading, content, speaker notes (rich text), the active <strong>trigger words</strong>, and an optional image. Also where you manage the <strong>Knowledge Base</strong> (Q&amp;A pairs) and test triggers. <strong>Where.</strong> Sidebar → <strong>Editor</strong> (<code>/editor</code>). <strong>Steps.</strong></p>
+<ol><li>Select a section.</li><li>Edit the heading/content; write <strong>speaker notes</strong> (markdown supported).</li><li>Toggle which <strong>trigger words</strong> are active for that slide (the AI suggests alternatives; you pick).</li><li>Optionally add an image.</li></ol>
+<p><strong>What you'll see.</strong> A sections list, a rich editor, and trigger toggles. With no deck loaded you get a "No presentation loaded" screen with buttons to create or load one. <strong>Limitations.</strong> Triggers match the spoken word with simple plural handling ("moment" matches "moments"); pick distinctive words to avoid accidental advances.</p>
+<p>[SCREENSHOT: editor]</p>
+<h2 id="presenting-the-presenter-view-voice-control-available">Presenting — the Presenter view + voice control (Available)</h2>
+<p><strong>What it does.</strong> The core of VerbaDeck. You present; saying a slide's trigger word advances the audience instantly, and a countdown then updates your notes so you can finish your thought. <strong>Where.</strong> Sidebar → <strong>Presenter</strong> (<code>/presenter</code>). Start voice with the <strong>Voice</strong> button (top right) or <strong>Start Listening</strong> in the status bar. <strong>Steps.</strong></p>
+<ol><li>Open Presenter with a deck loaded.</li><li>Click <strong>Voice</strong> and <strong>allow the microphone</strong> when the browser asks.</li><li>Speak naturally. When you say the current slide's trigger word, the slide advances; say <strong>"back"</strong> (or "previous") to go back.</li><li>To advance without speaking, use the <strong>← / →</strong> arrow keys.</li></ol>
+<p><strong>What you'll see.</strong> A presenter cockpit: the current slide, your speaker notes, the trigger words, a countdown bar between trigger and note-change, and a live transcript ticker at the bottom. <strong>Limitations.</strong> The microphone needs permission, and off-<code>localhost</code> it needs an <strong>https</strong> URL (the tunnel provides this). If the mic is blocked, missing, or busy, you'll get a clear message telling you how to fix it — and the arrow keys always work as a fallback.</p>
+<p>[SCREENSHOT: presenter]</p>
+<h3 id="live-qa-while-presenting-available">Live Q&amp;A while presenting (Available)</h3>
+<p><strong>What it does.</strong> When you (or the room) ask a question aloud, VerbaDeck detects it and generates an answer drawn from your current deck <strong>and</strong> your Knowledge Brain. <strong>Where.</strong> Inside Presenter, with voice running. <strong>What you'll see.</strong> A question panel with a quick answer and key points; you can pick a tone. <strong>Limitations.</strong> Question detection works best with a clear question ("how do you…?"). Answers are grounded in your content; if the Knowledge Brain is empty it answers from the deck only.</p>
+<h2 id="audience-view-the-second-screen-available">Audience view — the second screen (Available)</h2>
+<p><strong>What it does.</strong> A clean, cinematic, controls-free slide for your projector or second monitor, kept in sync with what you present. <strong>Where.</strong> Open it from <strong>Presenter → "Open Audience View"</strong> (it opens the <code>/audience</code> route in a new window you drag to the projector). <strong>What you'll see.</strong> A full-bleed slide. Opened on its own with nothing live, it shows a <strong>"Waiting for the presentation to begin…"</strong> state with a hint that it's launched from the Presenter. <strong>Limitations.</strong> Sync uses the browser's BroadcastChannel — keep the audience window in the <strong>same browser</strong> as the Presenter.</p>
+<h2 id="phone-remote-the-controller-available">Phone remote — the Controller (Available)</h2>
+<p><strong>What it does.</strong> Use your phone as a remote: advance slides, and trigger Q&amp;A, from your hand. <strong>Where.</strong> The <code>/controller</code> route on your phone. <strong>Steps.</strong> Start a presentation on your laptop, then on the phone enter the <strong>6-character room code</strong> shown on the presenter's screen and tap <strong>Connect</strong>. <strong>What you'll see.</strong> A pairing screen, then big Prev/Next buttons, the current slide number, your notes, and a Q&amp;A toggle. <strong>Limitations.</strong> Needs an active presentation to pair with; the phone must reach the same server.</p>
+<h2 id="know-it-all-wall-available">Know It All Wall (Available)</h2>
+<p><strong>What it does.</strong> A standalone Q&amp;A practice/answer mode — load a knowledge base of Q&amp;A pairs and get voice-activated, keyword-confirmed answers. Great for rehearsing tough questions. <strong>Where.</strong> Sidebar → <strong>Know It All Wall</strong> (<code>/know-it-all</code>). <strong>Steps.</strong> Load or build a knowledge base (or use a <strong>Quick Load Preset</strong>), pick a tone, and start. <strong>What you'll see.</strong> A setup panel with presets and tone, then the answer wall. <strong>Limitations.</strong> Presets are stored in your browser. On very narrow phones the preset controls wrap to fit (fixed in v1.2.0).</p>
+<h2 id="knowledge-brain-available">Knowledge Brain (Available)</h2>
+<p><strong>What it does.</strong> Dump a large, growing body of text (company docs, transcripts, research, FAQs) and recall it instantly during live Q&amp;A. It chunks, embeds, and indexes everything, then retrieves the few most relevant passages to answer in about a second. <strong>Where.</strong> Sidebar → <strong>Knowledge Brain</strong> (<code>/knowledge</code>). <strong>Steps.</strong></p>
+<ol><li>In <strong>Add to the brain</strong>, paste text (an optional title helps) and click <strong>Add to brain</strong>.</li><li>Each document is auto-given a title and topic tags.</li><li>Use <strong>Test a question</strong> to see what it retrieves and how it answers; <strong>Sources</strong> show what it used.</li><li>Remove a document with the trash icon.</li></ol>
+<p><strong>Example.</strong> Paste your company metrics; on stage, ask "what's our runway?" and the live Q&amp;A answers from it. <strong>What you'll see.</strong> Two cards (add / ask), stats ("N documents · N chunks indexed · embed provider"), and an indexed-documents list. With nothing added, the Ask box hints "Add a document first." <strong>Limitations.</strong> The brain is shared across the app (one pool); per-presentation knowledge sets are <strong>(Planned)</strong>.</p>
+<p>[SCREENSHOT: knowledge-brain]</p>
+<h2 id="library-available">Library (Available)</h2>
+<p><strong>What it does.</strong> Save presentations and reload them later (since decks aren't auto-persisted to the server). <strong>Where.</strong> Sidebar → <strong>Library</strong> (<code>/library</code>). <strong>Steps.</strong> Save the current deck; later, load any saved deck back into the Editor/Presenter. <strong>Limitations.</strong> Stored in your browser unless exported.</p>
+<h2 id="settings-available">Settings (Available)</h2>
+<p><strong>What it does.</strong> Adjust app preferences — including the <strong>countdown duration</strong> (1–10s between a trigger and your notes changing) and the <strong>cancel word</strong>. <strong>Where.</strong> Sidebar footer → <strong>Settings</strong> (opens a side panel; there is no separate page). <strong>Limitations.</strong> A built-in editor for the Quick Load Presets, and a model-context meter, are <strong>(Planned)</strong>.</p>
+<h2 id="on-the-roadmap-planned">On the roadmap (Planned)</h2>
+<ul><li><strong>AI deck generator</strong> — describe a topic and the AI designs each slide's layout, writes the real text, and generates the image: layout-driven rendering with perfect text + AI/stock/uploaded images in the picture slot. Designed and prototyped (<code>slide-lab/</code>), not yet in the app.</li><li><strong>Image Picker</strong> — a unified per-slide picker (AI variations · a Stock gallery with AI-suggested search terms · Upload), with mixable sources across one deck.</li><li><strong>PPTX export</strong>, <strong>per-presentation knowledge sets</strong>, and an in-Settings <strong>preset editor</strong>.</li></ul>
+<hr>
+<h1 id="part-2-admin-self-hosting">Part 2 — Admin &amp; Self-hosting</h1>
+<p>VerbaDeck runs on <strong>your</strong> machine and is exposed privately over a <strong>Cloudflare named tunnel</strong> — so the app, its API, the voice WebSocket, and your API keys all stay on your computer, reachable at your own HTTPS URL. Full reference: <strong><a href="DEPLOY-TUNNEL.md">DEPLOY-TUNNEL.md</a></strong>.</p>
+<h2 id="the-owner-account-waitlist-available">The owner account &amp; waitlist (Available)</h2>
+<ul><li>The single owner is set by <code>OWNER_EMAIL</code> / <code>OWNER_PASSWORD</code> in the project <code>.env</code>. Only this email can sign in; everyone else who signs up is recorded on the waitlist.</li><li><strong>Read the waitlist:</strong> signed in as owner, <code>GET /api/waitlist</code> returns everyone who's requested access (stored in <code>.data/waitlist.json</code>).</li><li><strong>Auth scope:</strong> every <code>/api/*</code> route and the live voice socket require the owner session; the public landing/sign-in page and the waitlist signup are the only unauthenticated surfaces.</li></ul>
+<h2 id="password-recovery-available-new-in-v120">Password recovery (Available — new in v1.2.0)</h2>
+<p>Locked out? From the project root:</p>
+<pre><code>npm run reset-owner-password -- "your new password"</code></pre>
+<p>This updates <code>OWNER_PASSWORD</code> in <code>.env</code>. <strong>Restart the server</strong> to apply.</p>
+<h2 id="running-it-behind-the-cloudflare-named-tunnel-available">Running it behind the Cloudflare named tunnel (Available)</h2>
+<p>This is the "internal tool, your own URL" setup — and the exact runbook used for <code>verbadeck.machinekinglabs.com</code>.</p>
+<ol><li><strong>Build the client</strong> so the server can serve it as one origin: ``<code> npm run build:client </code>``</li><li><strong>Start the single-origin, auth-on server</strong> on port 3002: ``<code> cd server &amp;&amp; node server.js </code>`<code> You should see </code>📦 Serving built client from client/dist (single-origin mode)<code>. Confirm the gate is on: </code>curl localhost:3002/api/auth/me<code> returns </code>authenticated:false`.</li><li><strong>Run the connector</strong> (uses the tunnel token from your Cloudflare account; a saved copy lives in <code>.data/tunnel-token.txt</code>): ``<code> cloudflared tunnel run --token &lt;YOUR_TUNNEL_TOKEN&gt; </code>`` Look for "Registered tunnel connection" (×4).</li><li>Visit your hostname (e.g. <code>https://verbadeck.machinekinglabs.com</code>) → the sign-in gate → sign in. Voice, AI, and the Knowledge Brain all work because it's one secure origin (<code>wss://…/ws</code>).</li></ol>
+<p><strong>Setting it up the first time</strong> (creating the tunnel + routing a hostname) is in DEPLOY-TUNNEL.md — either the dashboard flow or <code>node scripts/tunnel-up.mjs</code>.</p>
+<h2 id="admin-gotchas-learned-the-hard-way">⚠️ Admin gotchas (learned the hard way)</h2>
+<ul><li><strong>Rebuild after code changes.</strong> The tunnel serves <code>client/dist</code>, the <em>built</em> bundle — not your source. After any fix, re-run <code>npm run build:client</code> and restart the server, or the live tool stays on the old build.</li><li><strong>Never tunnel an auth-disabled server.</strong> <code>AUTH_DISABLED=true</code> (used for local dev/tests) turns the gate off. If the connector is pointed at an auth-disabled server, your app is <strong>public with no login</strong>. Always confirm <code>authenticated:false</code> on <code>/api/auth/me</code> <em>before</em> starting <code>cloudflared</code>.</li><li><strong>Your machine must stay on.</strong> The tunnel only exposes this computer; if it sleeps, the site is down. For always-on, install <code>cloudflared</code> as a service and run the Node server under a process manager.</li><li><strong>Optional second lock:</strong> put the hostname behind <strong>Cloudflare Access</strong> (Zero Trust) allowing only your email — a network-edge gate on top of the app's own auth.</li></ul>
+<h2 id="environment-keys">Environment &amp; keys</h2>
+<p>Required in <code>.env</code>: <code>AAI_API_KEY</code> (AssemblyAI voice), <code>OPENROUTER_API_KEY</code> (AI), <code>REPLICATE_API_KEY</code> (image generation), plus <code>PEXELS_API_KEY</code> for stock images. Auth: <code>OWNER_EMAIL</code>, <code>OWNER_PASSWORD</code>, <code>AUTH_SECRET</code>. The server exits on boot if a required key is missing.</p>
+<hr>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<div class="table-wrap"><table><thead><tr><th>Symptom</th><th>Fix</th></tr></thead><tbody><tr><td>Slides won't advance by voice</td><td>Click <strong>Voice</strong> and allow the mic; check the transcript ticker is moving; use ← → as a fallback.</td></tr><tr><td>"Microphone is blocked"</td><td>Click the camera/mic icon in the address bar → <strong>Allow</strong> → press Start again. Off-localhost, use the <strong>https</strong> URL.</td></tr><tr><td>Audience screen is blank</td><td>It's launched from <strong>Presenter → Open Audience View</strong>; keep it in the same browser.</td></tr><tr><td>Phone remote won't pair</td><td>Start a presentation first; enter the <strong>6-char code</strong> from the presenter screen.</td></tr><tr><td>Live site shows an old version</td><td>Rebuild: <code>npm run build:client</code>, then restart the server.</td></tr><tr><td>Locked out of the owner account</td><td><code>npm run reset-owner-password -- "new password"</code>, then restart.</td></tr></tbody></table></div>
+<p><em>Questions about what shipped when? See <a href="SHIPPING-LOG.md">SHIPPING-LOG.md</a>.</em></p>
+    <div class="foot">VerbaDeck user guide · <span class="mono">v1.2.0</span> · updated 2026-06-24</div>
+  </main>
+</div>
+<script>
+  (function(){
+    var links=[].slice.call(document.querySelectorAll('.toc a'));
+    var search=document.querySelector('.toc-search');
+    if(search){search.addEventListener('input',function(){
+      var q=search.value.toLowerCase();
+      links.forEach(function(a){a.style.display=a.textContent.toLowerCase().indexOf(q)>-1?'':'none';});
+    });}
+    var ids=links.map(function(a){return a.getAttribute('href').slice(1);});
+    function spy(){
+      var cur=ids[0];
+      for(var i=0;i<ids.length;i++){
+        var el=document.getElementById(ids[i]);
+        if(el && el.getBoundingClientRect().top<=120) cur=ids[i];
+      }
+      links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href').slice(1)===cur);});
+    }
+    document.addEventListener('scroll',spy,{passive:true});
+    window.addEventListener('resize',spy);
+    spy();
+  })();
+</script>
+</body>
+</html>
