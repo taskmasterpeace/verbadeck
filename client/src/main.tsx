@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Link, useRouteError } from 'react-router-dom'
 import App from './App.tsx'
 import { AudiencePage } from './pages/AudiencePage.tsx'
 import { ControllerPage } from './pages/ControllerPage.tsx'
@@ -30,12 +30,38 @@ if (migrationStatus.needsMigration) {
   console.log('✅ Storage is up to date (V' + migrationStatus.version + ')');
 }
 
+// Graceful error boundary. The common case is a stale dynamic-import after a deploy (new chunk
+// hashes); we detect that and reload once into the fresh build instead of showing a raw error.
+function RouteError() {
+  const error = useRouteError() as { message?: string } | undefined;
+  const msg = (error && (error.message || String(error))) || 'Something went wrong.';
+  const isChunk = /dynamically imported module|Importing a module script failed|Failed to fetch|ChunkLoadError|error loading/i.test(msg);
+  React.useEffect(() => {
+    const last = Number(sessionStorage.getItem('vd-chunk-reloaded') || 0);
+    if (isChunk && Date.now() - last > 10000) {
+      sessionStorage.setItem('vd-chunk-reloaded', String(Date.now()));
+      window.location.reload();
+    }
+  }, [isChunk]);
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0f14', color: '#e6eef5', fontFamily: 'Inter, system-ui, sans-serif', padding: 24, textAlign: 'center' }}>
+      <div style={{ maxWidth: 440 }}>
+        <div style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 8, color: '#f4f9fd' }}>{isChunk ? 'Updating to the latest version…' : 'Something went wrong'}</div>
+        <p style={{ color: '#8da2b5', fontSize: '.95rem', marginBottom: 20 }}>{isChunk ? 'A newer version just shipped — reloading now.' : 'Try reloading the page. If it keeps happening, let us know.'}</p>
+        <button onClick={() => { sessionStorage.removeItem('vd-chunk-reloaded'); window.location.reload(); }}
+          style={{ background: 'linear-gradient(100deg,#15a6d6,#2dd4bf)', color: '#04161d', border: 0, borderRadius: 10, padding: '10px 22px', fontWeight: 600, fontSize: '.95rem', cursor: 'pointer' }}>Reload</button>
+      </div>
+    </div>
+  );
+}
+
 // Router configuration for VerbaDeck V2.0
 // App.tsx handles all main routes with proper MainLayout integration
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <RouteError />,
     children: [
       {
         // Dashboard/Home - shows CreatePresentation component

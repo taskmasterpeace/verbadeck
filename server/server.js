@@ -1336,9 +1336,19 @@ app.get('/api/prompts/:operation', (req, res) => {
 // client/dist and Express serves the whole app + API from one origin on :3002.
 const clientDist = resolve(__dirname, '..', 'client', 'dist');
 if (existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  app.use(express.static(clientDist, {
+    setHeaders: (res, filePath) => {
+      // Hashed assets are immutable; index.html must always revalidate so clients pick up new chunks.
+      if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+      else if (/[\\/]assets[\\/]/.test(filePath)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    },
+  }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/ws')) return next();
+    // A missing hashed asset means a stale client after a deploy — 404 it (don't return HTML),
+    // so the dynamic import fails cleanly and the app's error boundary reloads into the fresh build.
+    if (req.path.startsWith('/assets/')) return res.status(404).end();
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(join(clientDist, 'index.html'));
   });
   console.log('📦 Serving built client from client/dist (single-origin mode)');
