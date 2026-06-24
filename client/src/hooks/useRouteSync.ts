@@ -38,6 +38,8 @@ export function useRouteSync() {
 
   // Sync viewMode with current route on mount and location changes
   useEffect(() => {
+    // UJ-002: /create rendered identically to the Dashboard — send it to the first real create step.
+    if (location.pathname === '/create') { navigate('/create/scratch', { replace: true }); return; }
     const newViewMode = routeToViewMode[location.pathname];
     if (newViewMode && newViewMode !== viewMode) {
       console.log(`🔄 Route changed to ${location.pathname}, setting viewMode to ${newViewMode}`);

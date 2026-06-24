@@ -7,6 +7,7 @@ import { ControllerPage } from './pages/ControllerPage.tsx'
 import { LayoutDemoPage } from './pages/LayoutDemoPage.tsx'
 import { LibraryPage } from './pages/LibraryPage.tsx'
 import { AuthGate } from './components/auth/AuthGate.tsx'
+import { Toaster } from 'sonner'
 import { runMigration, getMigrationStatus } from './lib/storage-migration'
 import './index.css'
 
@@ -121,5 +122,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <AuthGate>
       <RouterProvider router={router} />
     </AuthGate>
+    <Toaster richColors position="top-center" closeButton />
   </React.StrictMode>,
 )

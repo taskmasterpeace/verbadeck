@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { toast } from 'sonner';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useOpenRouter } from './hooks/useOpenRouter';
 import { useFileOperations } from './hooks/useFileOperations';
@@ -249,7 +250,7 @@ export default function App() {
     onTranscript: handleTranscript,
     onError: (error) => {
       console.error('Streaming error:', error);
-      alert(`Error: ${error}`);
+      toast.error(error, { duration: 8000 });
     },
   });
 

@@ -34,11 +34,11 @@ export function PresetSelector({
         <BookOpen className="w-4 h-4" />
         Quick Load Presets
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <select
           value={selectedPresetId || ''}
           onChange={(e) => onSelectPreset(e.target.value || null)}
-          className="flex-1 px-3 py-2 border rounded-lg text-sm"
+          className="flex-1 min-w-[150px] px-3 py-2 border rounded-lg text-sm"
           data-testid="preset-selector"
         >
           <option value="">Select a preset...</option>

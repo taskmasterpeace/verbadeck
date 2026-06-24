@@ -11,7 +11,8 @@ function PairingScreen({ onJoin, error }: { onJoin: (code: string) => void; erro
       <div className="text-center space-y-6 w-full max-w-sm">
         <img src="/logo-icon.png" alt="VerbaDeck" className="h-16 mx-auto" />
         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">VerbaDeck Remote</h1>
-        <p className="text-gray-400 text-sm">Enter the room code shown on the presenter's screen</p>
+        <p className="text-gray-400 text-sm">Enter the 6-character room code shown on the presenter's screen.</p>
+        <p className="text-gray-500 text-xs -mt-3">No code yet? Start a presentation on your laptop first, then pair this phone.</p>
 
         <input
           type="text"

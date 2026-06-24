@@ -179,7 +179,21 @@ export function useAudioStreaming({
 
     } catch (error) {
       console.error('Error starting audio stream:', error);
-      onErrorRef.current?.(error instanceof Error ? error.message : 'Failed to start audio stream');
+      // Translate mic errors into something the user can act on (UJ-005). Keyboard-advance still works.
+      const name = (error as { name?: string })?.name;
+      let msg = error instanceof Error ? error.message : 'Failed to start audio stream';
+      if (name === 'NotAllowedError' || name === 'SecurityError' || name === 'PermissionDeniedError') {
+        msg = 'Microphone access is blocked. Click the camera/mic icon in your browser\'s address bar, choose "Allow", then press Start again. You can also present with the ← → arrow keys.';
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        msg = 'No microphone found. Connect a mic (or pick your input device), then press Start again — or use the ← → arrow keys to advance.';
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        msg = 'Your microphone is in use by another app (Zoom, Meet, etc.). Close it, then press Start again.';
+      } else if (name === 'NotSupportedError') {
+        msg = 'Voice needs a secure connection (https, or localhost). Open the https link, then press Start — or present with the ← → arrow keys.';
+      } else {
+        msg = `${msg}. You can still present with the ← → arrow keys.`;
+      }
+      onErrorRef.current?.(msg);
       updateStatus('disconnected');
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());

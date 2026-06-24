@@ -92,6 +92,10 @@ export function KnowledgeBrain() {
             </button>
           </div>
 
+          {stats.documents === 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">Add a document on the left first — then ask it anything.</p>
+          )}
+
           {answer && (
             <div className="mt-4 rounded-lg border border-border bg-secondary/40 p-4">
               <div className="font-heading text-sm font-semibold text-foreground">{answer.heading}</div>

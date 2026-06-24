@@ -13,6 +13,7 @@
     "dev:client": "npm run dev --workspace=client",
     "build:client": "npm run build --workspace=client",
     "test": "playwright test",
+    "reset-owner-password": "node server/set-owner-password.mjs",
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "test:webkit": "playwright test --project=webkit",

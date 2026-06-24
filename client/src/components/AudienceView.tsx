@@ -34,6 +34,7 @@ export function AudienceView({
             </span>
             Waiting for the presentation to begin…
           </p>
+          <p className="mt-3 text-xs text-muted-foreground/60">Open this from the Presenter view → “Open Audience View”.</p>
         </div>
       </div>
     );

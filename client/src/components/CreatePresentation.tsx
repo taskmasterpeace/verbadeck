@@ -55,7 +55,7 @@ const STEPS = [
 
 export function CreatePresentation(props: CreatePresentationProps) {
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-8 sm:py-14">
+    <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-14">
       {/* Hero */}
       <header className="relative mb-12 text-center">
         {/* ambient brand glow */}
