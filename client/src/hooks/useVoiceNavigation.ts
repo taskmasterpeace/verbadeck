@@ -15,6 +15,10 @@ interface UseVoiceNavigationProps {
   cancelWord: string;
 }
 
+// VD-1: minimum gap between auto-detected questions, so the presenter's own continuous speech
+// (rhetorical / role-play questions, thinking aloud) can't re-trigger Q&A back-to-back.
+const QUESTION_COOLDOWN_MS = 8000;
+
 export function useVoiceNavigation({
   sections,
   currentSectionIndex,
@@ -36,6 +40,8 @@ export function useVoiceNavigation({
   // Live transcript
   const [transcript, setTranscript] = useState<string[]>([]);
   const [lastTranscript, setLastTranscript] = useState('');
+  // VD-1: timestamp of the last auto-detected question (cooldown guard).
+  const lastQuestionTimeRef = useRef(0);
 
   // Check for trigger words (no wake/stop words - always advancing)
   const handleTranscript = useCallback((text: string, isFinal: boolean) => {
@@ -56,10 +62,13 @@ export function useVoiceNavigation({
       return; // Don't process other triggers
     }
 
-    // Check for questions when Q&A mode is enabled (only on final transcripts)
-    if (isListeningForQuestions) {
+    // Check for questions when Q&A mode is enabled (only on final transcripts).
+    // VD-1: never while one is already being answered (isLoadingQA), and not within the cooldown —
+    // otherwise the presenter's own continuous speech re-fires Q&A back-to-back.
+    if (isListeningForQuestions && !isLoadingQA && Date.now() - lastQuestionTimeRef.current > QUESTION_COOLDOWN_MS) {
       const question = voiceController.detectQuestion(text, isFinal);
       if (question) {
+        lastQuestionTimeRef.current = Date.now();
         handleQuestionDetected(question);
         return; // Don't process other triggers when question detected
       }
