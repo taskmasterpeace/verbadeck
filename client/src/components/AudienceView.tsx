@@ -75,7 +75,12 @@ export function AudienceView({
 
   // Calculate scaled font sizes based on zoom level
   const zoomMultiplier = zoomLevel / 100;
-  const scaledFontSize = fontSize * zoomMultiplier;
+  // VD-3: hard cap by content length so a long slide never overflows the screen, even when the live
+  // measurement hasn't settled yet (e.g. the audience window just opened on a second monitor). The
+  // measurement still shrinks further when it can; this cap is the floor that guarantees a fit.
+  const rawWords = currentSection.content ? currentSection.content.trim().split(/\s+/).filter(Boolean).length : 0;
+  const lengthCap = rawWords > 70 ? 2.6 : rawWords > 45 ? 3.2 : rawWords > 28 ? 4.2 : rawWords > 16 ? 5.2 : 8;
+  const scaledFontSize = Math.min(fontSize, lengthCap) * zoomMultiplier;
 
   // Fullscreen state management
   const [isFullscreen, setIsFullscreen] = useState(false);

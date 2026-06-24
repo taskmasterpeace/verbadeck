@@ -36,8 +36,13 @@ export function useDynamicTextSize(
 
     const container = containerRef.current;
     const measurement = measurementRef.current;
-    const availableHeight = (window.innerHeight * config.containerHeightPercent) / 100;
-    const availableWidth = container.clientWidth;
+    // VD-3: measure against the ACTUAL available area (the flex parent), not a window %, so the
+    // heading + chrome that share the slide are accounted for — long content no longer clips
+    // off-screen. Reserve room for the heading (more when text shares the slide with no image).
+    const parent = container.parentElement;
+    const parentHeight = parent?.clientHeight || (window.innerHeight * config.containerHeightPercent) / 100;
+    const availableHeight = parentHeight * (hasImage ? 0.8 : 0.66);
+    const availableWidth = container.clientWidth || parent?.clientWidth || window.innerWidth * 0.85;
 
     // Start with max size
     let currentSize = config.maxSize;
@@ -70,6 +75,11 @@ export function useDynamicTextSize(
   useEffect(() => {
     // Calculate on mount and when content changes
     calculateOptimalSize();
+    // VD-3: re-measure after layout settles — on first mount (esp. a freshly opened audience window
+    // on a second monitor) the parent height can read 0 and over-size the text. Recheck on the next
+    // frame and shortly after so the fit is correct once the layout is real.
+    const raf = requestAnimationFrame(() => calculateOptimalSize());
+    const t = setTimeout(() => calculateOptimalSize(), 220);
 
     // Recalculate on window resize
     const handleResize = () => {
@@ -77,7 +87,11 @@ export function useDynamicTextSize(
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [calculateOptimalSize]);
 
   return {
