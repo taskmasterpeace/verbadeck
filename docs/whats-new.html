@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VerbaDeck — What's New</title>
+<meta name="description" content="VerbaDeck changelog — shipping in public." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0f14; --surface:#121922; --border:#243140; --border-soft:#1a232e;
+    --text:#e6eef5; --muted:#8da2b5; --heading:#f4f9fd; --brand:#15a6d6; --accent:#2dd4bf; --ink:#7fd6ec;
+    --new:#2dd4bf; --improved:#15a6d6; --fixed:#8da2b5; --access:#7fd6ec;
+    --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;
+    background-image:radial-gradient(rgba(120,200,230,.03) 1px,transparent 1px);background-size:24px 24px}
+  .wrap{max-width:760px;margin:0 auto;padding:56px 22px 90px}
+  .mono{font-family:var(--mono)}
+  .grad{background:linear-gradient(100deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  header.top{text-align:center;border-bottom:1px solid var(--border-soft);padding-bottom:30px;margin-bottom:30px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--ink)}
+  h1{font-size:clamp(2rem,5vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin:.5rem 0}
+  .tag{color:var(--muted);font-size:1rem}
+  .momentum{margin-top:20px;display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .momentum span{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+  .momentum b{color:var(--accent);font-weight:600}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:36px}
+  .chip{font-size:.82rem;font-weight:500;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:7px 15px;cursor:pointer;transition:all .15s}
+  .chip[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:rgba(45,212,191,.08)}
+  .rel{margin-bottom:44px}
+  .rel h2{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+  .rel .date{font-family:var(--mono);font-size:.8rem;color:var(--muted);font-weight:500}
+  .rel .lede{color:var(--muted);font-style:italic;margin:8px 0 18px}
+  .grp{margin:0 0 16px}
+  .grp .lbl{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:9px;display:inline-block}
+  .grp.new .lbl{color:var(--new)} .grp.improved .lbl{color:var(--improved)} .grp.fixed .lbl{color:var(--fixed)} .grp.access .lbl{color:var(--access)}
+  ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  li{position:relative;padding-left:18px;color:var(--text);font-size:.96rem}
+  li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:2px;background:var(--brand)}
+  .grp.new li::before{background:var(--new)} .grp.improved li::before{background:var(--improved)} .grp.fixed li::before{background:var(--fixed)} .grp.access li::before{background:var(--access)}
+  li b{color:var(--heading);font-weight:600}
+  .hr{height:1px;background:var(--border-soft);margin:0 0 44px}
+  footer{text-align:center;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border-soft);padding-top:22px}
+  footer a{color:var(--accent);text-decoration:none}
+  .hidden{display:none}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Shipping in public</div>
+    <h1>VerbaDeck — <span class="grad">What's New</span></h1>
+    <p class="tag">Present hands-free. Speak naturally, advance automatically.</p>
+    <div class="momentum">
+      <span><b>63</b> updates</span><span><b>12</b> active build days</span><span>since <b>Oct 2025</b></span><span>last shipped <b>today</b></span>
+    </div>
+  </header>
+
+  <nav class="filters" aria-label="Filter by type">
+    <button class="chip" data-cat="all" aria-pressed="true">All</button>
+    <button class="chip" data-cat="new" aria-pressed="false">New</button>
+    <button class="chip" data-cat="improved" aria-pressed="false">Improved</button>
+    <button class="chip" data-cat="fixed" aria-pressed="false">Fixed</button>
+    <button class="chip" data-cat="access" aria-pressed="false">Access</button>
+  </nav>
+
+  <section class="rel">
+    <h2>v1.2.0 <span class="date">June 24, 2026</span></h2>
+    <p class="lede">Your private, invite-only studio — host it yourself, behind your own door.</p>
+    <div class="grp new"><span class="lbl">New</span><ul>
+      <li><b>Invite-only access.</b> A single-owner sign-in gates the whole app; everyone else lands on a waitlist.</li>
+      <li><b>Run it as your own hosted tool.</b> One command puts the entire app — voice, AI, the Knowledge Brain — behind your own private URL over a Cloudflare tunnel. No port-forwarding; your API keys never leave your machine.</li>
+    </ul></div>
+    <div class="grp improved"><span class="lbl">Improved</span><ul>
+      <li>The landing page now leads with the <b>VerbaDeck mark</b> as its brand anchor.</li>
+      <li><b>A clearer first run</b> — "Create" drops you into the builder; the audience screen and phone remote explain what to do when nothing's live; menus and preset controls fit small phones.</li>
+    </ul></div>
+    <div class="grp fixed"><span class="lbl">Fixed</span><ul>
+      <li><b>Microphone trouble now explains itself</b> — blocked, missing, or busy mics get plain-English guidance, and you can always advance with the arrow keys.</li>
+      <li>Errors show as <b>tidy notifications</b> instead of blocking pop-ups.</li>
+      <li>The Knowledge Brain <b>points you to add a document</b> before you ask it a question.</li>
+    </ul></div>
+    <div class="grp access"><span class="lbl">Access</span><ul>
+      <li>Owner-only protection on every API call and the live voice connection, plus a one-line password-recovery command.</li>
+    </ul></div>
+  </section>
+  <div class="hr"></div>
+
+  <section class="rel">
+    <h2>v1.1.0 <span class="date">June 22, 2026</span></h2>
+    <p class="lede">Recall your whole knowledge base, live — and a home on the web.</p>
+    <div class="grp new"><span class="lbl">New</span><ul>
+      <li><b>Knowledge Brain.</b> Paste a large, growing body of text and recall it instantly during live Q&amp;A — it finds the few most relevant passages and answers in about a second. Each document is auto-titled and topic-tagged.</li>
+      <li><b>A home on the web.</b> A polished landing page — interface tour, feature highlights, and an honest comparison — deploying to verbadeck.com.</li>
+      <li><b>Drive it from code.</b> Add, search, and ask the Knowledge Brain through a simple programmatic interface and a public endpoint.</li>
+    </ul></div>
+    <div class="grp improved"><span class="lbl">Improved</span><ul>
+      <li>Live presenter Q&amp;A now answers from your Knowledge Brain, not just the current slide.</li>
+    </ul></div>
+  </section>
+  <div class="hr"></div>
+
+  <section class="rel">
+    <h2>v1.0.0 <span class="date">June 21, 2026</span></h2>
+    <p class="lede">The production-ready 1.0 — present a real deck hands-free, from first run to closing slide.</p>
+    <div class="grp new"><span class="lbl">New</span><ul>
+      <li><b>Voice-driven presenting.</b> Say a trigger word and the slide advances — no clicker, no keyboard.</li>
+      <li><b>Live AI Q&amp;A</b> from your own deck, a cinematic audience view, a presenter cockpit, and three ways to build a deck.</li>
+    </ul></div>
+    <div class="grp improved"><span class="lbl">Improved</span><ul>
+      <li>A premium design system end to end, a faster initial load, and full accessibility + brand polish.</li>
+    </ul></div>
+  </section>
+
+  <footer>
+    VerbaDeck · Built by <a href="https://github.com/taskmasterpeace/verbadeck">Machine King Labs</a> · v1.2.0
+  </footer>
+</div>
+
+<script>
+  const chips = [...document.querySelectorAll('.chip')];
+  const groups = [...document.querySelectorAll('.grp')];
+  chips.forEach(c => c.addEventListener('click', () => {
+    const cat = c.dataset.cat;
+    chips.forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+    groups.forEach(g => g.classList.toggle('hidden', cat !== 'all' && !g.classList.contains(cat)));
+    document.querySelectorAll('.rel').forEach(r => {
+      const anyVisible = [...r.querySelectorAll('.grp')].some(g => !g.classList.contains('hidden'));
+      r.classList.toggle('hidden', !anyVisible);
+      const hr = r.nextElementSibling;
+      if (hr && hr.classList.contains('hr')) hr.classList.toggle('hidden', !anyVisible);
+    });
+  }));
+</script>
+</body>
+</html>

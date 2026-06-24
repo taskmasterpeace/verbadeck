@@ -1,6 +1,34 @@
 # 📣 VerbaDeck — What's New
 
-> Built in public · 57 updates across 11 active build days · shipping since October 2025 · last shipped today.
+> Built in public · 63 updates across 12 active build days · shipping since October 2025 · last shipped today.
+
+---
+
+## v1.2.0 — June 24, 2026
+
+*Your private, invite-only studio — host it yourself, behind your own door.*
+
+### 🆕 New
+- **Invite-only access.** VerbaDeck is now a single-owner studio: you sign in, and the whole app is
+  yours. Everyone else who shows up lands on a **waitlist** instead of walking in.
+- **Run it as your own hosted tool.** A one-command setup puts the entire app — voice, AI, and the
+  Knowledge Brain — behind your own private URL over a Cloudflare tunnel. No port-forwarding, no
+  exposing your computer, and your API keys never leave it.
+
+### ✨ Improved
+- **The landing page now leads with the VerbaDeck mark** as its brand anchor.
+- **A clearer first run.** "Create" drops you straight into the builder; the audience screen and the
+  phone remote explain what to do when nothing's live yet; menus and preset controls fit small phones.
+
+### 🔧 Fixed
+- **Microphone trouble now explains itself** — a blocked, missing, or busy mic gets plain-English
+  guidance, and you can always advance with the arrow keys.
+- **Errors show as tidy notifications** instead of blocking pop-ups.
+- **The Knowledge Brain points you to add a document** before you ask it a question.
+
+### 🔒 Access
+- Owner-only protection on every API call and the live voice connection, plus a one-line
+  password-recovery command for the owner.
 
 ---
 
