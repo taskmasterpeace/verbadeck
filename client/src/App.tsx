@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { toast } from 'sonner';
 import { useAudioStreaming } from './hooks/useAudioStreaming';
 import { useOpenRouter } from './hooks/useOpenRouter';
@@ -245,6 +245,21 @@ export default function App() {
     handleTranscript,
   } = voiceNav;
 
+  // Collect this deck's active trigger words to boost STT recognition for them.
+  const voiceWordBoost = useMemo(() => {
+    const words = new Set<string>();
+    for (const s of sections) {
+      const triggers = s.selectedTriggers && s.selectedTriggers.length > 0
+        ? s.selectedTriggers
+        : (s.advanceToken ? [s.advanceToken] : []);
+      for (const t of triggers) {
+        const w = t?.trim();
+        if (w) words.add(w);
+      }
+    }
+    return Array.from(words);
+  }, [sections]);
+
   // Audio streaming hook (comes after voiceNav so handleTranscript is available)
   const { isStreaming, status, startStreaming, stopStreaming } = useAudioStreaming({
     onTranscript: handleTranscript,
@@ -252,6 +267,7 @@ export default function App() {
       console.error('Streaming error:', error);
       toast.error(error, { duration: 8000 });
     },
+    wordBoost: voiceWordBoost,
   });
 
   // Sync streaming state to Zustand voice store so KnowItAllMode and other consumers can read it

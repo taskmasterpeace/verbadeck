@@ -1372,7 +1372,10 @@ server.on('upgrade', async (req, socket, head) => {
     socket.destroy();
     return;
   }
-  if (req.url === '/ws') {
+  // Parse once so query params (e.g. word_boost) don't break exact-path matching.
+  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const pathname = parsedUrl.pathname;
+  if (pathname === '/ws') {
   wss.handleUpgrade(req, socket, head, (clientWs) => {
     console.log('✅ Client connected');
 
@@ -1381,9 +1384,19 @@ server.on('upgrade', async (req, socket, head) => {
       sample_rate: '16000',
       encoding: 'pcm_s16le',
       format_turns: 'true',
-      // Enable word-level timestamps and confidence for better trigger detection
-      word_boost: '["majin", "twin", "pause", "moments", "opportunity", "traction"]'
     });
+
+    // Boost recognition for THIS presentation's actual trigger words, sent by the client
+    // at connect time (comma-separated). Previously this was a hardcoded demo word list,
+    // so real users got no boost on their own triggers.
+    const boostWords = (parsedUrl.searchParams.get('word_boost') || '')
+      .split(',')
+      .map(w => w.trim())
+      .filter(Boolean)
+      .slice(0, 100);
+    if (boostWords.length > 0) {
+      aaiParams.set('word_boost', JSON.stringify(boostWords));
+    }
 
     const aaiUrl = `wss://streaming.assemblyai.com/v3/ws?${aaiParams}`;
 
@@ -1456,9 +1469,12 @@ server.on('upgrade', async (req, socket, head) => {
 
     aaiWs.on('error', (error) => {
       console.error('AssemblyAI WebSocket error:', error.message);
+      // Use capitalized 'Error' to match the AssemblyAI protocol and the client's
+      // handler (useAudioStreaming). A lowercase 'error' was silently dropped, leaving
+      // the user with an unexplained disconnect.
       clientWs.send(JSON.stringify({
-        type: 'error',
-        message: error.message
+        type: 'Error',
+        message: 'Voice transcription connection error. Please press Start to reconnect.'
       }));
       cleanup();
     });
@@ -1469,7 +1485,7 @@ server.on('upgrade', async (req, socket, head) => {
       cleanup();
     });
   });
-  } else if (req.url === '/ws/control') {
+  } else if (pathname === '/ws/control') {
     controlWss.handleUpgrade(req, socket, head, (ws) => {
       console.log('🎮 Control WebSocket connected');
       let roomCode = null;

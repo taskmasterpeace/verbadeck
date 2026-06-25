@@ -100,7 +100,11 @@ export class VoiceController {
       .filter(w => w.length > 0);
 
     for (const word of cancelWords) {
-      if (lowerText.includes(word)) {
+      // Word-boundary match (escaped) so "stop" doesn't fire on "stopwatch"/"nonstop".
+      // Mirrors detectBackCommand's boundary handling.
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (pattern.test(lowerText)) {
         console.log(`🛑 Cancel word detected: "${word}"`);
         return true;
       }

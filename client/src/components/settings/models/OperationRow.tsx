@@ -21,7 +21,7 @@ export function OperationRow({ operation, metadata, currentModel, onModelChange 
     if (modelId.includes('claude')) return <span className="text-xs text-green-600">✓ Quality</span>;
     if (modelId.includes('gpt-4o-mini')) return <span className="text-xs text-blue-600">⚡ Fast & Cheap</span>;
     if (modelId.includes('llama-3.1-8b') || modelId.includes('llama-4-scout')) return <span className="text-xs text-yellow-600">⚡⚡⚡ Ultra-Fast</span>;
-    if (modelId.includes('o1')) return <span className="text-xs text-indigo-600">🧠 Reasoning</span>;
+    if (modelId.includes('o1')) return <span className="text-xs text-cyan-600">🧠 Reasoning</span>;
     if (modelId.includes('perplexity')) return <span className="text-xs text-orange-600">🌐 Internet</span>;
     if (modelId.includes(':free')) return <span className="text-xs text-green-600">🆓 Free</span>;
     return null;

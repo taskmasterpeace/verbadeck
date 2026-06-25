@@ -14,12 +14,15 @@ interface UseAudioStreamingProps {
   onTranscript?: (text: string, isFinal: boolean) => void;
   onError?: (error: string) => void;
   onStatusChange?: (status: 'connecting' | 'connected' | 'disconnected') => void;
+  /** Active trigger words for the current deck — boosts STT recognition for them. */
+  wordBoost?: string[];
 }
 
 export function useAudioStreaming({
   onTranscript,
   onError,
   onStatusChange,
+  wordBoost,
 }: UseAudioStreamingProps = {}) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
@@ -30,14 +33,18 @@ export function useAudioStreaming({
   const audioWorkletRef = useRef<AudioWorkletNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isStreamingRef = useRef(false);
+  // Monotonic id to detect a stop()/restart that happens while startStreaming is awaiting.
+  const startIdRef = useRef(0);
   const onTranscriptRef = useRef(onTranscript);
   const onErrorRef = useRef(onError);
   const onStatusChangeRef = useRef(onStatusChange);
+  const wordBoostRef = useRef(wordBoost);
 
   // Keep refs in sync
   onTranscriptRef.current = onTranscript;
   onErrorRef.current = onError;
   onStatusChangeRef.current = onStatusChange;
+  wordBoostRef.current = wordBoost;
 
   const updateStatus = useCallback((newStatus: 'connecting' | 'connected' | 'disconnected') => {
     setStatus(newStatus);
@@ -46,6 +53,8 @@ export function useAudioStreaming({
 
   const stopStreaming = useCallback(() => {
     console.log('Stopping audio stream');
+    // Invalidate any in-flight startStreaming so it aborts after its awaits.
+    startIdRef.current++;
 
     // Close WebSocket
     if (wsRef.current) {
@@ -80,6 +89,11 @@ export function useAudioStreaming({
     // Use ref to avoid stale closure on isStreaming
     if (isStreamingRef.current) return;
 
+    // Claim this start attempt; if stopStreaming() runs during an await below, startIdRef
+    // changes and we abort instead of leaving an orphaned AudioContext/WebSocket behind.
+    const myStartId = ++startIdRef.current;
+    const aborted = () => startIdRef.current !== myStartId;
+
     try {
       updateStatus('connecting');
 
@@ -92,6 +106,10 @@ export function useAudioStreaming({
           noiseSuppression: true,
         },
       });
+      if (aborted()) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       streamRef.current = stream;
 
       // 2. Create AudioContext
@@ -101,9 +119,23 @@ export function useAudioStreaming({
       // 3. Load AudioWorklet processor (with cache-busting)
       const cacheBuster = `?v=${Date.now()}`;
       await audioContext.audioWorklet.addModule(`/audio-processor.js${cacheBuster}`);
+      if (aborted()) {
+        try { audioContext.close(); } catch { /* already closing */ }
+        stream.getTracks().forEach((track) => track.stop());
+        audioContextRef.current = null;
+        streamRef.current = null;
+        return;
+      }
 
-      // 4. Create WebSocket connection to our proxy
-      const ws = new WebSocket(WS_URL);
+      // 4. Create WebSocket connection to our proxy.
+      // Pass the deck's active trigger words so the server can boost STT recognition for them.
+      const boost = (wordBoostRef.current || [])
+        .map((w) => w.trim())
+        .filter(Boolean);
+      const wsUrl = boost.length > 0
+        ? `${WS_URL}${WS_URL.includes('?') ? '&' : '?'}word_boost=${encodeURIComponent(boost.join(','))}`
+        : WS_URL;
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.binaryType = 'arraybuffer';

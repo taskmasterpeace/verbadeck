@@ -59,7 +59,7 @@ export function PresenterPage({
             className="group relative cursor-pointer transition-transform hover:scale-105 active:scale-95"
           >
             <div className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-lg p-1 shadow-xl">
-              <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-md px-8 py-6 min-w-[280px]">
+              <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-800 rounded-md px-8 py-6 min-w-[280px]">
                 <div className="text-center">
                   <div className="text-white font-bold text-lg mb-1">Open Audience View</div>
                   <div className="text-blue-100 text-sm">Click to launch 2nd monitor</div>

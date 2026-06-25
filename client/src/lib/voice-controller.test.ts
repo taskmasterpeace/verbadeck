@@ -194,6 +194,19 @@ describe('VoiceController', () => {
     it('should return false for empty cancel word', () => {
       expect(controller.detectCancelWord('cancel', '')).toBe(false);
     });
+
+    it('should use word boundaries to prevent false positives', () => {
+      // "stop" must NOT match inside "stopwatch" / "nonstop"
+      expect(controller.detectCancelWord('check the stopwatch', 'stop')).toBe(false);
+      expect(controller.detectCancelWord('it was a nonstop flight', 'stop')).toBe(false);
+      // but a real standalone word (and its phrase) still matches
+      expect(controller.detectCancelWord('please stop now', 'stop')).toBe(true);
+      expect(controller.detectCancelWord('go back to the start', 'go back')).toBe(true);
+    });
+
+    it('should not throw on regex-special characters in cancel config', () => {
+      expect(controller.detectCancelWord('hello (world)', 'a+b')).toBe(false);
+    });
   });
 
   describe('debouncing', () => {
