@@ -75,7 +75,9 @@ Replaces the queue/rapid-fire toggle.
 
 ### 4.1 Focus model (resolves keyword collision)
 
-Two open cards mean up to four answer keyword sets live at once → collisions. Resolution: exactly **one open card is *focused*** at a time (default: the oldest open). **Only the focused card's answer keywords are voice-armed.** The second open card is a **read-ahead peek** (visible, answers shown) but not voice-armed. Change focus by saying `"next"` / the card's leading words, or tapping it; a visible **focus ring + "● live"** tag marks it. This preserves the unambiguous keyword-confirm mechanism while still showing two answers at once.
+Two open cards mean up to four answer keyword sets live at once → collisions. Resolution: exactly **one open card is *focused*** at a time (default: the oldest open). **Only the focused card's answer keywords are voice-armed.** The second open card is a **read-ahead peek** (visible, answers shown) but not voice-armed.
+
+**Focusing = enlarging (the presenter's refinement, 2026-06-24).** Say a card's **opening words** (or `"next"`, or tap it) and that card **grows to fill the space** while the other shrinks to a peek — so the question you're answering is unmistakably the big one. The matched opening words are **highlighted on the card** as confirmation the system locked onto the right question (*"so it knows, okay, this is what the user's saying"*). Up to **three** questions are visible at once (2 open + 1 pill); a pill enlarges into focus the same way when you say its words. Only the focused card's keywords are voice-armed, preserving the unambiguous keyword-confirm mechanism.
 
 ### 4.2 State / data model
 
