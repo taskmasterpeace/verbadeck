@@ -29,7 +29,10 @@
       "Bash(timeout 30 bash:*)",
       "Bash(timeout 45 bash:*)",
       "Bash(tee:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cd /d/git/verbadeck/client && find src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" -o -name \"*.css\" \\\\\\) | head -200)",
+      "Bash(cd /d/git/verbadeck/server && wc -l *.js utils/*.js middleware/*.js 2>/dev/null | sort -n)",
+      "Bash(echo \"---EXIT: $?---\")"
     ],
     "deny": [],
     "ask": []
